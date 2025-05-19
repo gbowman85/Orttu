@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-
-
+import { ConvexClientProvider } from "../providers/ConvexClientProvider";
 
 export const metadata: Metadata = {
   title: "Orttu",
@@ -16,7 +15,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        {/* Wrap children in ConvexClientProvider to allow using Convex in all children */}
+        <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
     </html>
   );

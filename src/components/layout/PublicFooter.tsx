@@ -7,7 +7,7 @@ export default function PublicFooter() {
             <a href="/privacy" className="text-sm text-gray-600 hover:text-gray-900">
               Privacy Policy
             </a>
-            <a href="/support" className="text-sm text-gray-600 hover:text-gray-900">
+            <a href="#" className="text-sm text-gray-600 hover:text-gray-900">
               Support
             </a>
           </div>
