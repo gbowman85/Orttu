@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function PublicHeader() {
   return (
@@ -15,11 +16,17 @@ export default function PublicHeader() {
           />
         </Link>
         <nav>
-          <ul>
+          <ul className="flex items-center gap-4">
             <li>
-              <Link href="/about" className="text-sm font-medium text-gray-700 hover:text-gray-900 mr-4">About</Link>
-              <Link href="/guide" className="text-sm font-medium text-gray-700 hover:text-gray-900 mr-4">Guide</Link>
-              <Link href="/login" className="text-sm font-medium text-gray-700 hover:text-gray-900">Login</Link>
+              <Link href="/about" className="text-sm font-medium text-gray-700 hover:text-gray-900">About</Link>
+            </li>
+            <li>
+              <Link href="/guide" className="text-sm font-medium text-gray-700 hover:text-gray-900">Guide</Link>
+            </li>
+            <li>
+              <Button asChild variant="secondary">
+                <Link href="/login">Login</Link>
+              </Button>
             </li>
           </ul>
         </nav>
