@@ -8,4 +8,7 @@ declare global {
       toHaveClass(className: string): R;
     }
   }
-} 
+}
+
+// Mock convex/react
+jest.mock('convex/react'); 

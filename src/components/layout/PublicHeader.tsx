@@ -1,7 +1,10 @@
+'use client'
+
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-
+import { Authenticated, Unauthenticated } from "convex/react";
+import { UserProfileIcon } from "../auth/UserProfileIcon";
 export default function PublicHeader() {
   return (
     <header className="w-full border-b">
@@ -24,9 +27,14 @@ export default function PublicHeader() {
               <Link href="/guide" className="text-sm font-medium text-gray-700 hover:text-gray-900">Guide</Link>
             </li>
             <li>
-              <Button asChild variant="secondary">
-                <Link href="/login">Login</Link>
-              </Button>
+              <Unauthenticated>
+                <Button asChild variant="secondary">
+                  <Link href="/login">Login</Link>
+                </Button>
+              </Unauthenticated>
+              <Authenticated>
+                <UserProfileIcon />
+              </Authenticated>
             </li>
           </ul>
         </nav>

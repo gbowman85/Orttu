@@ -1,4 +1,5 @@
 import { defineSchema, defineTable } from "convex/server";
+import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 // Enums for status and types
@@ -64,17 +65,14 @@ const ParameterSchema = v.object({
 });
 
 export default defineSchema({
+    // Auth
+    ...authTables,
 
     // Users
 
     users: defineTable({
-        authMethods: v.array(v.object({
-            service: v.string()
-        })),
         email: v.string(),
-        name: v.string(),
-        created: v.number(),
-        lastLogin: v.number()
+        name: v.string()
     }).index("by_email", ["email"]),
 
     user_preferences: defineTable({
