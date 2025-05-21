@@ -71,13 +71,8 @@ export default defineSchema({
     // Users
 
     users: defineTable({
-        authMethods: v.array(v.object({
-            service: v.string()
-        })),
         email: v.string(),
-        name: v.string(),
-        created: v.number(),
-        lastLogin: v.number()
+        name: v.string()
     }).index("by_email", ["email"]),
 
     user_preferences: defineTable({
