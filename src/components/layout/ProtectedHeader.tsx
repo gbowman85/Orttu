@@ -1,5 +1,11 @@
+'use client'
+
 import Link from "next/link";
 import Image from "next/image";
+import { Unauthenticated } from "convex/react";
+import { Authenticated } from "convex/react";
+import { UserProfileIcon } from "../auth/UserProfileIcon";
+import { Button } from "../ui/button";
 
 export default function ProtectedHeader() {
   return (
@@ -15,10 +21,19 @@ export default function ProtectedHeader() {
           />
         </Link>
         <nav>
-          <ul>
+          <ul className="flex items-center gap-4">
             <li>
               <Link href="/guide" className="text-sm font-medium text-gray-700 hover:text-gray-900 mr-4">Guide</Link>
-              <Link href="/account" className="text-sm font-medium text-gray-700 hover:text-gray-900">Account</Link>
+            </li>
+            <li>
+              <Unauthenticated>
+                <Button asChild variant="secondary">
+                  <Link href="/login">Login</Link>
+                </Button>
+              </Unauthenticated>
+              <Authenticated>
+                <UserProfileIcon />
+              </Authenticated>
             </li>
           </ul>
         </nav>
