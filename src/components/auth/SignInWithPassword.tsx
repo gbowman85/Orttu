@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useState } from "react";
 import { ConvexError } from "convex/values";
-
+import { useRouter } from "next/navigation";
+import { handleAuthSuccess } from "@/lib/auth";
 
 export function SignInWithPassword({
   provider,
@@ -22,8 +23,16 @@ export function SignInWithPassword({
   passwordRequirements?: string;
 }) {
   const { signIn } = useAuthActions();
+  const router = useRouter();
   const [flow, setFlow] = useState<"signIn" | "signUp">("signIn");
   const [submitting, setSubmitting] = useState(false);
+
+  const authHandler = handleAuthSuccess({
+    router,
+    onSuccess: handleSent,
+    flow
+  });
+
   return (
     <form
       className="flex flex-col"
@@ -32,25 +41,9 @@ export function SignInWithPassword({
         setSubmitting(true);
         const formData = new FormData(event.currentTarget);
         signIn(provider ?? "password", formData)
-          .then(() => {
-            handleSent?.(formData.get("email") as string);
-          })
+          .then(() => authHandler.onSuccess(formData.get("email") as string))
           .catch((error) => {
-            console.error(error);
-            let toastTitle: string;
-            if (
-              error instanceof ConvexError &&
-              error.data === "INVALID_PASSWORD"
-            ) {
-              toastTitle =
-                "Invalid password - check the requirements and try again.";
-            } else {
-              toastTitle =
-                flow === "signIn"
-                  ? "Could not sign in, did you mean to sign up?"
-                  : "Could not sign up, did you mean to sign in?";
-            }
-            toast.error(toastTitle);
+            const result = authHandler.onError(error);
             setSubmitting(false);
           });
       }}
