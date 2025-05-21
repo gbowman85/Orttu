@@ -55,6 +55,12 @@ export function SignInWithPassword({
           });
       }}
     >
+      {flow === "signUp" && (
+        <>
+          <label htmlFor="name">Name</label>
+          <Input name="name" id="name" className="mb-4" autoComplete="name" />
+        </>
+      )}
       <label htmlFor="email">Email</label>
       <Input name="email" id="email" className="mb-4" autoComplete="email" />
       <div className="flex items-center justify-between">
