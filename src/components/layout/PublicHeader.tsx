@@ -2,19 +2,20 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Authenticated, Unauthenticated } from "convex/react";
-import { UserProfileIcon } from "../auth/UserProfileIcon";
+import { UserProfileIcon, UserProfileIconFallback } from "../auth/UserProfileIcon";
+import { Suspense } from "react";
+
 export default function PublicHeader() {
   return (
     <header className="w-full border-b">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+      {/* h-[48px] to avoid header height jumping on load */}
+      <div className="container mx-auto h-[48px] px-4 my-3 flex justify-between items-center">
         <Link href="/">
           <Image
             src="/images/logo/orttu-logo.svg"
             alt="Orttu Logo"
-            width={352}
-            height={70}
+            width={176}
+            height={45}
             priority
           />
         </Link>
@@ -27,14 +28,9 @@ export default function PublicHeader() {
               <Link href="/guide" className="text-sm font-medium text-gray-700 hover:text-gray-900">Guide</Link>
             </li>
             <li>
-              <Unauthenticated>
-                <Button asChild variant="secondary">
-                  <Link href="/login">Login</Link>
-                </Button>
-              </Unauthenticated>
-              <Authenticated>
+              <Suspense fallback={<UserProfileIconFallback />}>
                 <UserProfileIcon />
-              </Authenticated>
+              </Suspense>
             </li>
           </ul>
         </nav>

@@ -1,5 +1,5 @@
 import ProtectedHeader from "@/components/layout/ProtectedHeader";
-import ProtectedFooter from "@/components/layout/ProtectedFooter";
+import MinimalFooter from "@/components/layout/MinimalFooter";
 
 export default function ProtectedLayout({
   children,
@@ -9,10 +9,10 @@ export default function ProtectedLayout({
   return (
     <div className="min-h-screen flex flex-col">
       <ProtectedHeader />
-      <main className="flex-1">
+      <main className="flex-1 px-4">
         {children}
       </main>
-      <ProtectedFooter />
+      <MinimalFooter />
     </div>
   );
 } 

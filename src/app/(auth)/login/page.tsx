@@ -1,10 +1,19 @@
 import { SignInWithPassword } from '@/components/auth/SignInWithPassword';
+import Link from 'next/link';
 
 export default function LoginPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center p-24">
-      <h1 className="text-4xl font-bold mb-8">Login</h1>
+    <>
+      <Link href="/">
+        <img
+          src="/images/logo/orttu-logo-square.svg"
+          alt="Orttu Logo"
+          className="mx-auto mb-8"
+          width={150}
+          height={118}
+        />
+      </Link>
       <SignInWithPassword />
-    </main>
+    </>
   );
 } 

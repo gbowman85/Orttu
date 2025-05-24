@@ -1,7 +1,7 @@
-export default function ProtectedFooter() {
+export default function MinimalFooter() {
   return (
     <footer className="w-full border-t">
-      <div className="container mx-auto px-4 py-4">
+      <div className="mx-auto px-2 py-2">
         <div className="flex justify-between items-center">
           <div className="flex gap-4">
             <a href="/privacy" className="text-sm text-gray-600 hover:text-gray-900">
@@ -12,7 +12,7 @@ export default function ProtectedFooter() {
             </a>
           </div>
           <div>
-            <img src="/images/logo/nova-Learn-logo_120.png" alt="novaLearn Logo" className="h-16" />
+            <img src="/images/logo/novaLearn-icon-80.png" alt="novaLearn Logo" className="h-8" />
           </div>
         </div>
       </div>

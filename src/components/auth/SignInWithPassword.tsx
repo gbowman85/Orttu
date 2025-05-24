@@ -8,6 +8,7 @@ import { useState } from "react";
 import { ConvexError } from "convex/values";
 import { useRouter } from "next/navigation";
 import { handleAuthSuccess } from "@/lib/auth";
+import { CircleArrowRight } from "lucide-react";
 
 export function SignInWithPassword({
   provider,
@@ -82,8 +83,8 @@ export function SignInWithPassword({
       )}
       {flow === "signUp" && customSignUp}
       <input name="flow" value={flow} type="hidden" />
-      <Button type="submit" disabled={submitting} className="mt-4">
-        {flow === "signIn" ? "Sign in" : "Sign up"}
+      <Button type="submit" disabled={submitting} className="mt-4 w-32 mx-auto">
+        <CircleArrowRight />{flow === "signIn" ? "Log in" : "Sign up"}
       </Button>
       <Button
         variant="link"
@@ -94,7 +95,7 @@ export function SignInWithPassword({
       >
         {flow === "signIn"
           ? "Don't have an account? Sign up"
-          : "Already have an account? Sign in"}
+          : "Already have an account? Log in"}
       </Button>
     </form>
   );
