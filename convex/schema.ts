@@ -142,7 +142,9 @@ export default defineSchema({
         token: v.string(),
         refreshToken: v.string(),
         created: v.number(),
-        updated: v.number()
+        updated: v.number(),
+        lastUsed: v.number(),
+        active: v.boolean()
     }).index("by_owner", ["ownerId"])
         .index("by_service", ["serviceId"]),
 

@@ -1,7 +1,14 @@
+'use client';
+
+import ConnectionsList from "@/components/dashboard/ConnectionsList";
+import ConnectionsToolbar from "@/components/dashboard/ConnectionsToolbar";
+import { ConnectionsProvider } from '@/contexts/ConnectionsContext';
+
 export default function ConnectionsPage() {
   return (
-    <div className="container mx-auto px-4 py-24">
-      <h1 className="text-4xl font-bold">Connections</h1>
-    </div>
+    <ConnectionsProvider>
+      <ConnectionsToolbar />
+      <ConnectionsList />
+    </ConnectionsProvider>
   );
 } 

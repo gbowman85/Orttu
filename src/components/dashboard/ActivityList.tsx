@@ -5,7 +5,7 @@ import { Button } from '../ui/button'
 import { useActivity } from '@/contexts/ActivityContext'
 import { ActivityEmpty } from "./ActivityEmpty"
 import { NoResults } from "./ActivityNoResults"
-import { formatDistanceToNow, formatRelative, formatDuration, formatDistance, formatDistanceStrict } from 'date-fns'
+import { formatDistanceToNow, formatRelative, formatDistanceStrict } from 'date-fns'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -96,7 +96,7 @@ export default function ActivityList() {
                         </div>
 
                     </div>
-                    
+
                     {/* More actions */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
