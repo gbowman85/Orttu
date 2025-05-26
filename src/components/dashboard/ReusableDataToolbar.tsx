@@ -40,13 +40,13 @@ export default function ReusableDataToolbar() {
 
     return (
         <div className="flex items-end justify-between w-full gap-4 mb-6">
-            <div className="flex items-left gap-2 flex-col lg:flex-row">
+            <div className="flex items-left gap-2 flex-col md:flex-row">
                 {/* Search */}
                 <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <Input
                         placeholder="Search variables..."
-                        className="pl-10 w-[180px] md:min-w-3xs lg:min-w-xs"
+                        className="pl-10 w-[180px] lg:min-w-3xs"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -76,8 +76,8 @@ export default function ReusableDataToolbar() {
                     <Select value={sortBy} onValueChange={setSortBy}>
                         <SelectTrigger 
                             className={cn(
-                                "min-w-[120px] rounded-l-md rounded-r-none",
-                                "[&>svg]:hidden" // This hides the chevron
+                                "min-w-[9em] rounded-l-md rounded-r-none",
+                                "[&>svg]:hidden"
                             )}
                         >
                             <SelectValue />
@@ -92,11 +92,11 @@ export default function ReusableDataToolbar() {
                     </Select>
 
                     {/* Sort direction toggle */}
-                    <div className="flex border-y border-r rounded-r-md">
+                    <div className="flex">
                         <Button
                             variant="ghost"
                             size="icon"
-                            className={`rounded-none border-l ${sortDirection === 'asc' ? 'bg-primary-background' : ''}`}
+                            className={`rounded-none border-y border-l ${sortDirection === 'asc' ? 'bg-primary-background' : ''}`}
                             onClick={() => setSortDirection('asc')}
                         >
                             <ChevronUp className="h-4 w-4" />
@@ -104,7 +104,7 @@ export default function ReusableDataToolbar() {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className={`rounded-none border-l ${sortDirection === 'desc' ? 'bg-primary-background' : ''}`}
+                            className={`rounded-none rounded-r-md border-y border-r border-l ${sortDirection === 'desc' ? 'bg-primary-background' : ''}`}
                             onClick={() => setSortDirection('desc')}
                         >
                             <ChevronDown className="h-4 w-4" />

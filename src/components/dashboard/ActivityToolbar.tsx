@@ -2,9 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import * as SelectPrimitive from "@radix-ui/react-select"
-import { Check, ChevronDown, ChevronUp, Search, Filter } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChevronDown, ChevronUp, Search, Filter } from "lucide-react";
 import { useActivity, ALL_WORKFLOWS } from "@/contexts/ActivityContext";
+import { cn } from "@/lib/utils";
 
 
 const sortOptions = [
@@ -42,96 +43,52 @@ export default function ActivityToolbar() {
 
         {/* Workflow Filter */}
         <div className="flex items-center">
-          <SelectPrimitive.Root value={selectedWorkflowTitle} onValueChange={setSelectedWorkflowTitle}>
-            <SelectPrimitive.Trigger className="flex items-center justify-between gap-2 rounded-md border bg-background px-3 py-2 text-sm min-w-[200px]">
+          <Select value={selectedWorkflowTitle} onValueChange={setSelectedWorkflowTitle}>
+            <SelectTrigger className="min-w-[200px]">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-muted-foreground" />
-                <SelectPrimitive.Value placeholder="Filter by workflow" />
+                <SelectValue placeholder="Filter by workflow" />
               </div>
-              <ChevronDown className="h-4 w-4 opacity-50" />
-            </SelectPrimitive.Trigger>
-            <SelectPrimitive.Portal>
-              <SelectPrimitive.Content className="relative z-50 min-w-[200px] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-80">
-                <SelectPrimitive.ScrollUpButton className="flex items-center justify-center h-[25px] bg-white text-muted-foreground">
-                  <ChevronUp className="h-4 w-4" />
-                </SelectPrimitive.ScrollUpButton>
-                <SelectPrimitive.Viewport className="p-1">
-                  <SelectPrimitive.Item
-                    value={ALL_WORKFLOWS}
-                    className="relative flex items-center h-[25px] px-2 py-4 pl-8 pr-2 rounded-sm hover:bg-primary-background cursor-pointer"
-                  >
-                    <SelectPrimitive.ItemText>All workflows</SelectPrimitive.ItemText>
-                    <SelectPrimitive.ItemIndicator className="absolute left-2 inline-flex items-center">
-                      <Check className="h-4 w-4" />
-                    </SelectPrimitive.ItemIndicator>
-                  </SelectPrimitive.Item>
-                  {availableWorkflowTitles.map((title) => (
-                    <SelectPrimitive.Item
-                      key={title}
-                      value={title}
-                      className="relative flex items-center h-[25px] px-2 py-4 pl-8 pr-2 rounded-sm hover:bg-primary-background cursor-pointer"
-                    >
-                      <SelectPrimitive.ItemText>{title}</SelectPrimitive.ItemText>
-                      <SelectPrimitive.ItemIndicator className="absolute left-2 inline-flex items-center">
-                        <Check className="h-4 w-4" />
-                      </SelectPrimitive.ItemIndicator>
-                    </SelectPrimitive.Item>
-                  ))}
-                </SelectPrimitive.Viewport>
-                <SelectPrimitive.ScrollDownButton className="flex items-center justify-center h-[25px] bg-white text-muted-foreground">
-                  <ChevronDown className="h-4 w-4" />
-                </SelectPrimitive.ScrollDownButton>
-              </SelectPrimitive.Content>
-            </SelectPrimitive.Portal>
-          </SelectPrimitive.Root>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_WORKFLOWS}>All workflows</SelectItem>
+              {availableWorkflowTitles.map((title) => (
+                <SelectItem key={title} value={title}>
+                  {title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       <div id="activity-toolbar-right" className="flex items-right gap-2 flex-col lg:flex-row items-end">
         {/* Sort */}
         <div className="flex items-center">
-          <SelectPrimitive.Root value={sortBy} onValueChange={setSortBy}>
-            {/* Trigger for the sort dropdown */}
-            <SelectPrimitive.Trigger className="min-w-[120px] flex items-center justify-between rounded-l-md rounded-r-none border bg-background px-3 py-2 text-sm">
-              <SelectPrimitive.Value />
-            </SelectPrimitive.Trigger>
-
-            {/* Portal for the sort dropdown */}
-            <SelectPrimitive.Portal>
-              <SelectPrimitive.Content className="relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-80">
-                <SelectPrimitive.ScrollUpButton className="flex items-center justify-center h-[25px] bg-white text-muted-foreground">
-                  <ChevronUp className="h-4 w-4" />
-                </SelectPrimitive.ScrollUpButton>
-
-                {/* Options for the sort dropdown */}
-                <SelectPrimitive.Viewport className="p-1">
-                  {sortOptions.map(({ value, label }) => (
-                    <SelectPrimitive.Item
-                      key={value}
-                      value={value}
-                      className="relative flex items-center h-[25px] px-2 py-4 pl-8 pr-2 rounded-sm hover:bg-primary-background cursor-pointer"
-                    >
-                      <SelectPrimitive.ItemText>{label}</SelectPrimitive.ItemText>
-                      <SelectPrimitive.ItemIndicator className="absolute left-2 inline-flex items-center">
-                        <Check className="h-4 w-4" />
-                      </SelectPrimitive.ItemIndicator>
-                    </SelectPrimitive.Item>
-                  ))}
-                </SelectPrimitive.Viewport>
-
-                <SelectPrimitive.ScrollDownButton className="flex items-center justify-center h-[25px] bg-white text-muted-foreground">
-                  <ChevronDown className="h-4 w-4" />
-                </SelectPrimitive.ScrollDownButton>
-              </SelectPrimitive.Content>
-            </SelectPrimitive.Portal>
-          </SelectPrimitive.Root>
+          <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger
+              className={cn(
+                "min-w-[9em] rounded-l-md rounded-r-none",
+                "[&>svg]:hidden"
+              )}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {sortOptions.map(({ value, label }) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {/* Sort direction toggle */}
-          <div className="flex border-y border-r rounded-r-md">
+          <div className="flex">
             <Button
               variant="ghost"
               size="icon"
-              className={`rounded-none border-l ${sortDirection === 'asc' ? 'bg-primary-background' : ''}`}
+              className={`rounded-none border-y border-l ${sortDirection === 'asc' ? 'bg-primary-background' : ''}`}
               onClick={() => setSortDirection('asc')}
             >
               <ChevronUp className="h-4 w-4" />
@@ -139,7 +96,7 @@ export default function ActivityToolbar() {
             <Button
               variant="ghost"
               size="icon"
-              className={`rounded-none border-l ${sortDirection === 'desc' ? 'bg-primary-background' : ''}`}
+              className={`rounded-none rounded-r-md border-y border-r border-l ${sortDirection === 'desc' ? 'bg-primary-background' : ''}`}
               onClick={() => setSortDirection('desc')}
             >
               <ChevronDown className="h-4 w-4" />
