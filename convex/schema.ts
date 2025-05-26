@@ -18,12 +18,17 @@ const StepStatus = v.union(
   v.literal("skipped")
 );
 
+// DataTypes for user variables
 const DataType = v.union(
   v.literal("string"),
   v.literal("number"),
   v.literal("boolean"),
+  v.literal("date"),
+  v.literal("datetime"),
+  v.literal("array"),
   v.literal("object"),
-  v.literal("array")
+  v.literal("file"),
+  v.literal("image")
 );
 
 // Enums for parameters
@@ -44,7 +49,7 @@ const ParameterValue = v.union(
   v.number(),
   v.boolean(),
   v.array(v.string()),
-  v.object({}) 
+  v.object({})
 );
 
 const ParameterSchema = v.object({
