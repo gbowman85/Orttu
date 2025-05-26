@@ -4,6 +4,7 @@ import { MoreVertical, Pencil, Trash2, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
     Table,
     TableBody,
@@ -88,12 +89,63 @@ export default function ReusableDataTable() {
         });
     };
 
+    const renderEditValue = (variable: EditingVariable, isNew: boolean = false) => {
+        const updateValue = (newValue: string) => {
+            if (isNew) {
+                setNewVariable({
+                    ...newVariable!,
+                    value: newValue
+                });
+            } else {
+                setEditingVariable({
+                    ...editingVariable!,
+                    value: newValue
+                });
+            }
+        };
+
+        switch (variable.dataType) {
+            case 'boolean':
+                return (
+                    <Switch
+                        checked={variable.value === 'true'}
+                        onCheckedChange={(checked) => updateValue(String(checked))}
+                    />
+                );
+            case 'date':
+            case 'datetime':
+                return (
+                    <DatePicker
+                        value={variable.value}
+                        onChange={(date) => updateValue(date ? date.toISOString() : '')}
+                        placeholder={`Select ${variable.dataType}`}
+                    />
+                );
+            default:
+                return (
+                    <Textarea
+                        placeholder="Enter your text here..."
+                        className="min-h-[1.5rem] resize-y"
+                        value={variable.value}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateValue(e.target.value)}
+                    />
+                );
+        }
+    };
+
     const renderValue = (variable: EditingVariable) => {
         try {
-            if (variable.dataType === 'object' || variable.dataType === 'array') {
-                return JSON.stringify(JSON.parse(variable.value), null, 2);
+            switch (variable.dataType) {
+                case 'date':
+                    return variable.value ? format(new Date(variable.value), 'PP') : '';
+                case 'datetime':
+                    return variable.value ? format(new Date(variable.value), 'PPp') : '';
+                case 'object':
+                case 'array':
+                    return JSON.stringify(JSON.parse(variable.value), null, 2);
+                default:
+                    return variable.value;
             }
-            return variable.value;
         } catch (e) {
             return variable.value;
         }
@@ -146,25 +198,7 @@ export default function ReusableDataTable() {
                                         </Select>
                                     </TableCell>
                                     <TableCell>
-                                        {editingVariable.dataType === 'boolean' ? (
-                                            <Switch
-                                                checked={editingVariable.value === 'true'}
-                                                onCheckedChange={(checked) => setEditingVariable({
-                                                    ...editingVariable,
-                                                    value: String(checked)
-                                                })}
-                                            />
-                                        ) : (
-                                            <Textarea
-                                                placeholder="Enter your text here..."
-                                                className="min-h-[1.5rem] resize-y"
-                                                value={editingVariable.value}
-                                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEditingVariable({
-                                                    ...editingVariable,
-                                                    value: e.target.value
-                                                })}
-                                            />
-                                        )}
+                                        {renderEditValue(editingVariable)}
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex gap-2">
@@ -263,25 +297,7 @@ export default function ReusableDataTable() {
                                 </Select>
                             </TableCell>
                             <TableCell>
-                                {newVariable.dataType === 'boolean' ? (
-                                    <Switch
-                                        checked={newVariable.value === 'true'}
-                                        onCheckedChange={(checked) => setNewVariable({
-                                            ...newVariable,
-                                            value: String(checked)
-                                        })}
-                                    />
-                                ) : (
-                                    <Textarea
-                                        placeholder="Enter your text here..."
-                                        className="min-h-[1.5rem] resize-y"
-                                        value={newVariable.value}
-                                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNewVariable({
-                                            ...newVariable,
-                                            value: e.target.value
-                                        })}
-                                    />
-                                )}
+                                {renderEditValue(newVariable, true)}
                             </TableCell>
                             <TableCell>
                                 <div className="flex gap-2">

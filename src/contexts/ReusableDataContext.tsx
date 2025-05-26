@@ -20,7 +20,7 @@ export const dataTypeOptions = [
     { value: 'date', label: 'Date' },
     { value: 'datetime', label: 'Date and Time' },
     { value: 'array', label: 'List' },
-    { value: 'object', label: 'Data' },
+    { value: 'object', label: 'JSON Object' },
     { value: 'file', label: 'File' },
     { value: 'image', label: 'Image' }
 ] as const;
