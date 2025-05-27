@@ -14,27 +14,24 @@ const sortOptions = [
   { value: 'name', label: 'Name' },
 ] as const;
 
-interface WorkflowsToolbarProps {
-  viewMode: 'grid' | 'list';
-  onViewModeChange: (mode: 'grid' | 'list') => void;
-}
+interface WorkflowsToolbarProps {}
 
-export function WorkflowsToolbar({
-  viewMode,
-  onViewModeChange,
-}: WorkflowsToolbarProps) {
-  const {
-    sortDirection,
+export function WorkflowsToolbar({}: WorkflowsToolbarProps) {
+  const { 
+    searchQuery, 
+    setSearchQuery, 
+    sortBy, 
+    setSortBy, 
+    sortDirection, 
     setSortDirection,
-    sortBy,
-    setSortBy,
-    searchQuery,
-    setSearchQuery,
-    allTags,
     selectedTags,
+    allTags,
     onTagSelect,
-    onTagRemove
+    onTagRemove,
+    viewMode,
+    setViewMode,
   } = useWorkflows();
+
 
   return (
     <div id="workflows-toolbar" className="flex items-center justify-between w-full gap-4 mb-6">
@@ -111,7 +108,7 @@ export function WorkflowsToolbar({
             variant="ghost"
             size="icon"
             className={`rounded-r-none border-y border-l border-r ${viewMode === 'grid' ? 'bg-primary-background' : ''}`}
-            onClick={() => onViewModeChange('grid')}
+            onClick={() => setViewMode('grid')}
           >
             <LayoutGrid />
           </Button>
@@ -119,7 +116,7 @@ export function WorkflowsToolbar({
             variant="ghost"
             size="icon"
             className={`rounded-l-none border-y border-l border-r  ${viewMode === 'list' ? 'bg-primary-background' : ''}`}
-            onClick={() => onViewModeChange('list')}
+            onClick={() => setViewMode('list')}
           >
             <LayoutList />
           </Button>

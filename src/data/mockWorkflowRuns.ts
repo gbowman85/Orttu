@@ -7,7 +7,7 @@ export interface WorkflowRun {
     errorMessage?: string; // Optional errorMessage message for failed runs
 }
 
-export const mockWorkflowRuns: WorkflowRun[] = [
+const workflowRuns: WorkflowRun[] = [
     {
         id: 'run_20',
         workflowId: '6',
@@ -152,3 +152,10 @@ export const mockWorkflowRuns: WorkflowRun[] = [
         finished: Date.now() - 1382395000 // 5 seconds duration
     }
 ]; 
+
+// Wrap the workflow runs in a Promise that resolves after a delay
+export const mockWorkflowRuns = new Promise<WorkflowRun[]>((resolve) => {
+    setTimeout(() => {
+        resolve(workflowRuns);
+    }, 0); // 0 second delay
+});

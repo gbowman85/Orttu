@@ -1,6 +1,6 @@
 'use client'
 import { Avatar } from "@/components/ui/avatar"
-import { api } from "../../../convex/_generated/api"
+import { api } from "@/../convex/_generated/api"
 import { useQuery } from "convex/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";

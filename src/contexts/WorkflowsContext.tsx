@@ -1,8 +1,10 @@
-import { createContext, useContext, useState, ReactNode, useMemo } from 'react';
+import { createContext, useContext, useState, ReactNode, use, useMemo, useEffect } from 'react';
 import { mockWorkflows } from '@/data/mockWorkflows';
 import Fuse from 'fuse.js';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
-// Define the Workflow type
+// Workflow type
 export interface Workflow {
     id: string;
     title: string;
@@ -15,25 +17,22 @@ export interface Workflow {
     updated: number;
 }
 
-interface WorkflowsContextType {
-    workflows: Workflow[];
-    handleStarToggle: (workflowId: string, isStarred: boolean) => void;
-    handleEnableToggle: (workflowId: string, isEnabled: boolean) => void;
-    sortBy: string;
-    setSortBy: (field: string) => void;
-    sortDirection: 'asc' | 'desc';
-    setSortDirection: (direction: 'asc' | 'desc') => void;
-    searchQuery: string;
-    setSearchQuery: (query: string) => void;
-    isFiltering: boolean;
-    clearFilters: () => void;
-    selectedTags: string[];
-    allTags: string[];
-    onTagSelect: (tag: string) => void;
-    onTagRemove: (tag: string) => void;
+// Default preferences
+const DEFAULT_VIEW_MODE: ViewMode = 'grid';
+const DEFAULT_SORT_BY: SortBy = 'updated';
+const DEFAULT_SORT_DIRECTION: SortDirection = 'desc';
+
+// Preferences types
+type ViewMode = 'grid' | 'list';
+type SortDirection = 'asc' | 'desc';
+type SortBy = 'name' | 'created' | 'updated';
+export interface WorkflowPreferences {
+    viewMode: ViewMode;
+    sortBy: SortBy;
+    sortDirection: SortDirection;
 }
 
-// Fuse.js options
+// Fuse.js options for search
 const fuseOptions = {
     keys: [
         { name: 'title', weight: 2 },
@@ -44,14 +43,84 @@ const fuseOptions = {
     ignoreLocation: true
 };
 
+// WorkflowsContextType to pass to the provider
+interface WorkflowsContextType {
+    workflows: Workflow[];
+    handleStarToggle: (workflowId: string, isStarred: boolean) => void;
+    handleEnableToggle: (workflowId: string, isEnabled: boolean) => void;
+    sortBy: SortBy;
+    setSortBy: (field: SortBy) => void;
+    sortDirection: SortDirection;
+    setSortDirection: (direction: SortDirection) => void;
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
+    isFiltering: boolean;
+    clearFilters: () => void;
+    selectedTags: string[];
+    allTags: string[];
+    onTagSelect: (tag: string) => void;
+    onTagRemove: (tag: string) => void;
+    viewMode: ViewMode;
+    setViewMode: (mode: ViewMode) => void;
+}
+
 const WorkflowsContext = createContext<WorkflowsContextType | undefined>(undefined);
 
+// WorkflowsProvider handles preferences and state for the workflows page
 export function WorkflowsProvider({ children }: { children: ReactNode }) {
-    const [rawWorkflows, setRawWorkflows] = useState(mockWorkflows);
-    const [sortBy, setSortBy] = useState<string>('updated');
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+    const preferences = useQuery(api.user.getUserPreferences, { prefType: "dashWorkflows" }) as WorkflowPreferences | null;
+    const updatePreferences = useMutation(api.user.updateUserPreferences);
+    
+    const [sortBy, setSortBy] = useState<SortBy>(DEFAULT_SORT_BY);
+    const [sortDirection, setSortDirection] = useState<SortDirection>(DEFAULT_SORT_DIRECTION);
+    const [viewMode, setViewMode] = useState<ViewMode>(DEFAULT_VIEW_MODE);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+    // Update local state when preferences load, or use defaults
+    useEffect(() => {
+        if (preferences === null || preferences === undefined) {
+            setSortBy(DEFAULT_SORT_BY);
+            setSortDirection(DEFAULT_SORT_DIRECTION);
+            setViewMode(DEFAULT_VIEW_MODE);
+        } else {
+            setSortBy(preferences.sortBy);
+            setSortDirection(preferences.sortDirection);
+            setViewMode(preferences.viewMode);
+        }
+    }, [preferences]);
+
+    // Debounce preference updates to avoid too many database writes
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            // Check if we need to update preferences
+            const shouldUpdate = preferences ? (
+                preferences.sortBy !== sortBy ||
+                preferences.sortDirection !== sortDirection ||
+                preferences.viewMode !== viewMode
+            ) : (
+                sortBy !== DEFAULT_SORT_BY ||
+                sortDirection !== DEFAULT_SORT_DIRECTION ||
+                viewMode !== DEFAULT_VIEW_MODE
+            );
+
+            if (shouldUpdate) {
+                updatePreferences({
+                    prefType: "dashWorkflows",
+                    preferences: {
+                        sortBy,
+                        sortDirection,
+                        viewMode
+                    }
+                });
+            }
+        }, 500); // Wait 500ms after the last change before updating
+
+        return () => clearTimeout(timer);
+    }, [sortBy, sortDirection, viewMode, preferences, updatePreferences]);
+
+    const loadWorkflows = use(mockWorkflows);
+    const [rawWorkflows, setRawWorkflows] = useState(loadWorkflows); // TODO: Replace with actual data fetching
 
     // Get all unique tags
     const allTags = useMemo(() => {
@@ -85,7 +154,7 @@ export function WorkflowsProvider({ children }: { children: ReactNode }) {
     };
 
     // Handle sort field changes with automatic direction
-    const handleSortByChange = (field: string) => {
+    const handleSortByChange = (field: SortBy) => {
         setSortBy(field);
         setSortDirection(field === 'name' ? 'asc' : 'desc');
     };
@@ -170,7 +239,9 @@ export function WorkflowsProvider({ children }: { children: ReactNode }) {
                 selectedTags,
                 allTags,
                 onTagSelect,
-                onTagRemove
+                onTagRemove,
+                viewMode,
+                setViewMode
             }}
         >
             {children}

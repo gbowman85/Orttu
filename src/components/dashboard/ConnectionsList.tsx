@@ -49,7 +49,6 @@ export default function ConnectionsList() {
                     {/* Status icon */}
                     <div className="flex items-center h-6 w-6">
                         {connection.active ? <CircleCheck className="text-green-500 fill-green-100" /> : <CircleX className="text-red-500 fill-red-100" />}
-
                     </div>
 
                     {/* Connection details */}

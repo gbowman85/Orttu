@@ -69,6 +69,18 @@ const ParameterSchema = v.object({
   }))
 });
 
+const basePreferencesObject = v.object({
+  sortBy: v.string(),
+  sortDirection: v.union(v.literal("asc"), v.literal("desc")),
+});
+
+const workflowPreferencesObject = v.object({
+  sortBy: v.string(),
+  viewMode: v.union(v.literal("grid"), v.literal("list")),
+  sortDirection: v.union(v.literal("asc"), v.literal("desc")),
+});
+
+
 export default defineSchema({
     // Auth
     ...authTables,
@@ -82,10 +94,10 @@ export default defineSchema({
 
     user_preferences: defineTable({
         userId: v.id("users"),
-        dashboardWorkflowsPrefs: v.string(),
-        dashboardActivityPrefs: v.string(),
-        dashboardConnectionsPrefs: v.string(),
-        dashboardReusableDataPrefs: v.string()
+        dashWorkflows: v.optional(workflowPreferencesObject),
+        dashActivities: v.optional(basePreferencesObject),
+        dashConnections: v.optional(basePreferencesObject),
+        dashReusableData: v.optional(basePreferencesObject)
     }).index("by_user", ["userId"]),
 
     user_variables: defineTable({

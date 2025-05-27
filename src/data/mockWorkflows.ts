@@ -10,7 +10,7 @@ export interface Workflow {
     updated: number;
 }
 
-export const mockWorkflows: Workflow[] = [
+const workflows: Workflow[] = [
     {
         id: '1',
         title: 'Customer Onboarding',
@@ -99,4 +99,11 @@ export const mockWorkflows: Workflow[] = [
         created: 1690848000000, // Aug 1, 2023
         updated: 1706054400000, // Jan 24, 2024
     }
-]; 
+];
+
+// Wrap the workflows in a Promise that resolves after a delay
+export const mockWorkflows = new Promise<Workflow[]>((resolve) => {
+    setTimeout(() => {
+        resolve(workflows);
+    }, 0); // 0 second delay
+}); 

@@ -1,15 +1,19 @@
-import { createContext, useContext, useState, ReactNode, useMemo } from 'react';
+import { createContext, useContext, useState, ReactNode, useMemo, useEffect, use } from 'react';
 import { mockUserVariables } from '@/data/mockUserVariables';
 import Fuse from 'fuse.js';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
-export interface UserVariable {
-    id: string;
-    title: string;
-    dataType: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'date' | 'datetime' | 'file' | 'image';
-    value: string;
-    userId: string;
-    created: number;
-    updated: number;
+// Default preferences
+const DEFAULT_SORT_BY: SortBy = 'updated';
+const DEFAULT_SORT_DIRECTION: SortDirection = 'desc';
+
+// Preferences types
+type SortBy = 'title' | 'created' | 'updated';
+type SortDirection = 'asc' | 'desc';
+interface ReusableDataPreferences {
+    sortBy: SortBy;
+    sortDirection: SortDirection;
 }
 
 export const dataTypeOptions = [
@@ -24,6 +28,16 @@ export const dataTypeOptions = [
     { value: 'file', label: 'File' },
     { value: 'image', label: 'Image' }
 ] as const;
+
+export interface UserVariable {
+    id: string;
+    title: string;
+    dataType: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'date' | 'datetime' | 'file' | 'image';
+    value: string;
+    userId: string;
+    created: number;
+    updated: number;
+}
 
 export type DataType = typeof dataTypeOptions[number]['value'];
 
@@ -57,11 +71,47 @@ const fuseOptions = {
 const ReusableDataContext = createContext<ReusableDataContextType | undefined>(undefined);
 
 export function ReusableDataProvider({ children }: { children: ReactNode }) {
-    const [allVariables, setAllVariables] = useState<UserVariable[]>(mockUserVariables);
-    const [sortBy, setSortBy] = useState<'title' | 'created' | 'updated'>('updated');
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+    const preferences = useQuery(api.user.getUserPreferences, { prefType: "dashReusableData" }) as ReusableDataPreferences | null;
+    const updatePreferences = useMutation(api.user.updateUserPreferences);
+
+    const loadVariables = use(mockUserVariables);
+    const [allVariables, setAllVariables] = useState<UserVariable[]>(loadVariables); // TODO: Replace with actual data fetching
+    const [sortBy, setSortBy] = useState<SortBy>(DEFAULT_SORT_BY);
+    const [sortDirection, setSortDirection] = useState<SortDirection>(DEFAULT_SORT_DIRECTION);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedDataTypes, setSelectedDataTypes] = useState<string[]>([]);
+
+    // Update local state when preferences load, or use defaults
+    useEffect(() => {
+        if (preferences === null || preferences === undefined) {
+            setSortBy(DEFAULT_SORT_BY);
+            setSortDirection(DEFAULT_SORT_DIRECTION);
+        } else {
+            setSortBy(preferences.sortBy);
+            setSortDirection(preferences.sortDirection);
+        }
+    }, [preferences]);
+
+    // Debounce preference updates to avoid too many database writes
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            // Only update if preferences exist and values are different
+            if (preferences && (
+                preferences.sortBy !== sortBy ||
+                preferences.sortDirection !== sortDirection
+            )) {
+                updatePreferences({
+                    prefType: "dashReusableData",
+                    preferences: {
+                        sortBy,
+                        sortDirection,
+                    }
+                });
+            }
+        }, 500); // Wait 500ms after the last change before updating
+
+        return () => clearTimeout(timer);
+    }, [sortBy, sortDirection, preferences, updatePreferences]);
 
     // Helper function to get data type label
     const getDataTypeLabel = (type: string): string => {

@@ -8,7 +8,7 @@ export interface UserVariable {
     updated: number;
 }
 
-export const mockUserVariables: UserVariable[] = [
+const userVariables: UserVariable[] = [
     {
         id: 'var_1',
         userId: 'user_1',
@@ -108,4 +108,11 @@ export const mockUserVariables: UserVariable[] = [
         created: Date.now() - 86400000,   // 1 day ago
         updated: Date.now() - 36000000    // 10 hours ago
     }
-]; 
+];
+
+// Wrap the user variables in a Promise that resolves after a delay
+export const mockUserVariables = new Promise<UserVariable[]>((resolve) => {
+    setTimeout(() => {
+        resolve(userVariables);
+    }, 0); // 0 second delay
+}); 

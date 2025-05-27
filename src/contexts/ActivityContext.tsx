@@ -1,34 +1,21 @@
-import { createContext, useContext, useState, ReactNode, useMemo } from 'react';
+import { createContext, useContext, useState, ReactNode, use, useEffect, useMemo } from 'react';
 import { mockWorkflowRuns, WorkflowRun } from '@/data/mockWorkflowRuns';
 import { mockWorkflows } from '@/data/mockWorkflows';
 import Fuse from 'fuse.js';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
-interface ActivityContextType {
-    workflowRuns: (WorkflowRun & { workflowTitle: string })[];
-    sortBy: string;
-    setSortBy: (field: string) => void;
-    sortDirection: 'asc' | 'desc';
-    setSortDirection: (direction: 'asc' | 'desc') => void;
-    searchQuery: string;
-    setSearchQuery: (query: string) => void;
-    isFiltering: boolean;
-    clearFilters: () => void;
-    selectedWorkflowTitle: string;
-    setSelectedWorkflowTitle: (title: string) => void;
-    availableWorkflowTitles: string[];
+// Default preferences
+const DEFAULT_SORT_BY: SortBy = 'started';
+const DEFAULT_SORT_DIRECTION: SortDirection = 'desc';
+
+// Preferences types
+type SortBy = 'started' | 'finished' | 'status';
+type SortDirection = 'asc' | 'desc';
+interface ActivityPreferences {
+    sortBy: SortBy;
+    sortDirection: SortDirection;
 }
-
-// Special value to represent no workflow filter
-export const ALL_WORKFLOWS = '__all_workflows__';
-
-// Create a map of workflow IDs to their titles
-const workflowTitles: Record<string, string> = {};
-mockWorkflows.forEach(workflow => {
-    workflowTitles[workflow.id] = workflow.title;
-});
-
-// Get unique workflow titles
-const availableWorkflowTitles = Array.from(new Set(Object.values(workflowTitles)));
 
 // Fuse.js options for searching
 const fuseOptions = {
@@ -39,28 +26,90 @@ const fuseOptions = {
     ignoreLocation: true
 };
 
+// ActivityContextType to pass to the provider
+interface ActivityContextType {
+    workflowRuns: (WorkflowRun & { workflowTitle: string })[];
+    sortBy: SortBy | undefined;
+    setSortBy: (field: SortBy) => void;
+    sortDirection: SortDirection | undefined;
+    setSortDirection: (direction: SortDirection) => void;
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
+    isFiltering: boolean;
+    clearFilters: () => void;
+    selectedWorkflowTitle: string;
+    setSelectedWorkflowTitle: (title: string) => void;
+    availableWorkflowTitles: string[];
+}
+
 const ActivityContext = createContext<ActivityContextType | undefined>(undefined);
 
+// ActivityProvider handles preferences and state for the activity page
 export function ActivityProvider({ children }: { children: ReactNode }) {
-    // Workflow runs with titles
-    const initialWorkflowRuns = mockWorkflowRuns.map(run => ({
+    const preferences = useQuery(api.user.getUserPreferences, { prefType: "dashActivities" }) as ActivityPreferences | null;
+    const updatePreferences = useMutation(api.user.updateUserPreferences);
+
+    // Get workflows and create workflow titles mapping
+    const loadedWorkflows = use(mockWorkflows);
+    const workflowTitles: Record<string, string> = {};
+    loadedWorkflows.forEach(workflow => {
+        workflowTitles[workflow.id] = workflow.title;
+    });
+
+    // Get unique workflow titles
+    const availableWorkflowTitles = Array.from(new Set(Object.values(workflowTitles)));
+
+    // Get mock workflow runs with titles
+    const initialWorkflowRuns = use(mockWorkflowRuns).map(run => ({
         ...run,
         workflowTitle: workflowTitles[run.workflowId] || 'Unknown Workflow'
     }));
 
     const [rawWorkflowRuns, setRawWorkflowRuns] = useState(initialWorkflowRuns);
-    const [sortBy, setSortBy] = useState<string>('started');
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+    const [sortBy, setSortBy] = useState<SortBy>(DEFAULT_SORT_BY);
+    const [sortDirection, setSortDirection] = useState<SortDirection>(DEFAULT_SORT_DIRECTION);
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedWorkflowTitle, setSelectedWorkflowTitle] = useState(ALL_WORKFLOWS);
+    const [selectedWorkflowTitle, setSelectedWorkflowTitle] = useState('__all_workflows__');
+
+    // Update local state when preferences load, or use defaults
+    useEffect(() => {
+        if (preferences === null || preferences === undefined) {
+            setSortBy(DEFAULT_SORT_BY);
+            setSortDirection(DEFAULT_SORT_DIRECTION);
+        } else {
+            setSortBy(preferences.sortBy);
+            setSortDirection(preferences.sortDirection);
+        }
+    }, [preferences]);
+
+    // Debounce preference updates to avoid too many database writes
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            // Only update if preferences exist and values are different
+            if (preferences && (
+                preferences.sortBy !== sortBy ||
+                preferences.sortDirection !== sortDirection
+            )) {
+                updatePreferences({
+                    prefType: "dashActivities",
+                    preferences: {
+                        sortBy,
+                        sortDirection,
+                    }
+                });
+            }
+        }, 500); // Wait 500ms after the last change before updating
+
+        return () => clearTimeout(timer);
+    }, [sortBy, sortDirection, preferences, updatePreferences]);
 
     // Determine if we're filtering results
-    const isFiltering = searchQuery.length > 0 || selectedWorkflowTitle !== ALL_WORKFLOWS;
+    const isFiltering = searchQuery.length > 0 || selectedWorkflowTitle !== '__all_workflows__';
 
     // Clear all filters
     const clearFilters = () => {
         setSearchQuery('');
-        setSelectedWorkflowTitle(ALL_WORKFLOWS);
+        setSelectedWorkflowTitle('__all_workflows__');
     };
 
     // Get filtered workflow runs based on search query and selected workflow title
@@ -68,7 +117,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
         let results = rawWorkflowRuns;
 
         // Apply workflow title filter
-        if (selectedWorkflowTitle !== ALL_WORKFLOWS) {
+        if (selectedWorkflowTitle !== '__all_workflows__') {
             results = results.filter(run => run.workflowTitle === selectedWorkflowTitle);
         }
 
@@ -83,6 +132,11 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
 
     // Sort workflow runs based on current sortBy and sortDirection
     const workflowRuns = useMemo(() => {
+        // Don't sort if preferences aren't loaded
+        if (!sortBy || !sortDirection) {
+            return filteredWorkflowRuns;
+        }
+
         return [...filteredWorkflowRuns].sort((a, b) => {
             let comparison = 0;
             
@@ -95,9 +149,6 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
                     break;
                 case 'status':
                     comparison = a.status.localeCompare(b.status);
-                    break;
-                case 'name':
-                    comparison = a.workflowTitle.localeCompare(b.workflowTitle);
                     break;
                 default:
                     comparison = 0;
@@ -121,7 +172,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
                 clearFilters,
                 selectedWorkflowTitle,
                 setSelectedWorkflowTitle,
-                availableWorkflowTitles
+                availableWorkflowTitles,
             }}
         >
             {children}

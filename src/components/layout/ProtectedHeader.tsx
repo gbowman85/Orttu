@@ -1,8 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Authenticated, Unauthenticated } from "convex/react";
-import { UserProfileIcon } from "../auth/UserProfileIcon";
-import { Button } from "../ui/button";
+import { UserProfileIcon } from "@/components/auth/UserProfileIcon";
+import { Button } from "@/components/ui/button";
 
 export default function ProtectedHeader() {
   return (

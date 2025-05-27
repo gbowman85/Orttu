@@ -1,6 +1,31 @@
-import { createContext, useContext, useState, ReactNode, useMemo } from 'react';
+'use client';
+
+import { createContext, useContext, useState, ReactNode, use, useEffect, useMemo } from 'react';
 import { mockConnections, Connection } from '@/data/mockConnections';
 import Fuse from 'fuse.js';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+
+// Default preferences
+const DEFAULT_SORT_BY: SortBy = 'lastUsed';
+const DEFAULT_SORT_DIRECTION: SortDirection = 'desc';
+
+// Preferences types
+type SortBy = 'title' | 'created' | 'lastUsed';
+type SortDirection = 'asc' | 'desc';
+interface ConnectionsPreferences {
+    sortBy: SortBy;
+    sortDirection: SortDirection;
+}
+
+// Fuse.js options for searching
+const fuseOptions = {
+    keys: [
+        { name: 'title', weight: 2 },
+    ],
+    threshold: 0.3,
+    ignoreLocation: true
+};
 
 interface ConnectionsContextType {
     connections: Connection[];
@@ -14,25 +39,49 @@ interface ConnectionsContextType {
     clearFilters: () => void;
 }
 
-
-
-// Fuse.js options for searching
-const fuseOptions = {
-    keys: [
-        { name: 'title', weight: 2 },
-    ],
-    threshold: 0.3,
-    ignoreLocation: true
-};
-
 const ConnectionsContext = createContext<ConnectionsContextType | undefined>(undefined);
 
 export function ConnectionsProvider({ children }: { children: ReactNode }) {
-    // TODO: Replace with actual data fetching
-    const [allConnections] = useState<Connection[]>(mockConnections);
-    const [sortBy, setSortBy] = useState<'title' | 'created' | 'lastUsed'>('lastUsed');
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+    const preferences = useQuery(api.user.getUserPreferences, { prefType: "dashConnections" }) as ConnectionsPreferences | null;
+    const updatePreferences = useMutation(api.user.updateUserPreferences);
+
+    // Use the 'use' hook to handle the Promise
+    const allConnections = use(mockConnections);
+    const [sortBy, setSortBy] = useState<SortBy>(DEFAULT_SORT_BY);
+    const [sortDirection, setSortDirection] = useState<SortDirection>(DEFAULT_SORT_DIRECTION);
     const [searchQuery, setSearchQuery] = useState('');
+
+    // Update local state when preferences load, or use defaults
+    useEffect(() => {
+        if (preferences === null || preferences === undefined) {
+            setSortBy(DEFAULT_SORT_BY);
+            setSortDirection(DEFAULT_SORT_DIRECTION);
+        } else {
+            setSortBy(preferences.sortBy);
+            setSortDirection(preferences.sortDirection);
+        }
+    }, [preferences]);
+
+    // Debounce preference updates to avoid too many database writes
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            // Only update if preferences exist and values are different
+            if (preferences && (
+                preferences.sortBy !== sortBy ||
+                preferences.sortDirection !== sortDirection
+            )) {
+                updatePreferences({
+                    prefType: "dashConnections",
+                    preferences: {
+                        sortBy,
+                        sortDirection,
+                    }
+                });
+            }
+        }, 500); // Wait 500ms after the last change before updating
+
+        return () => clearTimeout(timer);
+    }, [sortBy, sortDirection, preferences, updatePreferences]);
 
     // Determine if we're filtering results
     const isFiltering = searchQuery.length > 0;

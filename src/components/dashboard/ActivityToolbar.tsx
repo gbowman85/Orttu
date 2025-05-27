@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronDown, ChevronUp, Search, Filter } from "lucide-react";
-import { useActivity, ALL_WORKFLOWS } from "@/contexts/ActivityContext";
+import { useActivity } from "@/contexts/ActivityContext";
 import { cn } from "@/lib/utils";
 
 
@@ -47,11 +47,11 @@ export default function ActivityToolbar() {
             <SelectTrigger className="min-w-[200px]">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-muted-foreground" />
-                <SelectValue placeholder="Filter by workflow" />
+                <SelectValue />
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL_WORKFLOWS}>All workflows</SelectItem>
+              <SelectItem value='__all_workflows__'>All workflows</SelectItem>
               {availableWorkflowTitles.map((title) => (
                 <SelectItem key={title} value={title}>
                   {title}

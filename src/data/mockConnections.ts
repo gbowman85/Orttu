@@ -12,7 +12,7 @@ export interface Connection {
     active: boolean;
 }
 
-export const mockConnections: Connection[] = [
+const connections: Connection[] = [
     {
         id: 'conn_1',
         serviceId: 'svc_1',
@@ -78,4 +78,11 @@ export const mockConnections: Connection[] = [
         lastUsed: Date.now() - 3600000,     // 1 hour ago
         active: true
     }
-]; 
+];
+
+// Wrap the connections in a Promise that resolves after a delay
+export const mockConnections = new Promise<Connection[]>((resolve) => {
+    setTimeout(() => {
+        resolve(connections);
+    }, 0); // 0 second delay
+}); 
