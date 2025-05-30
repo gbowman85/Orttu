@@ -174,37 +174,36 @@ export default defineSchema({
     // Workflows
 
     workflows: defineTable({
-        currentConfigId: v.id("workflow_configurations"),
+        currentConfigId: v.optional(v.id("workflow_configurations")),
         ownerId: v.id("users"),
         viewerIds: v.array(v.id("users")),
         editorIds: v.array(v.id("users")),
         title: v.string(),
-        description: v.string(),
-        tags: v.array(v.string()),
+        description: v.optional(v.string()),
+        tags: v.optional(v.array(v.string())),
         starred: v.boolean(),
         created: v.number(),
         updated: v.number(),
         enabled: v.boolean(),
         deleted: v.boolean(),
-        versions: v.array(v.id("workflow_configurations"))
+        versions: v.optional(v.array(v.id("workflow_configurations")))
     }).index("by_owner", ["ownerId"]),
 
     workflow_configurations: defineTable({
         workflowId: v.id("workflows"),
         versionTitle: v.string(),
-        notes: v.string(),
+        notes: v.optional(v.string()),
         created: v.number(),
         updated: v.number(),
-        triggerStep: v.id("trigger_steps"),
-        actionsSteps: v.array(v.id("action_steps")),
-        currentVersion: v.boolean()
+        triggerStep: v.optional(v.id("trigger_steps")),
+        actionsSteps: v.optional(v.array(v.id("action_steps")))
     }).index("by_workflow", ["workflowId"]),
 
     trigger_steps: defineTable({
         triggerTypeId: v.id("trigger_types"),
         parameterValues: v.record(v.string(), ParameterValue), // keys are parameterKeys, values must match parameter types
         title: v.string(),
-        comment: v.string(),
+        comment: v.optional(v.string()),
         connectionId: v.id("connections")
     }).index("by_trigger_type", ["triggerTypeId"])
         .index("by_connection", ["connectionId"]),
@@ -213,7 +212,7 @@ export default defineSchema({
         actionTypeId: v.id("action_types"),
         parameterValues: v.record(v.string(), ParameterValue), // keys are parameterKeys, values must match parameter types
         title: v.string(),
-        comment: v.string(),
+        comment: v.optional(v.string()),
         connectionId: v.id("connections")
     }).index("by_action_type", ["actionTypeId"])
         .index("by_connection", ["connectionId"]),

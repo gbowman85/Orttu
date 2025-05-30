@@ -1,6 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { MutationCtx, QueryCtx } from "./_generated/server";
 
 // Schema for preference types
 const prefTypeSchema = v.union(
@@ -22,16 +23,18 @@ const dashWorkflowsPrefsSchema = v.object({
   viewMode: v.union(v.literal("grid"), v.literal("list")),
 });
 
+// Check authentication and return the user ID or throw an error
+export async function requireAuthenticated(ctx: MutationCtx | QueryCtx) {
+  const userId = await getAuthUserId(ctx);
+  if (!userId) throw new Error("Not authenticated");
+  return userId;
+}
 
 // User functions
-
 export const currentUser = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (userId === null) {
-      return null;
-    }
+    const userId = await requireAuthenticated(ctx);
     return await ctx.db.get(userId);
   },
 });
@@ -41,8 +44,7 @@ export const getUserPreferences = query({
     prefType: prefTypeSchema,
   },
   handler: async (ctx, { prefType }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
+    const userId = await requireAuthenticated(ctx);
 
     const preferences = await ctx.db
       .query("user_preferences")
@@ -63,8 +65,7 @@ export const updateUserPreferences = mutation({
     preferences: v.union(dashWorkflowsPrefsSchema, dashPrefsSchema),
   },
   handler: async (ctx, { prefType, preferences }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    const userId = await requireAuthenticated(ctx);
 
     const existingPrefs = await ctx.db
       .query("user_preferences")
