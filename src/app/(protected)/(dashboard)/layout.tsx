@@ -9,7 +9,7 @@ export default function DashboardLayout({
 }) {
     return (
         <div id="dashboard" className="flex flex-row gap-4">
-            <div id="sidebar" className="flex flex-col w-50 pt-4">
+            <div id="sidebar" className="flex flex-col w-50 pt-4 pl-2">
                 {/* New workflow button */}
                 <Button className="mb-4">
                     <PlusIcon className="w-4 h-4" />

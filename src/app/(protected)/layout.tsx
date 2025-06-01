@@ -9,7 +9,7 @@ export default function ProtectedLayout({
   return (
     <div className="min-h-screen flex flex-col">
       <ProtectedHeader />
-      <main className="flex-1 px-4">
+      <main className="flex flex-col flex-1">
         {children}
       </main>
       <MinimalFooter />
