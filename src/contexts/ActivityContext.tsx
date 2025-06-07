@@ -46,8 +46,8 @@ const ActivityContext = createContext<ActivityContextType | undefined>(undefined
 
 // ActivityProvider handles preferences and state for the activity page
 export function ActivityProvider({ children }: { children: ReactNode }) {
-    const preferences = useQuery(api.user.getUserPreferences, { prefType: "dashActivities" }) as ActivityPreferences | null;
-    const updatePreferences = useMutation(api.user.updateUserPreferences);
+    const preferences = useQuery(api.data_functions.users.getUserPreferences, { prefType: "dashActivities" }) as ActivityPreferences | null;
+    const updatePreferences = useMutation(api.data_functions.users.updateUserPreferences);
 
     // Get workflows and create workflow titles mapping
     const loadedWorkflows = use(mockWorkflows);

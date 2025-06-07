@@ -24,7 +24,7 @@ export function UserProfileIconFallback() {
 }
 
 export function UserProfileIcon() {
-  const user = useQuery(api.user.currentUser);
+  const user = useQuery(api.data_functions.users.currentUser);
   
   // If we're still loading, show the fallback
   if (user === undefined) {

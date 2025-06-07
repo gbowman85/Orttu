@@ -13,7 +13,7 @@ import { api } from "@/../convex/_generated/api";
 
 // This component reads preferences and shows the appropriate skeleton
 function WorkflowsSkeleton() {
-  const preferences = useQuery(api.user.getUserPreferences, { prefType: "dashWorkflows" }) as WorkflowPreferences | null;
+  const preferences = useQuery(api.data_functions.users.getUserPreferences, { prefType: "dashWorkflows" }) as WorkflowPreferences | null;
   const viewMode = preferences?.viewMode || 'grid';
   
   return (

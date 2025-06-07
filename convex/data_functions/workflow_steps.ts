@@ -1,15 +1,15 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
-import { requireWorkflowAccess } from "./workflow";
+import { requireWorkflowAccess } from "./workflows";
 
 
 // Set a trigger for a workflow configuration
 export const setTrigger = mutation({
     args: {
         workflowId: v.id("workflows"),
-        triggerTypeId: v.id("trigger_types")
+        triggerDefinitionId: v.id("trigger_definitions")
     },
-    handler: async (ctx, { workflowId, triggerTypeId }) => {
+    handler: async (ctx, { workflowId, triggerDefinitionId }) => {
         const { workflow } = await requireWorkflowAccess(ctx, workflowId, 'editor');
         
         if (!workflow.currentConfigId) {
@@ -18,7 +18,7 @@ export const setTrigger = mutation({
 
         // Create the trigger step
         const triggerStepId = await ctx.db.insert("trigger_steps", {
-            triggerTypeId,
+            triggerDefinitionId,
             parameterValues: {},
             title: "",
             connectionId: null as any // Will need to be set separately
@@ -26,7 +26,7 @@ export const setTrigger = mutation({
 
         // Update the workflow configuration with the new trigger
         await ctx.db.patch(workflow.currentConfigId, {
-            triggerStep: triggerStepId,
+            triggerStepId: triggerStepId,
             updated: Date.now()
         });
 
@@ -34,14 +34,52 @@ export const setTrigger = mutation({
     }
 });
 
+// Get the trigger step for a workflow configuration
+export const getTrigger = query({
+    args: {
+        workflowId: v.id("workflows")
+    },
+    handler: async (ctx, { workflowId }) => {
+        const { workflow } = await requireWorkflowAccess(ctx, workflowId, 'editor');
+        
+        if (!workflow.currentConfigId) {
+            throw new Error("No active workflow configuration");
+        }
+
+        // Get workflow config
+        const workflowConfig = await ctx.db.get(workflow.currentConfigId);
+
+        if (!workflowConfig || !workflowConfig.triggerStepId) {
+            throw new Error("Trigger step not found");
+        }
+
+        const triggerStep = await ctx.db.get(workflowConfig.triggerStepId);
+        if (!triggerStep) {
+            throw new Error("Trigger step not found");
+        }
+
+        return triggerStep;
+    }
+});
+
+// Internal query to get a trigger step
+export const getTriggerStepInternal = internalQuery({
+    args: {
+        triggerStepId: v.id("trigger_steps")
+    },
+    handler: async (ctx, { triggerStepId }) => {
+        return await ctx.db.get(triggerStepId);
+    }
+});
+
 // Add an action step to a workflow configuration
 export const addStep = mutation({
     args: {
         workflowId: v.id("workflows"),
-        actionTypeId: v.id("action_types"),
+        actionDefinitionId: v.id("action_definitions"),
         position: v.optional(v.number())
     },
-    handler: async (ctx, { workflowId, actionTypeId, position }) => {
+    handler: async (ctx, { workflowId, actionDefinitionId, position }) => {
         const { workflow } = await requireWorkflowAccess(ctx, workflowId, 'editor');
         
         if (!workflow.currentConfigId) {
@@ -50,7 +88,7 @@ export const addStep = mutation({
 
         // Create the action step
         const actionStepId = await ctx.db.insert("action_steps", {
-            actionTypeId,
+            actionDefinitionId,
             parameterValues: {},
             title: "",
             connectionId: null as any // Will need to be set separately
@@ -75,6 +113,26 @@ export const addStep = mutation({
         });
 
         return actionStepId;
+    }
+});
+
+// Get an action step
+export const getActionStep = query({
+    args: {
+        actionStepId: v.id("action_steps")
+    },
+    handler: async (ctx, { actionStepId }) => {
+        return await ctx.db.get(actionStepId);
+    }
+});
+
+// Internal query to get an action step
+export const getActionStepInternal = internalQuery({
+    args: {
+        actionStepId: v.id("action_steps")
+    },
+    handler: async (ctx, { actionStepId }) => {
+        return await ctx.db.get(actionStepId);
     }
 });
 

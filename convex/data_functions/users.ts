@@ -1,7 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { query, mutation } from "./_generated/server";
+import { query, mutation } from "../_generated/server";
 import { v } from "convex/values";
-import { MutationCtx, QueryCtx } from "./_generated/server";
+import { MutationCtx, QueryCtx } from "../_generated/server";
 
 // Schema for preference types
 const prefTypeSchema = v.union(

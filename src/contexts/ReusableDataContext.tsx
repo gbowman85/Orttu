@@ -71,8 +71,8 @@ const fuseOptions = {
 const ReusableDataContext = createContext<ReusableDataContextType | undefined>(undefined);
 
 export function ReusableDataProvider({ children }: { children: ReactNode }) {
-    const preferences = useQuery(api.user.getUserPreferences, { prefType: "dashReusableData" }) as ReusableDataPreferences | null;
-    const updatePreferences = useMutation(api.user.updateUserPreferences);
+    const preferences = useQuery(api.data_functions.users.getUserPreferences, { prefType: "dashReusableData" }) as ReusableDataPreferences | null;
+    const updatePreferences = useMutation(api.data_functions.users.updateUserPreferences);
 
     const loadVariables = use(mockUserVariables);
     const [allVariables, setAllVariables] = useState<UserVariable[]>(loadVariables); // TODO: Replace with actual data fetching

@@ -1,8 +1,8 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
-import { MutationCtx, QueryCtx } from "./_generated/server";
-import { Id } from "./_generated/dataModel";
-import { requireAuthenticated } from "./user";
+import { MutationCtx, QueryCtx } from "../_generated/server";
+import { Id } from "../_generated/dataModel";
+import { requireAuthenticated } from "./users";
 
 // Helper function to determine user's role in a workflow
 type WorkflowRole = "owner" | "editor" | "viewer" | "none";
@@ -66,6 +66,20 @@ export const getWorkflow = query({
     },
     handler: async (ctx, { workflowId }) => {
         const { workflow } = await requireWorkflowAccess(ctx, workflowId, "viewer");
+        return workflow;
+    },
+});
+
+// This is used by backend workflow executions
+export const getWorkflowInternal = internalQuery({
+    args: {
+        workflowId: v.id("workflows"),
+    },
+    handler: async (ctx, args) => {
+        const workflow = await ctx.db.get(args.workflowId);
+        if (!workflow) {
+            throw new Error("Workflow not found");
+        }
         return workflow;
     },
 });

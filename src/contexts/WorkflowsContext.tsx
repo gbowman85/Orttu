@@ -68,8 +68,8 @@ const WorkflowsContext = createContext<WorkflowsContextType | undefined>(undefin
 
 // WorkflowsProvider handles preferences and state for the workflows page
 export function WorkflowsProvider({ children }: { children: ReactNode }) {
-    const preferences = useQuery(api.user.getUserPreferences, { prefType: "dashWorkflows" }) as WorkflowPreferences | null;
-    const updatePreferences = useMutation(api.user.updateUserPreferences);
+    const preferences = useQuery(api.data_functions.users.getUserPreferences, { prefType: "dashWorkflows" }) as WorkflowPreferences | null;
+    const updatePreferences = useMutation(api.data_functions.users.updateUserPreferences);
     
     const [sortBy, setSortBy] = useState<SortBy>(DEFAULT_SORT_BY);
     const [sortDirection, setSortDirection] = useState<SortDirection>(DEFAULT_SORT_DIRECTION);

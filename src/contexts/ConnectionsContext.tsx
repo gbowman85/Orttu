@@ -42,8 +42,8 @@ interface ConnectionsContextType {
 const ConnectionsContext = createContext<ConnectionsContextType | undefined>(undefined);
 
 export function ConnectionsProvider({ children }: { children: ReactNode }) {
-    const preferences = useQuery(api.user.getUserPreferences, { prefType: "dashConnections" }) as ConnectionsPreferences | null;
-    const updatePreferences = useMutation(api.user.updateUserPreferences);
+    const preferences = useQuery(api.data_functions.users.getUserPreferences, { prefType: "dashConnections" }) as ConnectionsPreferences | null;
+    const updatePreferences = useMutation(api.data_functions.users.updateUserPreferences);
 
     // Use the 'use' hook to handle the Promise
     const allConnections = use(mockConnections);

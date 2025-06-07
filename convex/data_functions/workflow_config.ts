@@ -1,6 +1,6 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
-import { requireWorkflowAccess } from "./workflow";
+import { requireWorkflowAccess } from "./workflows";
 
 
 // Create a new workflow configuration
@@ -17,7 +17,7 @@ export const createWorkflowConfig = mutation({
         const configId = await ctx.db.insert("workflow_configurations", {
             workflowId: workflow._id,
             versionTitle: 'Version ' + (workflow.versions?.length || 0) + 1, 
-            triggerStep: triggerStepId || null as any,
+            triggerStepId: triggerStepId || null as any,
             actionsSteps: actionsSteps || [],
             created: Date.now(),
             updated: Date.now()
@@ -66,6 +66,18 @@ export const getWorkflowConfig = query({
         // Check if user has access to the parent workflow
         await requireWorkflowAccess(ctx, config.workflowId, "viewer");
         
+        return config;
+    },
+});
+
+// This is used by backend workflow executions
+export const getWorkflowConfigInternal = internalQuery({
+    args: {
+        workflowConfigId: v.id("workflow_configurations"),
+    },
+    handler: async (ctx, args) => {
+        const config = await ctx.db.get(args.workflowConfigId);
+        if (!config) throw new Error("Configuration not found");
         return config;
     },
 });
