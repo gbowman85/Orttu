@@ -1,73 +1,9 @@
 import { defineSchema, defineTable } from "convex/server";
 import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
+import { DataTypeSchema, ParameterSchema, ParameterValue, WorkflowStatus, StepStatus } from './types'
 
-// Enums for status and types
-const WorkflowStatus = v.union(
-  v.literal("running"),
-  v.literal("completed"),
-  v.literal("failed"),
-  v.literal("cancelled")
-);
 
-const StepStatus = v.union(
-  v.literal("pending"),
-  v.literal("running"),
-  v.literal("completed"),
-  v.literal("failed"),
-  v.literal("skipped")
-);
-
-// DataTypes for user variables
-const DataType = v.union(
-  v.literal("string"),
-  v.literal("number"),
-  v.literal("boolean"),
-  v.literal("date"),
-  v.literal("datetime"),
-  v.literal("array"),
-  v.literal("object"),
-  v.literal("file"),
-  v.literal("image")
-);
-
-// Enums for parameters
-const ParameterType = v.union(
-  v.literal("string"),
-  v.literal("number"),
-  v.literal("boolean"),
-  v.literal("date"),
-  v.literal("datetime"),
-  v.literal("array"),
-  v.literal("object"),
-  v.literal("file")
-);
-
-// Define the possible value types for parameters
-const ParameterValue = v.union(
-  v.string(),
-  v.number(),
-  v.boolean(),
-  v.array(v.string()),
-  v.object({})
-);
-
-const ParameterSchema = v.object({
-  parameterKey: v.string(),
-  title: v.string(),
-  description: v.string(),
-  type: ParameterType,
-  required: v.boolean(),
-  default: v.optional(v.string()),
-  validation: v.optional(v.object({
-    min: v.optional(v.number()),
-    max: v.optional(v.number()),
-    minLength: v.optional(v.number()),
-    maxLength: v.optional(v.number()),
-    pattern: v.optional(v.string()),
-    allowedValues: v.optional(v.array(v.string()))
-  }))
-});
 
 const basePreferencesObject = v.object({
   sortBy: v.string(),
@@ -79,7 +15,6 @@ const workflowPreferencesObject = v.object({
   viewMode: v.union(v.literal("grid"), v.literal("list")),
   sortDirection: v.union(v.literal("asc"), v.literal("desc")),
 });
-
 
 export default defineSchema({
     // Auth
@@ -103,51 +38,71 @@ export default defineSchema({
     user_variables: defineTable({
         userId: v.id("users"),
         title: v.string(),
-        dataType: DataType,
+        dataType: DataTypeSchema,
         value: v.string()
     }).index("by_user", ["userId"]),
 
-
-
     // Triggers/Actions, Categories and Parameters 
 
-    trigger_types: defineTable({
+    trigger_definitions: defineTable({
+        triggerKey: v.string(),
         categoryId: v.id("trigger_categories"),
-        serviceId: v.id("services"),
+        serviceId: v.optional(v.id("services")),
         title: v.string(),
         description: v.string(),
         parameters: v.array(ParameterSchema),
-        bgColour: v.string(),
-        borderColour: v.string(),
-        icon: v.string()
-    }).index("by_category", ["categoryId"])
+        outputs: v.array(v.object({
+            outputKey: v.string(),
+            outputType: DataTypeSchema,
+            outputTitle: v.string(),
+            outputDescription: v.string()
+        })),
+        bgColour: v.optional(v.string()),
+        borderColour: v.optional(v.string()),
+        textColor: v.optional(v.string()),
+        icon: v.optional(v.string())
+    }).index("by_trigger_key", ["triggerKey"])
+        .index("by_category", ["categoryId"])
         .index("by_service", ["serviceId"]),
 
-    action_types: defineTable({
+    action_definitions: defineTable({
+        actionKey: v.string(),
         categoryId: v.id("action_categories"),
-        serviceId: v.id("services"),
+        serviceId: v.optional(v.id("services")),
         title: v.string(),
         description: v.string(),
         parameters: v.array(ParameterSchema),
-        bgColour: v.string(),
-        borderColour: v.string(),
-        icon: v.string()
-    }).index("by_category", ["categoryId"])
+        outputs: v.array(v.object({
+            outputKey: v.string(),
+            outputType: DataTypeSchema,
+            outputTitle: v.string(),
+            outputDescription: v.string()
+        })),
+        bgColour: v.optional(v.string()),
+        borderColour: v.optional(v.string()),
+        textColor: v.optional(v.string()),
+        icon: v.optional(v.string())
+    }).index("by_action_key", ["actionKey"])
+        .index("by_category", ["categoryId"])
         .index("by_service", ["serviceId"]),
 
     trigger_categories: defineTable({
+        categoryKey: v.string(),
         title: v.string(),
         description: v.string(),
         colour: v.string(),
+        textColor: v.string(),
         icon: v.string()
-    }),
+    }).index("by_category_key", ["categoryKey"]),
 
     action_categories: defineTable({
+        categoryKey: v.string(),
         title: v.string(),
         description: v.string(),
         colour: v.string(),
+        textColor: v.optional(v.string()),
         icon: v.string()
-    }),
+    }).index("by_category_key", ["categoryKey"]),
     
     // Connections
 
@@ -166,10 +121,11 @@ export default defineSchema({
         .index("by_service", ["serviceId"]),
 
     services: defineTable({
+        serviceKey: v.string(),
         title: v.string(),
+        description: v.string(),
         parameters: v.array(ParameterSchema)
-    }),
-
+    }).index("by_service_key", ["serviceKey"]),
 
     // Workflows
 
@@ -195,28 +151,27 @@ export default defineSchema({
         notes: v.optional(v.string()),
         created: v.number(),
         updated: v.number(),
-        triggerStep: v.optional(v.id("trigger_steps")),
+        triggerStepId: v.optional(v.id("trigger_steps")),
         actionsSteps: v.optional(v.array(v.id("action_steps")))
     }).index("by_workflow", ["workflowId"]),
 
     trigger_steps: defineTable({
-        triggerTypeId: v.id("trigger_types"),
+        triggerDefinitionId: v.id("trigger_definitions"),
         parameterValues: v.record(v.string(), ParameterValue), // keys are parameterKeys, values must match parameter types
         title: v.string(),
         comment: v.optional(v.string()),
         connectionId: v.id("connections")
-    }).index("by_trigger_type", ["triggerTypeId"])
+    }).index("by_trigger_definition", ["triggerDefinitionId"])
         .index("by_connection", ["connectionId"]),
 
     action_steps: defineTable({
-        actionTypeId: v.id("action_types"),
+        actionDefinitionId: v.id("action_definitions"),
         parameterValues: v.record(v.string(), ParameterValue), // keys are parameterKeys, values must match parameter types
         title: v.string(),
         comment: v.optional(v.string()),
         connectionId: v.id("connections")
-    }).index("by_action_type", ["actionTypeId"])
+        }).index("by_action_definition", ["actionDefinitionId"])
         .index("by_connection", ["connectionId"]),
-
 
     // Workflow Executions
 
@@ -232,7 +187,19 @@ export default defineSchema({
         }))
     }).index("by_config", ["workflowConfigId"])
         .index("by_status", ["status"]),
-
+    
+    run_data: defineTable({
+        workflowRunId: v.id("workflow_runs"),
+        stepId: v.optional(v.id("action_steps")),
+        type: v.union(v.literal("variable"), v.literal("output")),
+        key: v.optional(v.string()),
+        value: v.optional(v.any()),
+        iterationCount: v.number()
+    }).index("by_workflow_run", ["workflowRunId"])
+        .index("by_key", ["key"])
+        .index("by_step", ["stepId"])
+        .index("by_iteration_count", ["iterationCount"]),
+    
     run_logs: defineTable({
         triggerStepId: v.id("trigger_steps"),
         stepId: v.id("action_steps"),
@@ -241,7 +208,6 @@ export default defineSchema({
         started: v.number(),
         finished: v.number()
     }).index("by_workflow_run", ["workflowRunId"]),
-
 
     // Templates
 
@@ -252,5 +218,5 @@ export default defineSchema({
         created: v.number(),
         updated: v.number(),
         actionSteps: v.array(v.id("action_steps"))
-    }).index("by_owner", ["ownerId"])
+    }).index("by_owner", ["ownerId"]),
 });
