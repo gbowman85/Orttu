@@ -55,11 +55,20 @@ export const getAllActionCategoriesInternal = internalQuery({
 })
 
 export const listActionCategories = query({
-  args: {},
   handler: async (ctx) => {
-    return await ctx.db.query('action_categories').collect();
-  }
-})
+    return await ctx.db.query("action_categories").collect();
+  },
+});
+
+export const getActionsByCategory = query({
+  args: { categoryId: v.id("action_categories") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("action_definitions")
+      .withIndex("by_category", (q) => q.eq("categoryId", args.categoryId))
+      .collect();
+  },
+});
 
 export const updateActionCategoryInternal = internalMutation({
   args: {

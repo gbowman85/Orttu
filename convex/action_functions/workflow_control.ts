@@ -55,8 +55,8 @@ export const conditional: ActionRegistryEntry['actionFunction'] = internalAction
 export const conditionalDefinition: ActionRegistryEntry['actionDefinition'] = {
     actionKey: 'conditional',
     categoryKey: 'workflow-control',
-    title: 'Conditional',
-    description: 'Conditional',
+    title: 'If/Then',
+    description: 'If a conditional is met, then do something, otherwise do something else',
     parameters: [
         {
             parameterKey: "leftOperand",

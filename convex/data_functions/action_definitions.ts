@@ -13,6 +13,14 @@ export const getActionDefinition = query({
     }
 })
 
+export const listActionDefinitions = query({
+    handler: async (ctx) => {
+      return await ctx.db
+        .query("action_definitions")
+        .collect();
+    }
+  });
+
 export const getActionDefinitionInternal = internalQuery({
     args: {
         actionDefinitionId: v.id("action_definitions")
