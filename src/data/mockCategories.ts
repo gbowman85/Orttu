@@ -3,7 +3,7 @@ export interface Category {
     title: string;
     description?: string;
     color: string;
-    textColor: string | null;
+    textColour: string | null;
     icon: string;
 }
 
@@ -13,7 +13,7 @@ export const actionCategories: Category[] = [
         title: "Variables",
         description: "Variables are used to store and retrieve data in your workflow",
         color: "var(--color-gray-300)",
-        textColor: "var(--color-gray-900)",
+        textColour: "var(--color-gray-900)",
         icon: "/images/icons/variables.svg"
     },
     {
@@ -21,14 +21,14 @@ export const actionCategories: Category[] = [
         title: "Workflow Control",
         description: "Create conditional branches and loops in your workflow",
         color: "var(--color-gray-400)",
-        textColor: "var(--color-white)",
+        textColour: "var(--color-white)",
         icon: "/images/icons/workflow.svg"
     },
     {
         id: "text",
         title: "Text",
         color: "var(--color-orange-200)",
-        textColor: "var(--color-gray-900)",
+        textColour: "var(--color-gray-900)",
         icon: "/images/icons/text.svg",
         description: "Text manipulation actions like joining, formatting, and splitting text"
     },
@@ -36,7 +36,7 @@ export const actionCategories: Category[] = [
         id: "gmail",
         title: "Gmail",
         color: "var(--color-red-500)",
-        textColor: "var(--color-white)",
+        textColour: "var(--color-white)",
         icon: "/images/icons/gmail.svg",
         description: "Gmail actions like sending and reading emails"
     },
@@ -44,7 +44,7 @@ export const actionCategories: Category[] = [
         id: "google-docs",
         title: "Google Docs",
         color: "var(--color-blue-500)",
-        textColor: "var(--color-white)",
+        textColour: "var(--color-white)",
         icon: "/images/icons/docs.svg",
         description: "Google Docs actions like creating and editing documents"
     }
@@ -55,14 +55,14 @@ export const triggerCategories: Category[] = [
         id: "default",
         title: "Default",
         color: "var(--color-green-500)",
-        textColor: "var(--color-white)",
+        textColour: "var(--color-white)",
         icon: "/images/icons/schedule.svg"
     }, 
     {
         id: "forms",
         title: "Forms",
         color: "var(--color-purple-500)",
-        textColor: "var(--color-white)",
+        textColour: "var(--color-white)",
         icon: "/images/icons/google-form.svg"
     }
 ]

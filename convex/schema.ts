@@ -60,7 +60,7 @@ export default defineSchema({
         })),
         bgColour: v.optional(v.string()),
         borderColour: v.optional(v.string()),
-        textColor: v.optional(v.string()),
+        textColour: v.optional(v.string()),
         icon: v.optional(v.string())
     }).index("by_trigger_key", ["triggerKey"])
         .index("by_category", ["categoryId"])
@@ -81,7 +81,7 @@ export default defineSchema({
         })),
         bgColour: v.optional(v.string()),
         borderColour: v.optional(v.string()),
-        textColor: v.optional(v.string()),
+        textColour: v.optional(v.string()),
         icon: v.optional(v.string())
     }).index("by_action_key", ["actionKey"])
         .index("by_category", ["categoryId"])
@@ -92,7 +92,7 @@ export default defineSchema({
         title: v.string(),
         description: v.string(),
         colour: v.string(),
-        textColor: v.string(),
+        textColour: v.string(),
         icon: v.string()
     }).index("by_category_key", ["categoryKey"]),
 
@@ -101,7 +101,7 @@ export default defineSchema({
         title: v.string(),
         description: v.string(),
         colour: v.string(),
-        textColor: v.optional(v.string()),
+        textColour: v.optional(v.string()),
         icon: v.string()
     }).index("by_category_key", ["categoryKey"]),
     

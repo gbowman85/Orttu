@@ -15,7 +15,7 @@ type CategoryRegistryEntry = {
     title: string,
     description: string,
     colour: string,
-    textColor: string,
+    textColour: string,
     icon: string,
 }
 
@@ -25,7 +25,7 @@ export const actionCategoryRegistry = {
         title: 'Variables',
         description: 'Variables are used to store data that can be used in the workflow',
         colour: 'var(--color-gray-300)',
-        textColor: 'var(--color-gray-900)',
+        textColour: 'var(--color-gray-900)',
         icon: '/images/icons/variables.svg',
     },
     'workflow-control': {
@@ -33,7 +33,7 @@ export const actionCategoryRegistry = {
         title: 'Workflow Control',
         description: 'Workflow Control is used to control the flow of the workflow',
         colour: 'var(--color-gray-400)',
-        textColor: 'var(--color-white)',
+        textColour: 'var(--color-white)',
         icon: '/images/icons/workflow.svg',
     },
     'text': {
@@ -41,7 +41,7 @@ export const actionCategoryRegistry = {
         title: 'Text',
         description: 'Text manipulation actions like joining, formatting, and splitting text',
         colour: 'var(--color-orange-200)',
-        textColor: 'var(--color-gray-900)',
+        textColour: 'var(--color-gray-900)',
         icon: '/images/icons/text.svg',
     },
     'gmail': {
@@ -49,7 +49,7 @@ export const actionCategoryRegistry = {
         title: 'Gmail',
         description: 'Gmail actions like sending and reading emails',
         colour: 'var(--color-red-500)',
-        textColor: 'var(--color-white)',
+        textColour: 'var(--color-white)',
         icon: '/images/icons/gmail.svg',
     },
     'google-docs': {
@@ -57,7 +57,7 @@ export const actionCategoryRegistry = {
         title: 'Google Docs',
         description: 'Google Docs actions like creating and editing documents',
         colour: 'var(--color-blue-500)',
-        textColor: 'var(--color-white)',
+        textColour: 'var(--color-white)',
         icon: '/images/icons/docs.svg',
     }
 } satisfies Record<string, CategoryRegistryEntry>;
@@ -74,7 +74,7 @@ export type ActionRegistryEntry = {
         description: string,
         bgColour?: string,
         borderColour?: string,
-        textColor?: string,
+        textColour?: string,
         icon?: string,
         parameters: Parameter[],
         outputs: {

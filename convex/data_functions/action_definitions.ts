@@ -38,7 +38,7 @@ export const createActionDefinitionInternal = internalMutation({
         })),
         bgColour: v.optional(v.string()),
         borderColour: v.optional(v.string()),
-        textColor: v.optional(v.string()),
+        textColour: v.optional(v.string()),
         icon: v.optional(v.string())
     },
     handler: async (ctx, args): Promise<Id<"action_definitions"> | null> => {
@@ -98,7 +98,7 @@ export const updateActionDefinitionInternal = internalMutation({
         serviceKey: v.optional(v.string()),
         bgColour: v.optional(v.string()),
         borderColour: v.optional(v.string()),
-        textColor: v.optional(v.string()),
+        textColour: v.optional(v.string()),
         icon: v.optional(v.string())
     },
     handler: async (ctx, args): Promise<Id<"action_definitions">> => {

@@ -56,7 +56,7 @@ export const createTriggerDefinitionInternal = internalMutation({
         })),
         bgColour: v.optional(v.string()),
         borderColour: v.optional(v.string()),
-        textColor: v.optional(v.string()),
+        textColour: v.optional(v.string()),
         icon: v.optional(v.string())
     },
     handler: async (ctx, args): Promise<Id<"trigger_definitions"> | null> => {
@@ -113,7 +113,7 @@ export const updateTriggerDefinitionInternal = internalMutation({
         serviceKey: v.optional(v.string()),
         bgColour: v.optional(v.string()),
         borderColour: v.optional(v.string()),
-        textColor: v.optional(v.string()),
+        textColour: v.optional(v.string()),
         icon: v.optional(v.string())
     },
     handler: async (ctx, args): Promise<Id<"trigger_definitions">> => {

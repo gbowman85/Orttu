@@ -5,7 +5,7 @@ export const createActionCategoryInternal = internalMutation({
   args: {
     title: v.string(),
     description: v.string(),
-    textColor: v.string(),
+    textColour: v.string(),
     icon: v.string(),
     categoryKey: v.string(),
     colour: v.string()
@@ -66,7 +66,7 @@ export const updateActionCategoryInternal = internalMutation({
     id: v.id("action_categories"),
     title: v.string(),
     description: v.string(),
-    textColor: v.string(),
+    textColour: v.string(),
     icon: v.string(),
     categoryKey: v.string(),
     colour: v.string()

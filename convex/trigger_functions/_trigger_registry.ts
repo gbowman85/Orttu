@@ -14,7 +14,7 @@ type CategoryRegistryEntry = {
     title: string,
     description: string,
     colour: string,
-    textColor: string,
+    textColour: string,
     icon: string,
 }
 
@@ -24,7 +24,7 @@ export const triggerCategoryRegistry = {
         title: 'Default',
         description: 'Standard triggers',
         colour: 'var(--color-gray-300)',
-        textColor: 'var(--color-gray-900)',
+        textColour: 'var(--color-gray-900)',
         icon: '/images/icons/default-triggers.svg',
     }
 } satisfies Record<string, CategoryRegistryEntry>;
@@ -42,7 +42,7 @@ export type TriggerRegistryEntry = {
         description: string,
         bgColour?: string,
         borderColour?: string,
-        textColor?: string,
+        textColour?: string,
         icon?: string,
         parameters: Parameter[],
         outputs: {

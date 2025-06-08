@@ -23,7 +23,7 @@ export const createTriggerCategoryInternal = internalMutation({
     title: v.string(),
     description: v.string(),
     colour: v.string(),
-    textColor: v.string(),
+    textColour: v.string(),
     icon: v.string(),
   },
   handler: async (ctx, args) => {
@@ -63,7 +63,7 @@ export const updateTriggerCategoryInternal = internalMutation({
     id: v.id("trigger_categories"),
     title: v.string(),
     description: v.string(),
-    textColor: v.string(),
+    textColour: v.string(),
     icon: v.string(),
     categoryKey: v.string(),
     colour: v.string()
