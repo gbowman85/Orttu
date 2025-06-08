@@ -1,12 +1,149 @@
 //npx convex run sync_functions:syncActions
+//npx convex run sync_functions:syncTriggers
 
 import { internalAction, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { actionRegistry } from "./action_functions/_action_registry";
 import { actionCategoryRegistry } from "./action_functions/_action_registry";
+import { triggerCategoryRegistry } from "./trigger_functions/_trigger_registry";
+import { triggerRegistry } from "./trigger_functions/_trigger_registry";
 
 
-export const syncActions = internalAction({
+export const syncAll = internalAction({
+    handler: async (ctx): Promise<object> => {
+        // Sync triggers function
+        const triggersOutput: object = await ctx.runMutation(internal.sync_functions.syncTriggers) ?? {};
+
+        // Sync actions function
+        const actionsOutput: object = await ctx.runMutation(internal.sync_functions.syncActions) ?? {}; 
+
+        return {
+            "triggers": triggersOutput,
+            "actions": actionsOutput,
+        };
+    }
+})
+
+
+export const syncTriggers = internalMutation({
+    handler: async (ctx): Promise<object> => {
+        const triggerCategoriesOutput: object = await ctx.runMutation(internal.sync_functions.syncTriggerCategoriesToDatabase) ?? 0;
+        const triggerDefinitionsOutput: object = await ctx.runMutation(internal.sync_functions.syncTriggerDefinitionsToDatabase) ?? 0;
+
+        return {
+            "triggerCategories": triggerCategoriesOutput,
+            "triggerDefinitions": triggerDefinitionsOutput,
+        };
+    }
+})
+
+export const syncTriggerCategoriesToDatabase = internalMutation({
+    handler: async (ctx) => {
+        const categories = Object.values(triggerCategoryRegistry);
+        let triggerCategoriesCreated = 0;
+        let triggerCategoriesUpdated = 0;
+        let triggerCategoriesDeleted = 0;
+
+        // Get all existing categories
+        const existingCategories = await ctx.runQuery(internal.data_functions.trigger_categories.getAllTriggerCategoriesInternal);
+        const registryCategoryKeys = new Set(categories.map(cat => cat.categoryKey));
+
+        // Delete categories that are no longer in the registry
+        for (const existingCategory of existingCategories) {
+            if (!registryCategoryKeys.has(existingCategory.categoryKey)) {
+                await ctx.runMutation(internal.data_functions.trigger_categories.deleteTriggerCategoryInternal, {
+                    id: existingCategory._id
+                });
+                triggerCategoriesDeleted++;
+            }
+        }
+
+        // Create or update categories
+        for (const category of categories) {
+            const existingCategory = await ctx.runQuery(internal.data_functions.trigger_categories.getTriggerCategoryByCategoryKeyInternal, { categoryKey: category.categoryKey });
+            
+            if (existingCategory) {
+                // Update existing category if it has changed
+                if (hasChanges(existingCategory, category, ['_id', '_creationTime', 'categoryKey'])) {
+                    await ctx.runMutation(internal.data_functions.trigger_categories.updateTriggerCategoryInternal, {
+                        id: existingCategory._id,
+                        ...category
+                    });
+                    triggerCategoriesUpdated++;
+                }
+            } else {
+                // Create new category
+                const newCategory = await ctx.runMutation(internal.data_functions.trigger_categories.createTriggerCategoryInternal, category);
+                if (newCategory) {
+                    triggerCategoriesCreated++;
+                }
+            }
+        }
+
+        return {
+            total: categories.length,
+            created: triggerCategoriesCreated,
+            updated: triggerCategoriesUpdated,
+            deleted: triggerCategoriesDeleted
+        };
+    }
+})
+
+export const syncTriggerDefinitionsToDatabase = internalMutation({
+    handler: async (ctx) => {
+        const triggers = Object.values(triggerRegistry);
+        let triggerDefinitionsCreated = 0;
+        let triggerDefinitionsUpdated = 0;
+        let triggerDefinitionsDeleted = 0;
+
+        // Get all existing trigger definitions
+        const existingTriggers = await ctx.runQuery(internal.data_functions.trigger_definitions.getAllTriggerDefinitionsInternal);
+        const registryTriggerKeys = new Set(triggers.map(trigger => trigger.triggerDefinition.triggerKey));
+
+        // Delete triggers that are no longer in the registry
+        for (const existingTrigger of existingTriggers) {
+            if (!registryTriggerKeys.has(existingTrigger.triggerKey)) {
+                await ctx.runMutation(internal.data_functions.trigger_definitions.deleteTriggerDefinitionInternal, {
+                    id: existingTrigger._id
+                });
+                triggerDefinitionsDeleted++;
+            }
+        }
+
+        // Create or update triggers
+        for (const trigger of triggers) {
+            const existingTrigger = await ctx.runQuery(internal.data_functions.trigger_definitions.getTriggerDefinitionByTriggerKeyInternal, { 
+                triggerKey: trigger.triggerDefinition.triggerKey 
+            });
+            
+            if (existingTrigger) {
+                // Update existing trigger if it has changed
+                if (hasChanges(existingTrigger, trigger.triggerDefinition, ['_id', '_creationTime', 'categoryId', 'categoryKey', 'serviceId', 'serviceKey'])) {
+                    await ctx.runMutation(internal.data_functions.trigger_definitions.updateTriggerDefinitionInternal, {
+                        id: existingTrigger._id,
+                        ...trigger.triggerDefinition
+                    });
+                    triggerDefinitionsUpdated++;
+                }
+            } else {
+                // Create new trigger
+                const newTrigger = await ctx.runMutation(internal.data_functions.trigger_definitions.createTriggerDefinitionInternal, trigger.triggerDefinition);
+                if (newTrigger) {
+                    triggerDefinitionsCreated++;
+                }
+            }
+        }
+
+        return {
+            total: triggers.length,
+            created: triggerDefinitionsCreated,
+            updated: triggerDefinitionsUpdated,
+            deleted: triggerDefinitionsDeleted
+        };
+    }
+})
+
+export const syncActions = internalMutation({
     handler: async (ctx): Promise<object> => {
         const actionCategoriesOutput: object = await ctx.runMutation(internal.sync_functions.syncActionCategoriesToDatabase) ?? 0;
         const actionDefinitionsOutput: object = await ctx.runMutation(internal.sync_functions.syncActionDefinitionsToDatabase) ?? 0;

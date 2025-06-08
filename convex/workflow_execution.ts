@@ -46,6 +46,16 @@ export const executeWorkflow = convexWorkflow.define({
       workflowConfigId: workflowConfig._id
     });
 
+    // Store triggerData as a workflow variable if it exists
+    if (args.triggerData) {
+      await step.runMutation(internal.data_functions.workflow_runs.setRunDataInternal, {
+        workflowRunId,
+        type: "variable",
+        key: "triggerData",
+        value: args.triggerData
+      });
+    }
+
     // Execute the workflow steps
     
     try {

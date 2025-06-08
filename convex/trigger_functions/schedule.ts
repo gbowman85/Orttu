@@ -1,0 +1,78 @@
+import { v } from "convex/values";
+import { internalAction, internalMutation } from "../_generated/server";
+import { TriggerRegistryEntry } from "./_trigger_registry";
+import { internal } from "../_generated/api";
+
+export const scheduleTrigger: TriggerRegistryEntry['triggerFunction'] = internalAction({
+    args: {
+        workflowId: v.id("workflows"),
+        repeat: v.boolean(),
+        startDateTime: v.number(),
+        endDateTime: v.optional(v.number()),
+        interval: v.optional(v.number()),
+        intervalUnit: v.optional(v.string()),
+    },
+    handler: async (ctx, args): Promise<any> => {
+
+        // Check that the startDateTime is in the future
+        if (args.startDateTime < Date.now()) {
+            throw new Error("Scheduled date and time must be in the future");
+        }
+
+        // Create a scheduled workflow run in the database
+        await ctx.runMutation(internal.data_functions.scheduled_workflows.createScheduledWorkflowRunInternal, {
+            ...args,
+            nextRunDateTime: args.startDateTime
+        });
+
+        return {
+            startDateTime: args.startDateTime
+        };
+    },
+});
+
+export const scheduleTriggerDefinition: TriggerRegistryEntry['triggerDefinition'] = {
+    triggerKey: "schedule",
+    triggerType: "schedule",
+    categoryKey: "default",
+    title: "Schedule",
+    description: "Schedule a workflow to run at a specific time or at regular intervals",
+    parameters: [
+        {
+            parameterKey: "firstRunDateTime",
+            title: "Start at",
+            description: "The date and time the workflow starts",
+            type: "datetime" as const,
+            required: false,
+        },
+        {
+            parameterKey: "repeat",
+            title: "Repeat",
+            description: "Whether the workflow should repeat",
+            type: "boolean" as const,
+            required: false,
+        },
+        {
+            parameterKey: "interval",
+            title: "Every",
+            description: "The interval at which the workflow runs",
+            type: "number" as const,
+            required: false,
+        },
+        {
+            parameterKey: "intervalUnit",
+            title: "Units",
+            description: "The unit of the interval",
+            type: "string" as const,
+            required: false,
+        },
+    ],
+    outputs: [
+        {
+            outputKey: "startDateTime",
+            outputType: "number" as const,
+            outputTitle: "Start Date and Time",
+            outputDescription: "The date and time the workflow starts",
+        }
+    ],
+};

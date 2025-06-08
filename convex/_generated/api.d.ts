@@ -8,12 +8,15 @@
  * @module
  */
 
+import type * as action_functions__action_loader from "../action_functions/_action_loader.js";
 import type * as action_functions__action_registry from "../action_functions/_action_registry.js";
 import type * as action_functions_variables from "../action_functions/variables.js";
 import type * as action_functions_workflow_control from "../action_functions/workflow_control.js";
 import type * as auth from "../auth.js";
+import type * as crons from "../crons.js";
 import type * as data_functions_action_categories from "../data_functions/action_categories.js";
 import type * as data_functions_action_definitions from "../data_functions/action_definitions.js";
+import type * as data_functions_scheduled_workflows from "../data_functions/scheduled_workflows.js";
 import type * as data_functions_services from "../data_functions/services.js";
 import type * as data_functions_trigger_categories from "../data_functions/trigger_categories.js";
 import type * as data_functions_trigger_definitions from "../data_functions/trigger_definitions.js";
@@ -23,7 +26,10 @@ import type * as data_functions_workflow_runs from "../data_functions/workflow_r
 import type * as data_functions_workflow_steps from "../data_functions/workflow_steps.js";
 import type * as data_functions_workflows from "../data_functions/workflows.js";
 import type * as http from "../http.js";
+import type * as sync_functions from "../sync_functions.js";
+import type * as trigger_functions__trigger_loader from "../trigger_functions/_trigger_loader.js";
 import type * as trigger_functions__trigger_registry from "../trigger_functions/_trigger_registry.js";
+import type * as trigger_functions_manual from "../trigger_functions/manual.js";
 import type * as trigger_functions_schedule from "../trigger_functions/schedule.js";
 import type * as types from "../types.js";
 import type * as workflow_execution from "../workflow_execution.js";
@@ -43,12 +49,15 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "action_functions/_action_loader": typeof action_functions__action_loader;
   "action_functions/_action_registry": typeof action_functions__action_registry;
   "action_functions/variables": typeof action_functions_variables;
   "action_functions/workflow_control": typeof action_functions_workflow_control;
   auth: typeof auth;
+  crons: typeof crons;
   "data_functions/action_categories": typeof data_functions_action_categories;
   "data_functions/action_definitions": typeof data_functions_action_definitions;
+  "data_functions/scheduled_workflows": typeof data_functions_scheduled_workflows;
   "data_functions/services": typeof data_functions_services;
   "data_functions/trigger_categories": typeof data_functions_trigger_categories;
   "data_functions/trigger_definitions": typeof data_functions_trigger_definitions;
@@ -58,7 +67,10 @@ declare const fullApi: ApiFromModules<{
   "data_functions/workflow_steps": typeof data_functions_workflow_steps;
   "data_functions/workflows": typeof data_functions_workflows;
   http: typeof http;
+  sync_functions: typeof sync_functions;
+  "trigger_functions/_trigger_loader": typeof trigger_functions__trigger_loader;
   "trigger_functions/_trigger_registry": typeof trigger_functions__trigger_registry;
+  "trigger_functions/manual": typeof trigger_functions_manual;
   "trigger_functions/schedule": typeof trigger_functions_schedule;
   types: typeof types;
   workflow_execution: typeof workflow_execution;

@@ -46,6 +46,7 @@ export default defineSchema({
 
     trigger_definitions: defineTable({
         triggerKey: v.string(),
+        triggerType: v.string(),
         categoryId: v.id("trigger_categories"),
         serviceId: v.optional(v.id("services")),
         title: v.string(),
@@ -219,4 +220,17 @@ export default defineSchema({
         updated: v.number(),
         actionSteps: v.array(v.id("action_steps"))
     }).index("by_owner", ["ownerId"]),
+
+    // Scheduled Workflow Runs
+
+    scheduled_workflows: defineTable({
+        workflowId: v.id("workflows"),
+        nextRunDateTime: v.number(),
+        repeat: v.boolean(),
+        startDateTime: v.optional(v.number()),
+        endDateTime: v.optional(v.number()),
+        interval: v.optional(v.number()),
+        intervalUnit: v.optional(v.string())
+    }).index("by_workflow", ["workflowId"])
+        .index("by_next_run_date_time", ["nextRunDateTime"]),
 });
