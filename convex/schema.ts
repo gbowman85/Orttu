@@ -148,7 +148,7 @@ export default defineSchema({
 
     workflow_configurations: defineTable({
         workflowId: v.id("workflows"),
-        versionTitle: v.string(),
+        versionTitle: v.optional(v.string()),
         notes: v.optional(v.string()),
         created: v.number(),
         updated: v.number(),
@@ -161,7 +161,7 @@ export default defineSchema({
         parameterValues: v.record(v.string(), ParameterValue), // keys are parameterKeys, values must match parameter types
         title: v.string(),
         comment: v.optional(v.string()),
-        connectionId: v.id("connections")
+        connectionId: v.optional(v.id("connections"))
     }).index("by_trigger_definition", ["triggerDefinitionId"])
         .index("by_connection", ["connectionId"]),
 

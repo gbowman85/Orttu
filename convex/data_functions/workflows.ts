@@ -37,9 +37,10 @@ export async function requireWorkflowAccess(
 
 export const createWorkflow = mutation({
     args: {
-        title: v.string()
+        title: v.string(),
+        triggerKey: v.optional(v.string())
     },
-    handler: async (ctx, { title }) => {
+    handler: async (ctx, { title, triggerKey }) => {
         const userId = await requireAuthenticated(ctx);
 
         const workflowId = await ctx.db.insert("workflows", {
@@ -55,6 +56,35 @@ export const createWorkflow = mutation({
             enabled: false,
             deleted: false
         });
+
+        // Create the workflow configuration
+        const workflowConfigId = await ctx.db.insert("workflow_configurations", {
+            workflowId,
+            actionsSteps: [],
+            created: Date.now(),
+            updated: Date.now()
+        });
+
+        if (triggerKey) {
+
+            // Get the trigger definition
+            const triggerDefinition = await ctx.db.query("trigger_definitions").withIndex("by_trigger_key", (q) => q.eq("triggerKey", triggerKey)).first();
+            if (!triggerDefinition) {
+                throw new Error("Trigger definition not found");
+            }
+
+            // Create the trigger step
+            const triggerStepId = await ctx.db.insert("trigger_steps", {
+                triggerDefinitionId: triggerDefinition._id,
+                parameterValues: {},
+                title: triggerDefinition.title
+            });
+
+            // Update the workflow configuration
+            await ctx.db.patch(workflowConfigId, {
+                triggerStepId: triggerStepId
+            });
+        }
 
         return workflowId;
     },

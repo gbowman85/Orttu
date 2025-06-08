@@ -14,6 +14,13 @@ export const getTriggerDefinition = query({
     }
 })
 
+export const listTriggerDefinitions = query({
+    args: {},
+    handler: async (ctx) => {
+        return await ctx.db.query('trigger_definitions').collect();
+    }
+})
+
 export const getTriggerDefinitionInternal = internalQuery({
     args: {
         triggerDefinitionId: v.id("trigger_definitions")
