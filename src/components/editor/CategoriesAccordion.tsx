@@ -1,5 +1,5 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ActionCard } from "@/components/editor/ActionCard";
+import { ActionCard } from "@/components/editor/ActionCardDraggable";
 import { CategorySkeleton, SelectSkeleton, ActionsSkeleton } from "./LoadingStates";
 import { SelectItem } from "@/components/ui/select";
 import { api } from "@/../convex/_generated/api";

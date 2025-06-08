@@ -2,7 +2,7 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@/../convex/_generated/api";
-import { ActionCard } from "@/components/editor/ActionCard";
+import { ActionCard } from "@/components/editor/ActionCardDraggable";
 import { Id } from "@/../convex/_generated/dataModel";
 import { ActionsSkeleton } from "./LoadingStates";
 

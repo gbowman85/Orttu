@@ -1,46 +1,25 @@
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Info } from "lucide-react";
+'use client'
 
 interface ActionCardProps {
-  actionKey: string;
-  title: string;
-  description: string;
-  bgColour?: string;
-  borderColour?: string;
-  textColour?: string;
-  icon?: string;
+  title: string
+  description: string
+  borderColour?: string
+  bgColour?: string
+  textColour?: string
 }
 
-export function ActionCard({
-  actionKey,
-  title,
-  description,
-  bgColour,
-  borderColour,
-  textColour,
-  icon
-}: ActionCardProps) {
+export default function ActionCard({ title, description, borderColour, bgColour, textColour }: ActionCardProps) {
   return (
-    <div
-      className="p-3 rounded-lg cursor-move relative group"
+    <div className="w-90 border-4 border-gray-200 rounded-3xl p-4 text-center text-muted-foreground"
       style={{
         backgroundColor: bgColour,
         borderColor: borderColour,
-        borderWidth: "1px",
         color: textColour
       }}
     >
-      <div className="flex justify-between items-center">
-        <span>{title}</span>
-        <HoverCard>
-          <HoverCardTrigger>
-            <Info className="h-4 w-4 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity cursor-help" />
-          </HoverCardTrigger>
-          <HoverCardContent className="bg-gray-50 opacity-95 text-sm border-gray-400">
-            <p>{description}</p>
-          </HoverCardContent>
-        </HoverCard>
-      </div>
+        <div className="text-lg font-bold">{title}</div>
+        <div className="text-sm text-muted-foreground">{description}</div>
     </div>
-  );
-} 
+    
+  )
+}

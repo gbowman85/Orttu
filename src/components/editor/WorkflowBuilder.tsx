@@ -2,7 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import AddActionButton from "@/components/editor/AddActionButton"
-import ActionCard from "@/components/editor/ActionCardx"
+import ActionCard from "@/components/editor/ActionCard"
+import ActionDroppable from "@/components/editor/ActionCardDroppable"
 
 export default function WorkflowBuilder() {
     return (
@@ -17,6 +18,7 @@ export default function WorkflowBuilder() {
                 <AddActionButton />
                 
                 <ActionCard title="Action" description="Description" />
+                <ActionDroppable elementId="action-1" />
             </div>
 
         </div>
