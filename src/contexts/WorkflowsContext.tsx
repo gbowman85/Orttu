@@ -1,21 +1,8 @@
-import { createContext, useContext, useState, ReactNode, use, useMemo, useEffect } from 'react';
-import { mockWorkflows } from '@/data/mockWorkflows';
+import { createContext, useContext, useState, ReactNode, useMemo, useEffect } from 'react';
 import Fuse from 'fuse.js';
 import { useMutation, useQuery } from 'convex/react';
-import { api } from '../../convex/_generated/api';
-
-// Workflow type
-export interface Workflow {
-    id: string;
-    title: string;
-    description: string;
-    status: 'active' | 'paused' | 'draft';
-    starred: boolean;
-    tags: string[];
-    enabled: boolean;
-    created: number;
-    updated: number;
-}
+import { Doc, Id } from '@/../convex/_generated/dataModel';
+import { api } from '@/../convex/_generated/api';
 
 // Default preferences
 const DEFAULT_VIEW_MODE: ViewMode = 'grid';
@@ -45,9 +32,9 @@ const fuseOptions = {
 
 // WorkflowsContextType to pass to the provider
 interface WorkflowsContextType {
-    workflows: Workflow[];
-    handleStarToggle: (workflowId: string, isStarred: boolean) => void;
-    handleEnableToggle: (workflowId: string, isEnabled: boolean) => void;
+    workflows: Doc<"workflows">[];
+    handleStarToggle: (workflowId: Id<"workflows">, isStarred: boolean) => void;
+    handleEnableToggle: (workflowId: Id<"workflows">, isEnabled: boolean) => void;
     sortBy: SortBy;
     setSortBy: (field: SortBy) => void;
     sortDirection: SortDirection;
@@ -119,15 +106,25 @@ export function WorkflowsProvider({ children }: { children: ReactNode }) {
         return () => clearTimeout(timer);
     }, [sortBy, sortDirection, viewMode, preferences, updatePreferences]);
 
-    const loadWorkflows = use(mockWorkflows);
-    const [rawWorkflows, setRawWorkflows] = useState(loadWorkflows); // TODO: Replace with actual data fetching
+    let loadWorkflows = useQuery(api.data_functions.workflows.listWorkflows);
+
+    const [rawWorkflows, setRawWorkflows] = useState<Doc<"workflows">[]>([]);
+
+    // Update rawWorkflows when loadWorkflows changes
+    useEffect(() => {
+        if (loadWorkflows) {
+            setRawWorkflows(loadWorkflows);
+        }
+    }, [loadWorkflows]);
 
     // Get all unique tags
     const allTags = useMemo(() => {
         const tags = new Set<string>();
-        rawWorkflows.forEach(workflow => {
-            workflow.tags.forEach(tag => tags.add(tag));
-        });
+        if (rawWorkflows) {
+            rawWorkflows.forEach(workflow => {
+                workflow.tags?.forEach(tag => tags.add(tag));
+            });
+        }
         return Array.from(tags).sort();
     }, [rawWorkflows]);
 
@@ -159,20 +156,20 @@ export function WorkflowsProvider({ children }: { children: ReactNode }) {
         setSortDirection(field === 'name' ? 'asc' : 'desc');
     };
 
-    const handleStarToggle = (workflowId: string, isStarred: boolean) => {
+    const handleStarToggle = (workflowId: Id<"workflows">, isStarred: boolean) => {
         setRawWorkflows(currentWorkflows => 
             currentWorkflows.map(workflow => 
-                workflow.id === workflowId 
+                workflow._id === workflowId 
                     ? { ...workflow, starred: isStarred }
                     : workflow
             )
         );
     };
 
-    const handleEnableToggle = (workflowId: string, isEnabled: boolean) => {
+    const handleEnableToggle = (workflowId: Id<"workflows">, isEnabled: boolean) => {
         setRawWorkflows(currentWorkflows =>
             currentWorkflows.map(workflow =>
-                workflow.id === workflowId
+                workflow._id === workflowId
                     ? { ...workflow, enabled: isEnabled }
                     : workflow
             )
@@ -186,7 +183,7 @@ export function WorkflowsProvider({ children }: { children: ReactNode }) {
         // Apply tag filtering
         if (selectedTags.length > 0) {
             results = results.filter(workflow =>
-                selectedTags.every(tag => workflow.tags.includes(tag))
+                selectedTags.every(tag => workflow.tags?.includes(tag) ?? false)
             );
         }
 

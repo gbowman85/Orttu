@@ -1,5 +1,4 @@
-import { Button } from "../ui/button";
-import { Plus } from "lucide-react";
+import NewWorkflowDialogButton from "./NewWorkflowDialog";
 
 export function WorkflowsEmpty() {
     return (
@@ -10,10 +9,7 @@ export function WorkflowsEmpty() {
             <p className="text-sm text-gray-500 mb-6">
                 Create one to get started
             </p>
-            <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                New Workflow
-            </Button>
+            <NewWorkflowDialogButton /> 
         </div>
     );
 } 

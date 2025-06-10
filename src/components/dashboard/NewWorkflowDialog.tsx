@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
+// Define the schema for the form data validation
 const workflowSchema = z.object({
   name: z.string().min(1, 'Workflow name is required'),
   triggerKey: z.string().min(1, 'Please select a trigger')
@@ -21,9 +22,10 @@ const workflowSchema = z.object({
 
 type WorkflowFormData = z.infer<typeof workflowSchema>;
 
-export default function NewWorkflowDialog() {
+// The dialog content for creating a new workflow
+function NewWorkflowDialogContent() {
     const router = useRouter()
-    const triggers = useQuery(api.data_functions.trigger_definitions.listTriggerDefinitions)
+    const triggers = useQuery(api.data_functions.trigger_definitions.listTriggerDefinitions) || []
     const createWorkflow = useMutation(api.data_functions.workflows.createWorkflow)
     const [formData, setFormData] = useState<WorkflowFormData>({
         name: '',
@@ -64,14 +66,6 @@ export default function NewWorkflowDialog() {
     };
 
     return (
-    <Dialog>
-        <DialogTrigger asChild>
-            <Button className="mb-4">
-                <PlusIcon className="w-4 h-4" />
-                New workflow
-            </Button>
-        </DialogTrigger>
-
         <DialogContent className="fixed top-[25%]">
             <DialogHeader>
                 <DialogTitle>New workflow</DialogTitle>
@@ -108,7 +102,7 @@ export default function NewWorkflowDialog() {
                             <SelectValue placeholder="Select a trigger" />
                         </SelectTrigger>
                         <SelectContent>
-                            {triggers?.map((trigger) => (
+                            {triggers.map((trigger) => (
                                 <SelectItem key={trigger._id} value={trigger.triggerKey}>
                                     {trigger.title}
                                 </SelectItem>
@@ -124,6 +118,20 @@ export default function NewWorkflowDialog() {
                 </Button>
             </form>
         </DialogContent>
-    </Dialog>
+    )
+}
+
+// The main button component that's always mounted
+export default function NewWorkflowDialogButton() {
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button className="mb-4">
+                    <PlusIcon className="w-4 h-4" />
+                    New workflow
+                </Button>
+            </DialogTrigger>
+            <NewWorkflowDialogContent />
+        </Dialog>
     )
 }
