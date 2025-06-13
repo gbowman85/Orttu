@@ -1,30 +1,5 @@
 import { v } from 'convex/values'
-
-//*
-//  TypeScript types
-//*
-
-// Type definition for parameters
-
-export type DataType = 'string' | 'number' | 'boolean' | 'date' | 'datetime' | 'array' | 'object' | 'file' | 'image' | 'any'
-
-export type Parameter = {
-  parameterKey: string
-  title: string
-  description: string
-  type: DataType
-  required: boolean
-  default?: string
-  validation?: {
-    min?: number
-    max?: number
-    minLength?: number
-    maxLength?: number
-    pattern?: string
-    allowedValues?: string[]
-  }
-} 
-
+import { Id } from './_generated/dataModel';
 
 
 //*
@@ -47,6 +22,7 @@ export const StepStatus = v.union(
   v.literal("skipped")
 );
 
+// Convex schema for data types
 export const DataTypeSchema = v.union(
   v.literal("string"),
   v.literal("number"),
@@ -60,7 +36,11 @@ export const DataTypeSchema = v.union(
   v.literal("any")
 );
 
-// Define the possible value types for parameters
+// Type definition for data types
+export type DataType = 'string' | 'number' | 'boolean' | 'date' | 'datetime' | 'array' | 'object' | 'file' | 'image' | 'any'
+
+
+// Convex schema for parameter values
 export const ParameterValue = v.union(
   v.string(),
   v.number(),
@@ -69,6 +49,9 @@ export const ParameterValue = v.union(
   v.object({}),
   v.any()
 )
+
+// Type definition for parameter values
+export type ParameterValue = string | number | boolean | string[] | { [key: string]: any } | any
 
 // Convex schema for parameters
 export const ParameterSchema = v.object({
@@ -88,3 +71,32 @@ export const ParameterSchema = v.object({
   }))
 })
 
+// Type definition for parameters
+export type Parameter = {
+  parameterKey: string
+  title: string
+  description: string
+  type: DataType
+  required: boolean
+  default?: string
+  validation?: {
+    min?: number
+    max?: number
+    minLength?: number
+    maxLength?: number
+    pattern?: string
+    allowedValues?: string[]
+  }
+} 
+
+// Convex schema for action steps
+export const ActionStepRef = v.object({
+  actionStepId: v.id("action_steps"),
+  children: v.optional(v.record(v.string(), v.array(v.id("action_steps"))))
+})
+
+// Type definition for action steps
+export type ActionStepRefType = {
+  actionStepId: Id<"action_steps">
+  children?: Record<string, Id<"action_steps">[]>
+}

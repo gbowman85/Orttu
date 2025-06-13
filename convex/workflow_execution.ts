@@ -34,10 +34,10 @@ export const executeWorkflow = convexWorkflow.define({
       workflowConfigId: workflowDetails.currentConfigId!
     });
     
-    // Get the workflow actionsSteps
-    const workflowActionStepIds = workflowConfig.actionsSteps;
+    // Get the workflow action steps
+    const workflowActionSteps = workflowConfig.actionSteps;
 
-    if (!workflowActionStepIds) {
+    if (!workflowActionSteps) {
       throw new Error("No action steps found");
     }
 
@@ -57,14 +57,13 @@ export const executeWorkflow = convexWorkflow.define({
     }
 
     // Execute the workflow steps
-    
     try {
-      for (const actionStepId of workflowActionStepIds) {
-        const actionStep = await step.runQuery(internal.data_functions.workflow_steps.getActionStepInternal, {
-          actionStepId
+      for (const actionStep of workflowActionSteps) {
+        const stepDetails = await step.runQuery(internal.data_functions.workflow_steps.getActionStepInternal, {
+          actionStepId: actionStep.actionStepId
         });
 
-        if (!actionStep) {
+        if (!stepDetails) {
           throw new Error("Action step not found");
         }
 
@@ -73,8 +72,7 @@ export const executeWorkflow = convexWorkflow.define({
           internal.workflow_execution.executeAction, 
           {
             workflowRunId,
-            stepId: actionStepId,
-            
+            stepId: actionStep.actionStepId
           }
         );
       }
@@ -102,7 +100,6 @@ export const executeAction = internalAction({
     stepId: v.id("action_steps")
   },
   handler: async (step, args): Promise<any> => {
-
     const actionStep = await step.runQuery(internal.data_functions.workflow_steps.getActionStepInternal, {
       actionStepId: args.stepId
     });
@@ -138,7 +135,9 @@ export const executeAction = internalAction({
       }
     }
 
-    const parameters = actionStep.parameterValues;
+    const parameters = {
+      ...actionStep.parameterValues
+    };
 
     // Get the key for the action
     const actionKey = actionDefinition.actionKey as ActionKey;

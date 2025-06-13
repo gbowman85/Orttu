@@ -1,7 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import { DataTypeSchema, ParameterSchema, ParameterValue, WorkflowStatus, StepStatus } from './types'
+import { DataTypeSchema, ParameterSchema, ParameterValue, WorkflowStatus, StepStatus, ActionStepRef } from './types'
 
 
 
@@ -79,6 +79,11 @@ export default defineSchema({
             outputTitle: v.string(),
             outputDescription: v.string()
         })),
+        childListKeys: v.optional(v.array(v.object({
+            key: v.string(),
+            title: v.string(),
+            description: v.string()
+        }))),
         bgColour: v.optional(v.string()),
         borderColour: v.optional(v.string()),
         textColour: v.optional(v.string()),
@@ -153,12 +158,12 @@ export default defineSchema({
         created: v.number(),
         updated: v.number(),
         triggerStepId: v.optional(v.id("trigger_steps")),
-        actionsSteps: v.optional(v.array(v.id("action_steps")))
+        actionSteps: v.array(ActionStepRef)
     }).index("by_workflow", ["workflowId"]),
 
     trigger_steps: defineTable({
         triggerDefinitionId: v.id("trigger_definitions"),
-        parameterValues: v.record(v.string(), ParameterValue), // keys are parameterKeys, values must match parameter types
+        parameterValues: v.record(v.string(), ParameterValue),
         title: v.string(),
         comment: v.optional(v.string()),
         connectionId: v.optional(v.id("connections"))
@@ -167,11 +172,13 @@ export default defineSchema({
 
     action_steps: defineTable({
         actionDefinitionId: v.id("action_definitions"),
-        parameterValues: v.record(v.string(), ParameterValue), // keys are parameterKeys, values must match parameter types
+        parameterValues: v.record(v.string(), ParameterValue),
         title: v.string(),
         comment: v.optional(v.string()),
-        connectionId: v.id("connections")
-        }).index("by_action_definition", ["actionDefinitionId"])
+        connectionId: v.optional(v.id("connections")),
+        parentId: v.optional(v.id("action_steps")),
+        children: v.optional(v.record(v.string(), v.array(v.id("action_steps"))))
+    }).index("by_action_definition", ["actionDefinitionId"])
         .index("by_connection", ["connectionId"]),
 
     // Workflow Executions

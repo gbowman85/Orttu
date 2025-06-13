@@ -1,6 +1,7 @@
 import { query, mutation, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
 import { requireWorkflowAccess } from "./workflows";
+import { ActionStepRef } from "../types";
 
 
 // Create a new workflow configuration
@@ -8,9 +9,9 @@ export const createWorkflowConfig = mutation({
     args: {
         workflowId: v.id("workflows"),
         triggerStepId: v.optional(v.id("trigger_steps")),
-        actionsSteps: v.optional(v.array(v.id("action_steps")))
+        actionSteps: v.optional(v.array(ActionStepRef))
     },
-    handler: async (ctx, { workflowId, triggerStepId, actionsSteps }) => {
+    handler: async (ctx, { workflowId, triggerStepId, actionSteps }) => {
         const { workflow } = await requireWorkflowAccess(ctx, workflowId, 'editor');
 
         // Add the new workflow configuration to the database
@@ -18,7 +19,7 @@ export const createWorkflowConfig = mutation({
             workflowId: workflow._id,
             versionTitle: 'Version ' + (workflow.versions?.length || 0) + 1, 
             triggerStepId: triggerStepId || null as any,
-            actionsSteps: actionsSteps || [],
+            actionSteps: actionSteps || [],
             created: Date.now(),
             updated: Date.now()
         });
@@ -83,7 +84,7 @@ export const getWorkflowConfigInternal = internalQuery({
 });
 
 // Edit a workflow configuration
-export const editWorkflowConfig = mutation({
+export const updateWorkflowConfig = mutation({
     args: {
         workflowConfigId: v.id("workflow_configurations"),
         updates: v.object({
