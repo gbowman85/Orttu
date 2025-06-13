@@ -2,13 +2,16 @@
 
 import { useDroppable } from "@dnd-kit/react";
 
-interface ActionCardProps {
-  elementId: string
+interface ActionTargetProps {
+  index: number
 }
 
-export default function ActionCardDroppable({ elementId }: ActionCardProps) {
+export function ActionTarget({ index }: ActionTargetProps) {
   const { isDropTarget, ref } = useDroppable({
-    id: elementId,
+    id: index,
+    data: {
+      index,
+    },
   });
 
   return (

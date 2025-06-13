@@ -1,10 +1,10 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ActionCard } from "@/components/editor/ActionCardDraggable";
+import { ActionDefinitionCard } from "@/components/editor/ActionDefinitionCard";
 import { CategorySkeleton, SelectSkeleton, ActionsSkeleton } from "./LoadingStates";
 import { SelectItem } from "@/components/ui/select";
 import { api } from "@/../convex/_generated/api";
 import { useQuery } from "convex/react";
-import { useState, useEffect } from "react";
+import { CategoryActions } from "./CategoryActions";
 
 export const CategoriesOptions = () => {
     const categories = useQuery(api.data_functions.action_categories.listActionCategories);
@@ -95,18 +95,7 @@ const CategoriesAccordionContent = ({
                                 {allActions === undefined ? (
                                     <ActionsSkeleton />
                                 ) : (
-                                    categoryActions.map((action) => (
-                                        <ActionCard
-                                            key={action._id}
-                                            actionKey={action.actionKey}
-                                            title={action.title}
-                                            description={action.description}
-                                            bgColour={action.bgColour}
-                                            borderColour={action.borderColour}
-                                            textColour={action.textColour}
-                                            icon={action.icon}
-                                        />
-                                    ))
+                                    <CategoryActions categoryActions={categoryActions} />
                                 )}
                             </div>
                         </AccordionContent>
@@ -117,13 +106,13 @@ const CategoriesAccordionContent = ({
     );
 }
 
-export const CategoriesAccordion = ({
+export function CategoriesAccordion({
     searchQuery,
     selectedCategory
 }: {
     searchQuery: string,
     selectedCategory: string
-}) => {
+}) {
     return (
         <CategoriesAccordionContent
             searchQuery={searchQuery}

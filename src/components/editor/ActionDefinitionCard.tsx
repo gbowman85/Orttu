@@ -1,49 +1,35 @@
 import {useDraggable} from '@dnd-kit/react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Info } from "lucide-react";
+import { Doc } from "@/../convex/_generated/dataModel"
 
-interface ActionCardProps {
-  actionKey: string;
-  title: string;
-  description: string;
-  bgColour?: string;
-  borderColour?: string;
-  textColour?: string;
-  icon?: string;
-}
-
-export function ActionCard({
-  actionKey,
-  title,
-  description,
-  bgColour,
-  borderColour,
-  textColour,
-  icon
-}: ActionCardProps) {
+export function ActionDefinitionCard({actionDefinition}: {actionDefinition: Doc<"action_definitions">}) {
     const {ref} = useDraggable({
-        id: actionKey,
+      id: actionDefinition._id,
+      data: {
+        actionDefinition: actionDefinition
+      }
       });
     
   return (
     <div
       className="p-3 rounded-lg cursor-move relative group"
       style={{
-        backgroundColor: bgColour,
-        borderColor: borderColour,
+        backgroundColor: actionDefinition.bgColour,
+        borderColor: actionDefinition.borderColour,
         borderWidth: "1px",
-        color: textColour
+        color: actionDefinition.textColour
       }}
       ref={ref}
     >
       <div className="flex justify-between items-center">
-        <span>{title}</span>
+        <span>{actionDefinition.title}</span>
         <HoverCard>
           <HoverCardTrigger>
             <Info className="h-4 w-4 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity cursor-help" />
           </HoverCardTrigger>
           <HoverCardContent className="bg-gray-50 opacity-95 text-sm border-gray-400">
-            <p>{description}</p>
+            <p>{actionDefinition.description}</p>
           </HoverCardContent>
         </HoverCard>
       </div>

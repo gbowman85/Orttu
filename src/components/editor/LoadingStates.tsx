@@ -28,9 +28,17 @@ export function ActionsSkeleton() {
 
 export function SelectSkeleton() {
     return (
-        <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="loading" disabled>Loading categories...</SelectItem>
-        </SelectContent>
+        <SelectItem value="loading" disabled>Loading categories...</SelectItem>
     );
+}
+
+export function TriggerCardSkeleton() {
+    return (
+        <div className="w-90 h-20 mb-2 p-4 border-4 border-gray-200 rounded-3xl text-center text-muted-foreground">
+            <div className="animate-pulse flex flex-col items-center justify-center">
+                <div className="h-4 w-3/4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-3 w-1/2 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+    )
 }
