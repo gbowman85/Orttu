@@ -5,6 +5,7 @@ import { SelectItem } from "@/components/ui/select";
 import { api } from "@/../convex/_generated/api";
 import { useQuery } from "convex/react";
 import { CategoryActions } from "./CategoryActions";
+import { useState, useEffect } from "react";
 
 export const CategoriesOptions = () => {
     const categories = useQuery(api.data_functions.action_categories.listActionCategories);
@@ -29,6 +30,9 @@ const CategoriesAccordionContent = ({
     searchQuery: string,
     selectedCategory: string
 }) => {
+    // Only track manually expanded items when there's no search
+    const [manuallyExpandedItems, setManuallyExpandedItems] = useState<string[]>([]);
+
     // Load all categories and actions
     const allCategories = useQuery(api.data_functions.action_categories.listActionCategories);
     const allActions = useQuery(api.data_functions.action_definitions.listActionDefinitions);
@@ -68,8 +72,23 @@ const CategoriesAccordionContent = ({
         return true;
     });
 
+    // Get categories that should be expanded based on search
+    const searchExpandedItems = searchQuery 
+        ? filteredCategories
+            .filter(category => (actionsByCategory[category._id] ?? []).length > 0)
+            .map(category => category._id)
+        : [];
+
+    // Use search results when searching, otherwise use manual state
+    const expandedItems = searchQuery ? searchExpandedItems : manuallyExpandedItems;
+
     return (
-        <Accordion type="multiple" className="w-full">
+        <Accordion 
+            type="multiple" 
+            className="w-full"
+            value={expandedItems}
+            onValueChange={setManuallyExpandedItems}
+        >
             {filteredCategories.map(category => {
                 const categoryActions = actionsByCategory[category._id] ?? [];
 
@@ -81,6 +100,7 @@ const CategoriesAccordionContent = ({
                         style={{
                             '--border-hover-color': category.colour
                         } as React.CSSProperties}
+                        disabled={!!searchQuery}
                     >
                         <AccordionTrigger
                             className="px-4 hover:no-underline rounded [&>svg]:text-current"
@@ -91,7 +111,7 @@ const CategoriesAccordionContent = ({
                             </span>
                         </AccordionTrigger>
                         <AccordionContent>
-                            <div className="grid grid-cols-1 gap-2 p-2">
+                            <div className="grid grid-cols-1 gap-4 px-1">
                                 {allActions === undefined ? (
                                     <ActionsSkeleton />
                                 ) : (
