@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, query } from "../_generated/server";
 import { internal } from "../_generated/api";
-import { Id } from "../_generated/dataModel";
+import { Doc, Id } from "../_generated/dataModel";
 import { DataTypeSchema, ParameterSchema } from "../types";
 
 export const getActionDefinition = query({
@@ -10,6 +10,24 @@ export const getActionDefinition = query({
     },
     handler: async (ctx, args) => {
         return await ctx.db.get(args.actionDefinitionId);
+    }
+})
+
+export const getActionDefinitions = query({
+    args: {
+        actionDefinitionIds: v.array(v.id("action_definitions"))
+    },
+    handler: async (ctx, { actionDefinitionIds }) => {
+        const definitions = await Promise.all(
+            actionDefinitionIds.map(id => ctx.db.get(id))
+        )
+        const definitionsById: Record<Id<'action_definitions'>, Doc<'action_definitions'>> = {}
+        definitions.forEach((definition) => {
+            if (definition) {
+                definitionsById[definition._id] = definition
+            }
+        })
+        return definitionsById
     }
 })
 

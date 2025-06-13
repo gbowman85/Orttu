@@ -31,6 +31,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "convex": "^1.24.1",
+    "convex-helpers": "^0.1.92",
     "date-fns": "^4.1.0",
     "fuse.js": "^7.1.0",
     "lucide-react": "^0.511.0",

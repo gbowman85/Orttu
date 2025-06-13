@@ -1,6 +1,8 @@
 import { query, mutation, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
 import { requireWorkflowAccess } from "./workflows";
+import { Doc, Id } from "../_generated/dataModel";
+import { ActionStepRef } from "../types";
 
 
 // Set a trigger for a workflow configuration
@@ -34,8 +36,18 @@ export const setTrigger = mutation({
     }
 });
 
+// Get the trigger step from an ID
+export const getTriggerStepById = query({
+    args: {
+        triggerStepId: v.id("trigger_steps")
+    },
+    handler: async (ctx, { triggerStepId }) => {
+        return await ctx.db.get(triggerStepId);
+    }
+});
+
 // Get the trigger step for a workflow configuration
-export const getTrigger = query({
+export const getTriggerByWorkflowId = query({
     args: {
         workflowId: v.id("workflows")
     },
@@ -62,6 +74,7 @@ export const getTrigger = query({
     }
 });
 
+
 // Internal query to get a trigger step
 export const getTriggerStepInternal = internalQuery({
     args: {
@@ -72,49 +85,7 @@ export const getTriggerStepInternal = internalQuery({
     }
 });
 
-// Add an action step to a workflow configuration
-export const addStep = mutation({
-    args: {
-        workflowId: v.id("workflows"),
-        actionDefinitionId: v.id("action_definitions"),
-        position: v.optional(v.number())
-    },
-    handler: async (ctx, { workflowId, actionDefinitionId, position }) => {
-        const { workflow } = await requireWorkflowAccess(ctx, workflowId, 'editor');
-        
-        if (!workflow.currentConfigId) {
-            throw new Error("No active workflow configuration");
-        }
 
-        // Create the action step
-        const actionStepId = await ctx.db.insert("action_steps", {
-            actionDefinitionId,
-            parameterValues: {},
-            title: "",
-            connectionId: null as any // Will need to be set separately
-        });
-
-        // Get current configuration
-        const config = await ctx.db.get(workflow.currentConfigId);
-        if (!config) throw new Error("Configuration not found");
-
-        // Update the steps array
-        let currentSteps = config.actionsSteps || [];
-        if (typeof position === 'number' && position >= 0 && position <= currentSteps.length) {
-            currentSteps.splice(position, 0, actionStepId);
-        } else {
-            currentSteps.push(actionStepId);
-        }
-
-        // Update the workflow configuration
-        await ctx.db.patch(workflow.currentConfigId, {
-            actionsSteps: currentSteps,
-            updated: Date.now()
-        });
-
-        return actionStepId;
-    }
-});
 
 // Get an action step
 export const getActionStep = query({
@@ -125,6 +96,179 @@ export const getActionStep = query({
         return await ctx.db.get(actionStepId);
     }
 });
+
+// Add an action step to a workflow configuration
+export const addActionStep = mutation({
+    args: {
+        workflowConfigId: v.id("workflow_configurations"),
+        actionDefinitionId: v.id("action_definitions"),
+        parentId: v.optional(v.id("action_steps")),
+        parentKey: v.optional(v.string()),
+        index: v.number()
+    },
+    handler: async (ctx, { workflowConfigId, actionDefinitionId, parentId, parentKey, index }) => {
+        const workflowConfig = await ctx.db.get(workflowConfigId);
+        if (!workflowConfig) throw new Error("Configuration not found");
+
+
+        // Create the action step
+        const actionStepId = await ctx.db.insert("action_steps", {
+            actionDefinitionId,
+            parameterValues: {},
+            title: "",
+            parentId: parentId,
+        });
+        
+        let actionSteps = workflowConfig.actionSteps;
+
+        // Create the step, ready to insert into the array
+        const newStep = {
+            actionStepId,
+        }
+
+        // Update the steps array
+        if (!parentId ) {
+            // Add the step to the root level at the target index
+            actionSteps.splice(index, 0, newStep);
+            
+            // Update the workflow configuration
+            await ctx.db.patch(workflowConfigId, {
+                actionSteps: actionSteps,
+                updated: Date.now()
+            });
+        } else {
+            // Add the step to the child level
+            if (!parentKey) throw new Error("Parent key not found");
+
+            // Get the parent step
+            const parentStep = await ctx.db.get(parentId);
+            if (!parentStep) throw new Error("Parent step not found");
+
+            // Get the children of the parent step
+            const children = parentStep.children;
+            let childrenList = children?.[parentKey];
+
+            // Create the child list if it doesn't exist
+            if (!childrenList) {
+                childrenList = [];
+            }
+
+            // Add the new step to the child list at the target index
+            childrenList.splice(index, 0, actionStepId);
+
+            // Update the parent step
+            await ctx.db.patch(parentId, {
+                children: {
+                    [parentKey]: childrenList
+                }
+            });
+        }
+
+        return actionStepId;
+    }
+});
+
+// Move an action step to a new position
+export const moveActionStep = mutation({
+    args: {
+        workflowConfigId: v.id("workflow_configurations"),
+        actionStepId: v.id("action_steps"),
+        sourceIndex: v.number(),
+        targetIndex: v.number(),
+        newParentId: v.optional(v.id("action_steps")),
+        newParentKey: v.optional(v.string())
+    },
+    handler: async (ctx, { workflowConfigId, actionStepId, sourceIndex, targetIndex, newParentId, newParentKey }) => {
+        const workflowConfig = await ctx.db.get(workflowConfigId);
+        if (!workflowConfig) throw new Error("Configuration not found");
+
+        // Get the action step to move
+        const actionStep = await ctx.db.get(actionStepId);
+        if (!actionStep) throw new Error("Action step not found");
+
+        // Remove the step from its current position
+        if (!actionStep.parentId) {
+            // Remove from root level
+            const rootSteps = workflowConfig.actionSteps;
+            const index = rootSteps.findIndex(step => step.actionStepId === actionStepId);
+            if (index === -1) throw new Error("Action step not found in root level");
+            rootSteps.splice(index, 1);
+            await ctx.db.patch(workflowConfigId, {
+                actionSteps: rootSteps,
+                updated: Date.now()
+            });
+        } else {
+            // Remove from parent's children
+            const parentStep = await ctx.db.get(actionStep.parentId);
+            if (!parentStep) throw new Error("Parent step not found");
+            
+            // Find which key contains this step
+            let parentKey = '';
+            for (const [key, children] of Object.entries(parentStep.children || {})) {
+                if (children.includes(actionStepId)) {
+                    parentKey = key;
+                    break;
+                }
+            }
+            if (!parentKey) throw new Error("Action step not found in parent's children");
+
+            // Remove from parent's children
+            const children = [...(parentStep.children?.[parentKey] || [])];
+            const index = children.indexOf(actionStepId);
+            children.splice(index, 1);
+            
+            await ctx.db.patch(actionStep.parentId, {
+                children: {
+                    ...parentStep.children,
+                    [parentKey]: children
+                }
+            });
+        }
+
+        // Add the step to its new position
+        if (!newParentId) {
+            // Add to root level
+            const rootSteps = workflowConfig.actionSteps;
+            const newStep = { actionStepId };
+
+            // Insert at the target index
+            rootSteps.splice(targetIndex, 0, newStep);
+
+            await ctx.db.patch(workflowConfigId, {
+                actionSteps: rootSteps,
+                updated: Date.now()
+            });
+        } else {
+            // Add to parent's children
+            if (!newParentKey) throw new Error("Parent key not found");
+
+            const parentStep = await ctx.db.get(newParentId);
+            if (!parentStep) throw new Error("New parent step not found");
+
+            // Get the children of the parent step
+            const children = parentStep.children?.[newParentKey] || [];
+
+            // Insert at the target index
+            children.splice(targetIndex, 0, actionStepId);
+
+            // Update the parent step
+            await ctx.db.patch(newParentId, {
+                children: {
+                    ...parentStep.children,
+                    [newParentKey]: children
+                }
+            });
+        }
+
+        // Update the action step's parent reference
+        await ctx.db.patch(actionStepId, {
+            parentId: newParentId
+        });
+
+        return actionStepId;
+    }
+});
+
 
 // Internal query to get an action step
 export const getActionStepInternal = internalQuery({
@@ -244,3 +388,35 @@ export const editStepParameters = mutation({
         return stepId;
     }
 });
+
+// Get multiple action steps by their IDs
+export const getActionStepsByIds = query({
+    args: {
+        actionStepIds: v.array(v.id("action_steps"))
+    },
+    handler: async (ctx, { actionStepIds }) => {
+        const steps = await Promise.all(
+            actionStepIds.map(id => ctx.db.get(id))
+        );
+        return steps.filter((step): step is Doc<"action_steps"> => step !== null);
+    }
+});
+
+// Get multiple action steps array of action steps
+export const getActionSteps = query({
+    args: {
+        actionStepRefs: v.array(ActionStepRef)
+    },
+    handler: async (ctx, { actionStepRefs }) => {
+        const steps = await Promise.all(
+            actionStepRefs.map(actionStepRef => ctx.db.get(actionStepRef.actionStepId))
+        );
+
+        return steps.reduce((acc, step) => {
+            if (step) {
+                acc[step._id] = step
+            }
+            return acc
+        }, {} as Record<Id<'action_steps'>, Doc<'action_steps'>>)
+    }
+}); 

@@ -1,12 +1,12 @@
 import { query, mutation, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
 import { MutationCtx, QueryCtx } from "../_generated/server";
-import { Id } from "../_generated/dataModel";
+import { Doc, Id } from "../_generated/dataModel";
 import { requireAuthenticated } from "./users";
 
 // Helper function to determine user's role in a workflow
 type WorkflowRole = "owner" | "editor" | "viewer" | "none";
-function getUserRole(workflow: any, userId: string): WorkflowRole {
+function getUserRole(workflow: Doc<"workflows">, userId: Id<"users"> ): WorkflowRole {
     if (workflow.ownerId === userId) return "owner";
     if (workflow.editorIds.includes(userId)) return "editor";
     if (workflow.viewerIds.includes(userId)) return "viewer";
@@ -54,15 +54,21 @@ export const createWorkflow = mutation({
             created: Date.now(),
             updated: Date.now(),
             enabled: false,
-            deleted: false
+            deleted: false,
+            currentConfigId: undefined
         });
 
         // Create the workflow configuration
         const workflowConfigId = await ctx.db.insert("workflow_configurations", {
             workflowId,
-            actionsSteps: [],
+            actionSteps: [],
             created: Date.now(),
             updated: Date.now()
+        });
+
+        // Update the workflow with the new configuration
+        await ctx.db.patch(workflowId, {
+            currentConfigId: workflowConfigId
         });
 
         if (triggerKey) {
@@ -79,11 +85,20 @@ export const createWorkflow = mutation({
                 parameterValues: {},
                 title: triggerDefinition.title
             });
+            if (!triggerStepId) {
+                throw new Error("Failed to create trigger step");
+            }
 
             // Update the workflow configuration
             await ctx.db.patch(workflowConfigId, {
                 triggerStepId: triggerStepId
             });
+            
+            const updatedWorkflowConfig = await ctx.db.get(workflowConfigId);
+            if (!updatedWorkflowConfig?.triggerStepId) {
+                throw new Error("Failed to update workflow configuration with trigger step");
+            }
+            return workflowId;
         }
 
         return workflowId;
@@ -118,9 +133,12 @@ export const listWorkflows = query({
     args: {},
     handler: async (ctx) => {
         const userId = await requireAuthenticated(ctx);
-        return await ctx.db.query("workflows")
+
+        const workflows = await ctx.db.query("workflows")
             .filter((q) => q.eq(q.field("ownerId"), userId))
             .collect();
+
+        return workflows;
     },
 });
 
