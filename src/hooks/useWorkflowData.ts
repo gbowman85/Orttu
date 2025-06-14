@@ -1,3 +1,5 @@
+'use client'
+
 import { useQuery } from "convex-helpers/react/cache/hooks"
 import { useParams } from "next/navigation"
 import { api } from "@/../convex/_generated/api"
@@ -5,10 +7,9 @@ import { Doc, Id } from "@/../convex/_generated/dataModel"
 import { useMemo, useRef } from "react"
 
 export function useWorkflowData() {
-  const workflowId = useParams().workflowId
-
+  const { workflowId } = useParams() as { workflowId: Id<"workflows"> }
   const workflow = useQuery(api.data_functions.workflows.getWorkflow, {
-    workflowId: workflowId as Id<"workflows">
+    workflowId: workflowId
   })
 
   const workflowConfig = useQuery(
