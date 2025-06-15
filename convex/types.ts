@@ -39,9 +39,25 @@ export const DataTypeSchema = v.union(
 // Type definition for data types
 export type DataType = 'string' | 'number' | 'boolean' | 'date' | 'datetime' | 'array' | 'object' | 'file' | 'image' | 'any'
 
+export const InputType = v.union(
+  v.literal("text"),
+  v.literal("textarea"),
+  v.literal("select"),
+  v.literal("checkbox"),
+  v.literal("radio"),
+  v.literal("date"),
+  v.literal("datetime"),
+  v.literal("number"),
+  v.literal("switch"),
+  v.literal("file"),
+  v.literal("image")
+)
+
+// Type definition for input types
+export type InputType = 'text' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'date' | 'datetime' | 'number' | 'switch' | 'file' | 'image'
 
 // Convex schema for parameter values
-export const ParameterValue = v.union(
+export const ParameterValueSchema = v.union(
   v.string(),
   v.number(),
   v.boolean(),
@@ -58,7 +74,8 @@ export const ParameterSchema = v.object({
   parameterKey: v.string(),
   title: v.string(),
   description: v.string(),
-  type: DataTypeSchema,
+  dataType: DataTypeSchema,
+  inputType: v.optional(InputType),
   required: v.boolean(),
   default: v.optional(v.string()),
   validation: v.optional(v.object({
@@ -76,7 +93,8 @@ export type Parameter = {
   parameterKey: string
   title: string
   description: string
-  type: DataType
+  dataType: DataType
+  inputType?: InputType
   required: boolean
   default?: string
   validation?: {
@@ -88,6 +106,22 @@ export type Parameter = {
     allowedValues?: string[]
   }
 } 
+
+// Convex schema for outputs
+export const OutputSchema = v.object({
+    outputKey: v.string(),
+    outputDataType: DataTypeSchema,
+    outputTitle: v.string(),
+    outputDescription: v.string()
+})
+
+// Type definition for outputs
+export type Output = {
+  outputKey: string
+  outputDataType: DataType
+  outputTitle: string
+  outputDescription: string
+}
 
 // Convex schema for action steps
 export const ActionStepRef = v.object({

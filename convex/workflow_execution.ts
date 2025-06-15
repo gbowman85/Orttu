@@ -50,7 +50,7 @@ export const executeWorkflow = convexWorkflow.define({
     if (args.triggerData) {
       await step.runMutation(internal.data_functions.workflow_runs.setRunDataInternal, {
         workflowRunId,
-        type: "variable",
+       source: "variable",
         key: "triggerData",
         value: args.triggerData
       });
@@ -169,7 +169,7 @@ export const executeAction = internalAction({
       workflowRunId: args.workflowRunId,
       stepId: args.stepId,
       value: result,
-      type: "output"
+      source: "output"
     });
 
     if (result.error) {

@@ -16,7 +16,7 @@ export const setVariable: ActionRegistryEntry['actionFunction'] = internalAction
             workflowRunId: args.workflowRunId,
             key: args.key,
             value: args.value,
-            type: "variable"
+            source: "variable"
         });
         if (!result) {
             throw new Error("Failed to set variable");
@@ -36,24 +36,26 @@ export const setVariableDefinition: ActionRegistryEntry['actionDefinition'] = {
     parameters: [
         {
             parameterKey: "key",
-            title: "Variable Name",
+            title: "Name",
             description: "The name of the variable. You can use this name to retrieve the variable later in the workflow.",
-            type: "string" as const,
+            dataType: "string" as const,
+            inputType: "text" as const,
             required: true
         },
         {
             parameterKey: "value",
-            title: "Variable Value",
-            description: "The value to store",
-            type: "any" as const,
+            title: "Value",
+            description: "The value to store in the variable.",
+            dataType: "any" as const,
+            inputType: "textarea" as const,
             required: true
         }
     ],
     outputs: [
         {
             outputKey: "variableKey",
-            outputType: "string" as const,
-            outputTitle: "Variable Name",
+            outputDataType: "string" as const,
+            outputTitle: "Variable Name" as const,
             outputDescription: "The name of the variable that was set",
         }
     ]
@@ -88,15 +90,15 @@ export const getVariableDefinition: ActionRegistryEntry['actionDefinition'] = {
             parameterKey: "variableKey",
             title: "Variable Name",
             description: "The name of the variable to retrieve",
-            type: "string" as const,
+            dataType: "string" as const,
             required: true
         }
     ],
     outputs: [
         {
             outputKey: "value",
-            outputType: "any" as const,
-            outputTitle: "Value",
+            outputDataType: "any" as const,
+            outputTitle: "Value" as const,
             outputDescription: "The value of the variable",
         }
     ]

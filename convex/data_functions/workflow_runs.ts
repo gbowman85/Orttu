@@ -79,13 +79,13 @@ export const setRunDataInternal = internalMutation({
     args: {
         workflowRunId: v.id("workflow_runs"),
         stepId: v.optional(v.id("action_steps")),
-        type: v.union(v.literal("variable"), v.literal("output")),
+        source: v.union(v.literal("variable"), v.literal("output")),
         key: v.optional(v.string()),
         value: v.any(),
     },
     handler: async (ctx, args) => {
-        // Validate that key is required when type is "variable"
-        if (args.type === "variable" && !args.key) {
+        // Validate that key is required when source is "variable"
+        if (args.source === "variable" && !args.key) {
             throw new Error("Key is required when type is 'variable'");
         }
 
@@ -102,7 +102,7 @@ export const setRunDataInternal = internalMutation({
         const result = await ctx.db.insert("run_data", {
             workflowRunId: args.workflowRunId,
             stepId: args.stepId,
-            type: args.type,
+            source: args.source,
             key: args.key,
             value: args.value,
             iterationCount: iterationCount,

@@ -57,7 +57,7 @@ export const createTriggerDefinitionInternal = internalMutation({
         parameters: v.array(ParameterSchema),
         outputs: v.array(v.object({
             outputKey: v.string(),
-            outputType: DataTypeSchema,
+            outputDataType: DataTypeSchema,
             outputTitle: v.string(),
             outputDescription: v.string()
         })),
@@ -110,10 +110,11 @@ export const updateTriggerDefinitionInternal = internalMutation({
         description: v.string(),
         categoryKey: v.string(),
         triggerKey: v.string(),
+        triggerType: v.string(),
         parameters: v.array(ParameterSchema),
         outputs: v.array(v.object({
             outputKey: v.string(),
-            outputType: DataTypeSchema,
+            outputDataType: DataTypeSchema,
             outputTitle: v.string(),
             outputDescription: v.string()
         })),

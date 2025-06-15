@@ -47,7 +47,7 @@ export type TriggerRegistryEntry = {
         parameters: Parameter[],
         outputs: {
             outputKey: string,
-            outputType: DataType,
+            outputDataType: DataType,
             outputTitle: string,
             outputDescription: string,
         }[]

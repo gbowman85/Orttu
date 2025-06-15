@@ -1,9 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import { DataTypeSchema, ParameterSchema, ParameterValue, WorkflowStatus, StepStatus, ActionStepRef } from './types'
-
-
+import { DataTypeSchema, ParameterSchema, WorkflowStatus, StepStatus, ActionStepRef, OutputSchema, ParameterValueSchema } from './types'
 
 const basePreferencesObject = v.object({
   sortBy: v.string(),
@@ -52,12 +50,7 @@ export default defineSchema({
         title: v.string(),
         description: v.string(),
         parameters: v.array(ParameterSchema),
-        outputs: v.array(v.object({
-            outputKey: v.string(),
-            outputType: DataTypeSchema,
-            outputTitle: v.string(),
-            outputDescription: v.string()
-        })),
+        outputs: v.array(OutputSchema),
         bgColour: v.optional(v.string()),
         borderColour: v.optional(v.string()),
         textColour: v.optional(v.string()),
@@ -73,12 +66,7 @@ export default defineSchema({
         title: v.string(),
         description: v.string(),
         parameters: v.array(ParameterSchema),
-        outputs: v.array(v.object({
-            outputKey: v.string(),
-            outputType: DataTypeSchema,
-            outputTitle: v.string(),
-            outputDescription: v.string()
-        })),
+        outputs: v.array(OutputSchema),
         childListKeys: v.optional(v.array(v.object({
             key: v.string(),
             title: v.string(),
@@ -163,7 +151,7 @@ export default defineSchema({
 
     trigger_steps: defineTable({
         triggerDefinitionId: v.id("trigger_definitions"),
-        parameterValues: v.record(v.string(), ParameterValue),
+        parameterValues: v.record(v.string(), ParameterValueSchema),
         title: v.string(),
         comment: v.optional(v.string()),
         connectionId: v.optional(v.id("connections"))
@@ -172,7 +160,7 @@ export default defineSchema({
 
     action_steps: defineTable({
         actionDefinitionId: v.id("action_definitions"),
-        parameterValues: v.record(v.string(), ParameterValue),
+        parameterValues: v.record(v.string(), ParameterValueSchema),
         title: v.string(),
         comment: v.optional(v.string()),
         connectionId: v.optional(v.id("connections")),
@@ -199,7 +187,7 @@ export default defineSchema({
     run_data: defineTable({
         workflowRunId: v.id("workflow_runs"),
         stepId: v.optional(v.id("action_steps")),
-        type: v.union(v.literal("variable"), v.literal("output")),
+        source: v.union(v.literal("variable"), v.literal("output")),
         key: v.optional(v.string()),
         value: v.optional(v.any()),
         iterationCount: v.number()

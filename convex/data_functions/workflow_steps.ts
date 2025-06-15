@@ -2,7 +2,7 @@ import { query, mutation, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
 import { requireWorkflowAccess } from "./workflows";
 import { Doc, Id } from "../_generated/dataModel";
-import { ActionStepRef } from "../types";
+import { ActionStepRef, ParameterValueSchema } from "../types";
 
 
 // Set a trigger for a workflow configuration
@@ -363,15 +363,28 @@ export const editStepConnection = mutation({
     }
 });
 
-// Edit a step's parameters
-export const editStepParameters = mutation({
+// Get step parameters
+export const getStepParameterValues = query({
     args: {
-        workflowId: v.id("workflows"),
-        stepId: v.union(v.id("trigger_steps"), v.id("action_steps")),
-        parameterValues: v.record(v.string(), v.union(v.string(), v.number(), v.boolean(), v.array(v.string()), v.object({})))
+        stepId: v.union(v.id("trigger_steps"), v.id("action_steps"))
     },
-    handler: async (ctx, { workflowId, stepId, parameterValues }) => {
-        const { workflow } = await requireWorkflowAccess(ctx, workflowId, 'editor');
+    handler: async (ctx, { stepId }) => {
+        const step = await ctx.db.get(stepId);
+        if (!step) throw new Error("Step not found");
+        return step.parameterValues;
+    }
+});
+
+// Edit a step's parameters
+export const editStepParameterValues = mutation({
+    args: {
+        workflowConfigId: v.id("workflow_configurations"),
+        stepId: v.union(v.id("trigger_steps"), v.id("action_steps")),
+        parameterValues: v.record(v.string(), ParameterValueSchema)
+    },
+    handler: async (ctx, { workflowConfigId, stepId, parameterValues }) => {
+        const workflowConfig = await ctx.db.get(workflowConfigId);
+        if (!workflowConfig) throw new Error("Workflow configuration not found");
         
         // Try to update the step (will work for either trigger or action step)
         await ctx.db.patch(stepId, {
@@ -379,8 +392,8 @@ export const editStepParameters = mutation({
         });
 
         // Update the workflow configuration's updated timestamp
-        if (workflow.currentConfigId) {
-            await ctx.db.patch(workflow.currentConfigId, {
+        if (workflowConfig.workflowId) {
+            await ctx.db.patch(workflowConfig.workflowId, {
                 updated: Date.now()
             });
         }

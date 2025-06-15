@@ -62,21 +62,21 @@ export const conditionalDefinition: ActionRegistryEntry['actionDefinition'] = {
             parameterKey: "leftOperand",
             title: "Left Operand",
             description: "The left side of the condition",
-            type: "any" as const,
+            dataType: "any" as const,
             required: true
         },
         {
             parameterKey: "rightOperand",
             title: "Right Operand",
             description: "The right side of the condition",
-            type: "any" as const,
+            dataType: "any" as const,
             required: true
         },
         {
             parameterKey: "operator",
             title: "Operator",
             description: "The comparison operator",
-            type: "string" as const,
+            dataType: "string" as const,
             required: true,
             validation: {
                 allowedValues: ["equals", "notEquals", "greaterThan", "lessThan", "greaterThanOrEqual", "lessThanOrEqual"]
@@ -86,21 +86,21 @@ export const conditionalDefinition: ActionRegistryEntry['actionDefinition'] = {
             parameterKey: "trueActionStepIds",
             title: "True Action Steps",
             description: "The action steps to execute if the condition is true",
-            type: "array" as const,
+            dataType: "array" as const,
             required: true
         },
         {
             parameterKey: "falseActionStepIds",
             title: "False Action Steps",
             description: "The action steps to execute if the condition is false",
-            type: "array" as const,
+            dataType: "array" as const,
             required: true
         }
     ],
     outputs: [
         {
             outputKey: "actionStepIds",
-            outputType: "array" as const,
+            outputDataType: "array" as const,
             outputTitle: "Action Step IDs",
             outputDescription: "The action step ids that were executed",
         }
@@ -182,7 +182,7 @@ export const loopDefinition: ActionRegistryEntry['actionDefinition'] = {
             parameterKey: "loopType",
             title: "Loop Type",
             description: "The type of loop to execute",
-            type: "string" as const,
+            dataType: "string" as const,
             required: true,
             validation: {
                 allowedValues: ["for", "while", "until", "number"]
@@ -192,21 +192,21 @@ export const loopDefinition: ActionRegistryEntry['actionDefinition'] = {
             parameterKey: "loopData",
             title: "Loop Data",
             description: "The data to use for the loop",
-            type: "any" as const,
+            dataType: "any" as const,
             required: true
         },
         {
             parameterKey: "actionStepIds",
             title: "Action Steps",
             description: "The action steps to execute in the loop",
-            type: "array" as const,
+            dataType: "array" as const,
             required: true
         }
     ],
     outputs: [
         {
             outputKey: "output",
-            outputType: "array" as const,
+            outputDataType: "array" as const,
             outputTitle: "Output",
             outputDescription: "The output of the loop",
         }

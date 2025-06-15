@@ -58,7 +58,7 @@ export const createActionDefinitionInternal = internalMutation({
         parameters: v.array(ParameterSchema),
         outputs: v.array(v.object({
             outputKey: v.string(),
-            outputType: DataTypeSchema,
+            outputDataType: DataTypeSchema,
             outputTitle: v.string(),
             outputDescription: v.string()
         })),
@@ -117,7 +117,7 @@ export const updateActionDefinitionInternal = internalMutation({
         parameters: v.array(ParameterSchema),
         outputs: v.array(v.object({
             outputKey: v.string(),
-            outputType: DataTypeSchema,
+            outputDataType: DataTypeSchema,
             outputTitle: v.string(),
             outputDescription: v.string()
         })),

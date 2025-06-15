@@ -79,7 +79,7 @@ export type ActionRegistryEntry = {
         parameters: Parameter[],
         outputs: {
             outputKey: string,
-            outputType: DataType,
+            outputDataType: DataType,
             outputTitle: string,
             outputDescription: string,
         }[]
