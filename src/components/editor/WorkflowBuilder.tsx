@@ -13,12 +13,22 @@ export default function WorkflowBuilder() {
         triggerDefinition,
         actionStepRefs,
         actionSteps,
-        actionDefinitions
+        actionDefinitions,
+        setSelectedStepId,
+        selectedStepId
     } = useWorkflowEditor()
 
     return (
-        <div className="relative flex flex-row">
-            <div className="flex-1 flex flex-col items-left justify-top min-h-0 mt-4">
+        <div className="relative flex flex-row flex-1">
+            <div 
+                id="workflow-builder"
+                className="flex flex-col flex-1 items-left justify-top min-h-0 mt-4"
+                onClick={(e) => {
+                    if (selectedStepId && (e.target === e.currentTarget || (e.target as HTMLElement).parentElement === e.currentTarget)) {
+                        setSelectedStepId(null)
+                    }
+                }}
+            >
                 <TriggerCard 
                     triggerStep={triggerStep} 
                     triggerDefinition={triggerDefinition} 
@@ -42,7 +52,9 @@ export default function WorkflowBuilder() {
                     )}
                 </div>
             </div>
-            <PropertiesPanel />
+            <div id="properties-panel" className="absolute top-0 right-0">
+                <PropertiesPanel />
+            </div>
         </div>
     )
 } 

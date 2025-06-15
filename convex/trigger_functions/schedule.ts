@@ -64,6 +64,10 @@ export const scheduleTriggerDefinition: TriggerRegistryEntry['triggerDefinition'
             title: "Units",
             description: "The unit of the interval",
             dataType: "string" as const,
+            inputType: "select" as const,
+            validation: {
+                allowedValues: ["hours", "days", "weeks", "months", "years"]
+            },
             required: false,
         },
     ],

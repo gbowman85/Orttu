@@ -6,8 +6,9 @@ import { ActionStepRefType } from '@/../convex/types'
 
 interface WorkflowEditorContextType {
   // Selection state
-  selectedStepId: Id<'action_steps'> | null
-  setSelectedStepId: (id: Id<'action_steps'> | null) => void
+  selectedStepId: Id<'trigger_steps'> | Id<'action_steps'> | null
+  setSelectedStepId: (id: Id<'trigger_steps'> | Id<'action_steps'> | null) => void
+  selectTriggerStep: () => void
   
   // Workflow data
   triggerStep: Doc<'trigger_steps'> | undefined
@@ -40,12 +41,19 @@ export function WorkflowEditorProvider({
   actionSteps,
   actionDefinitions
 }: WorkflowEditorProviderProps) {
-  const [selectedStepId, setSelectedStepId] = useState<Id<'action_steps'> | null>(null)
+  const [selectedStepId, setSelectedStepId] = useState<Id<'trigger_steps'> | Id<'action_steps'> | null>(null)
   const [actionStepProperties, setActionStepProperties] = useState<Record<string, any>>({})
+
+  const selectTriggerStep = () => {
+    if (triggerStep) {
+      setSelectedStepId(triggerStep._id)
+    }
+  }
 
   const value: WorkflowEditorContextType = {
     selectedStepId,
     setSelectedStepId,
+    selectTriggerStep,
     triggerStep,
     triggerDefinition,
     actionStepRefs,
