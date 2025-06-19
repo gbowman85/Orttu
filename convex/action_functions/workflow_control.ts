@@ -66,36 +66,35 @@ export const conditionalDefinition: ActionRegistryEntry['actionDefinition'] = {
             required: true
         },
         {
-            parameterKey: "rightOperand",
-            title: "Right Operand",
-            description: "The right side of the condition",
-            dataType: "any" as const,
-            required: true
-        },
-        {
             parameterKey: "operator",
             title: "Operator",
             description: "The comparison operator",
             dataType: "string" as const,
             required: true,
             validation: {
-                allowedValues: ["equals", "notEquals", "greaterThan", "lessThan", "greaterThanOrEqual", "lessThanOrEqual"]
+                allowedValues: ["equals", "notEquals", "greaterThan", "lessThan", "greaterThanOrEqual", "lessThanOrEqual"],
+                allowedValueLabels: ["Equals", "Not Equals", "Greater Than", "Less Than", "Greater Than or Equal", "Less Than or Equal"]
             }
         },
         {
-            parameterKey: "trueActionStepIds",
-            title: "True Action Steps",
-            description: "The action steps to execute if the condition is true",
-            dataType: "array" as const,
-            required: true
-        },
-        {
-            parameterKey: "falseActionStepIds",
-            title: "False Action Steps",
-            description: "The action steps to execute if the condition is false",
-            dataType: "array" as const,
+            parameterKey: "rightOperand",
+            title: "Right Operand",
+            description: "The right side of the condition",
+            dataType: "any" as const,
             required: true
         }
+    ],
+    childListKeys: [
+        {
+            key: "trueActionStepIds",
+            title: "If True",
+            description: "The action steps to run if the condition is true",
+        },
+        {
+            key: "falseActionStepIds",
+            title: "If False",
+            description: "The action steps to run if the condition is false",
+        },
     ],
     outputs: [
         {
@@ -194,14 +193,14 @@ export const loopDefinition: ActionRegistryEntry['actionDefinition'] = {
             description: "The data to use for the loop",
             dataType: "any" as const,
             required: true
-        },
-        {
-            parameterKey: "actionStepIds",
-            title: "Action Steps",
-            description: "The action steps to execute in the loop",
-            dataType: "array" as const,
-            required: true
         }
+    ],
+    childListKeys: [
+        {
+            key: "actionStepIds",
+            title: "Action Steps",
+            description: "The action steps to run in the loop",
+        },
     ],
     outputs: [
         {

@@ -40,7 +40,24 @@ export const setVariableDefinition: ActionRegistryEntry['actionDefinition'] = {
             description: "The name of the variable. You can use this name to retrieve the variable later in the workflow.",
             dataType: "string" as const,
             inputType: "text" as const,
-            required: true
+            required: true,
+            validation: {
+                pattern: "^[a-zA-Z0-9_ -]+$",
+                minLength: 3,
+                maxLength: 30,
+            }
+        },
+        {
+            parameterKey: "dataType",
+            title: "Type of data",
+            description: "The data type of the variable.",
+            dataType: "string" as const,
+            inputType: "select" as const,
+            required: true,
+            validation: {
+                allowedValues: ["string", "number", "boolean", "date", "datetime", "array", "object"],
+                allowedValueLabels: ["Text", "Number", "True/False", "Date", "Datetime", "Array", "Object"]
+            }
         },
         {
             parameterKey: "value",

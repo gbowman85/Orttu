@@ -77,14 +77,32 @@ export const ParameterSchema = v.object({
   dataType: DataTypeSchema,
   inputType: v.optional(InputType),
   required: v.boolean(),
-  default: v.optional(v.string()),
+  showIf: v.optional(v.object({
+    parameterKey: v.string(),
+    operator: v.union(
+      v.literal("equals"),
+      v.literal("notEquals"),
+      v.literal("greaterThan"),
+      v.literal("lessThan"),
+      v.literal("contains"),
+      v.literal("notContains")
+    ),
+    value: v.union(
+      v.string(),
+      v.number(),
+      v.boolean(),
+      v.array(v.string())
+    )
+  })),
+  default: v.optional(v.any()),
   validation: v.optional(v.object({
     min: v.optional(v.number()),
     max: v.optional(v.number()),
     minLength: v.optional(v.number()),
     maxLength: v.optional(v.number()),
     pattern: v.optional(v.string()),
-    allowedValues: v.optional(v.array(v.string()))
+    allowedValues: v.optional(v.array(v.string())),
+    allowedValueLabels: v.optional(v.array(v.string()))
   }))
 })
 
@@ -96,7 +114,12 @@ export type Parameter = {
   dataType: DataType
   inputType?: InputType
   required: boolean
-  default?: string
+  showIf?: {
+    parameterKey: string
+    operator: 'equals' | 'notEquals' | 'greaterThan' | 'lessThan' | 'contains' | 'notContains'
+    value: string | number | boolean | string[]
+  }
+  default?: any
   validation?: {
     min?: number
     max?: number
@@ -104,6 +127,7 @@ export type Parameter = {
     maxLength?: number
     pattern?: string
     allowedValues?: string[]
+    allowedValueLabels?: string[]
   }
 } 
 

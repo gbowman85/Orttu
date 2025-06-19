@@ -15,9 +15,42 @@ interface ParameterInputProps {
     value: any
     onChange: (value: any) => void
     error?: string
+    otherValues?: Record<string, any>
 }
 
-export function ParameterInput({ parameter, value, onChange, error }: ParameterInputProps) {
+export function ParameterInput({ parameter, value, onChange, error, otherValues = {} }: ParameterInputProps) {
+    const shouldHide = () => {
+        if (!parameter.showIf || !otherValues) return false
+
+        const { parameterKey, operator, value: conditionValue } = parameter.showIf
+        const compareValue = otherValues[parameterKey]
+
+        // If the condition is met, show the parameter
+        const shouldShow = (() => {
+            switch (operator) {
+                case 'equals':
+                    return compareValue === conditionValue
+                case 'notEquals':
+                    return compareValue !== conditionValue
+                case 'greaterThan':
+                    return compareValue > conditionValue
+                case 'lessThan':
+                    return compareValue < conditionValue
+                case 'contains':
+                    return Array.isArray(compareValue) && compareValue.includes(conditionValue)
+                case 'notContains':
+                    return Array.isArray(compareValue) && !compareValue.includes(conditionValue)
+                default:
+                    return false
+            }
+        })()
+
+        // Hide if the condition is not met
+        return !shouldShow
+    }
+
+    if (shouldHide()) return null
+
     const renderInput = () => {
         // Use inputType if specified
         if (parameter.inputType) {
@@ -49,9 +82,9 @@ export function ParameterInput({ parameter, value, onChange, error }: ParameterI
                                 <SelectValue placeholder="Select a value" />
                             </SelectTrigger>
                             <SelectContent>
-                                {parameter.validation?.allowedValues?.map((option) => (
+                                {parameter.validation?.allowedValues?.map((option, index) => (
                                     <SelectItem key={option} value={option}>
-                                        {option}
+                                        {parameter.validation?.allowedValueLabels?.[index] ?? option}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -69,16 +102,18 @@ export function ParameterInput({ parameter, value, onChange, error }: ParameterI
                     return (
                         <DatePicker
                             value={value}
-                            onChange={(date) => onChange(date?.toISOString())}
+                            onChange={(date) => onChange(date?.getTime())}
                             placeholder={`Select ${parameter.inputType}`}
                         />
                     )
                 case 'datetime':
+                    console.log('datetime value', value)
                     return (
                         <DatePicker
                             value={value}
-                            onChange={(date) => onChange(date?.toISOString())}
+                            onChange={(date) => onChange(date?.getTime())}
                             placeholder={`Select ${parameter.inputType}`}
+                            showTime={true}
                         />
                     )
                 case 'number':
@@ -116,9 +151,9 @@ export function ParameterInput({ parameter, value, onChange, error }: ParameterI
                             <SelectValue placeholder="Select a value" />
                         </SelectTrigger>
                         <SelectContent>
-                            {parameter.validation.allowedValues.map((option) => (
+                            {parameter.validation.allowedValues.map((option, index) => (
                                 <SelectItem key={option} value={option}>
-                                    {option}
+                                    {parameter.validation?.allowedValueLabels?.[index] ?? option}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -153,12 +188,18 @@ export function ParameterInput({ parameter, value, onChange, error }: ParameterI
                 )
 
             case 'date':
+                return (
+                    <DatePicker
+                        value={value}
+                        onChange={(date) => onChange(date?.getTime())}
+                    />
+                )
             case 'datetime':
                 return (
                     <DatePicker
                         value={value}
-                        onChange={(date) => onChange(date?.toISOString())}
-                        placeholder={`Select ${parameter.dataType}`}
+                        onChange={(date) => onChange(date?.getTime())}
+                        showTime={true}
                     />
                 )
 

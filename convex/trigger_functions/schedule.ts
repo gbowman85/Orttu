@@ -43,21 +43,31 @@ export const scheduleTriggerDefinition: TriggerRegistryEntry['triggerDefinition'
             title: "Start at",
             description: "The date and time the workflow starts",
             dataType: "datetime" as const,
-            required: false,
+            required: true,
         },
         {
             parameterKey: "repeat",
             title: "Repeat",
             description: "Whether the workflow should repeat",
             dataType: "boolean" as const,
-            required: false,
+            required: true,
+            default: false,
         },
         {
             parameterKey: "interval",
             title: "Every",
             description: "The interval at which the workflow runs",
             dataType: "number" as const,
-            required: false,
+            required: true,
+            validation: {
+                min: 1,
+                max: 1000,
+            },
+            showIf: {
+                parameterKey: "repeat",
+                operator: "equals",
+                value: true,
+            },
         },
         {
             parameterKey: "intervalUnit",
@@ -68,7 +78,12 @@ export const scheduleTriggerDefinition: TriggerRegistryEntry['triggerDefinition'
             validation: {
                 allowedValues: ["hours", "days", "weeks", "months", "years"]
             },
-            required: false,
+            required: true,
+            showIf: {
+                parameterKey: "repeat",
+                operator: "equals",
+                value: true,
+            },
         },
     ],
     outputs: [
