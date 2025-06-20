@@ -21,35 +21,40 @@ export default function WorkflowBuilder() {
     return (
         <div className="relative flex flex-row flex-1">
             <div 
-                id="workflow-builder"
-                className="flex flex-col flex-1 items-left justify-top min-h-0 mt-4"
+                id="workflow-builder-container"
+                className="w-full "
                 onClick={(e) => {
                     if (selectedStepId && (e.target === e.currentTarget || (e.target as HTMLElement).parentElement === e.currentTarget)) {
                         setSelectedStepId(null)
                     }
-                }}
-            >
-                <TriggerCard 
-                    triggerStep={triggerStep} 
-                    triggerDefinition={triggerDefinition} 
-                />
-                
-                <div id="actions-container" className="flex flex-col items-left justify-top min-h-0 mt-2 gap-2">
-                    {actionStepRefs?.map((step, index) => {
-                        const actionStep = actionSteps[step.actionStepId]
-                        if (!actionStep) return null
-                        return (
-                            <ActionStepCard
-                                key={step.actionStepId}
-                                actionStep={actionStep}
-                                actionDefinition={actionDefinitions[actionStep.actionDefinitionId] ?? {}}
-                                index={index}
-                            />
-                        )
-                    })}
-                    {actionStepRefs !== undefined && actionStepRefs.length === 0 && (
-                        <ActionTarget index={-1} />
-                    )}
+                }}>
+                <div
+                    id="workflow-builder"
+                    className="flex flex-col w-fit items-center justify-top min-h-0 mt-4"
+
+                >
+                    <TriggerCard
+                        triggerStep={triggerStep}
+                        triggerDefinition={triggerDefinition}
+                    />
+
+                    <div id="actions-container" className="flex flex-col items-center justify-top min-h-0 mt-2 gap-2">
+                        {actionStepRefs?.map((step, index) => {
+                            const actionStep = actionSteps[step.actionStepId]
+                            if (!actionStep) return null
+                            return (
+                                <ActionStepCard
+                                    key={step.actionStepId}
+                                    actionStep={actionStep}
+                                    actionDefinition={actionDefinitions[actionStep.actionDefinitionId] ?? {}}
+                                    index={index}
+                                />
+                            )
+                        })}
+                        {actionStepRefs !== undefined && actionStepRefs.length === 0 && (
+                            <ActionTarget index={-1} />
+                        )}
+                    </div>
                 </div>
             </div>
             <div id="properties-panel" className="absolute top-0 right-0">

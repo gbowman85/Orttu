@@ -25,7 +25,7 @@ export default function PropertiesPanel() {
   )
 
   return (
-    <div className="w-80 bg-gray-100 mt-4 ml-4 p-4 rounded-lg shadow-md">
+    <div className="w-80 bg-gray-100 mt-4 ml-4 p-4 rounded-lg shadow-md lg:opacity-100 opacity-80 hover:opacity-100 transition-opacity">
       {selectedStep && selectedDefinition && workflowConfig && selectedStepId ? (
         <>
           <div className="space-y-4">

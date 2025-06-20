@@ -432,4 +432,42 @@ export const getActionSteps = query({
             return acc
         }, {} as Record<Id<'action_steps'>, Doc<'action_steps'>>)
     }
+});
+
+// Get all action steps for a workflow configuration (including children)
+export const getAllActionStepsForConfig = query({
+    args: {
+        workflowConfigId: v.id("workflow_configurations")
+    },
+    handler: async (ctx, { workflowConfigId }) => {
+        const workflowConfig = await ctx.db.get(workflowConfigId);
+        if (!workflowConfig) throw new Error("Workflow configuration not found");
+
+        const allActionSteps: Record<Id<'action_steps'>, Doc<'action_steps'>> = {};
+        
+        // Helper function to recursively fetch action steps and their children
+        const fetchActionStepAndChildren = async (actionStepId: Id<'action_steps'>) => {
+            const actionStep = await ctx.db.get(actionStepId);
+            if (!actionStep) return;
+            
+            // Add this action step to our collection
+            allActionSteps[actionStep._id] = actionStep;
+            
+            // Recursively fetch children if they exist
+            if (actionStep.children) {
+                for (const [key, childIds] of Object.entries(actionStep.children)) {
+                    for (const childId of childIds) {
+                        await fetchActionStepAndChildren(childId);
+                    }
+                }
+            }
+        };
+        
+        // Fetch all top-level action steps and their children
+        for (const actionStepRef of workflowConfig.actionSteps) {
+            await fetchActionStepAndChildren(actionStepRef.actionStepId);
+        }
+        
+        return allActionSteps;
+    }
 }); 

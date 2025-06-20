@@ -35,28 +35,24 @@ export function useWorkflowData() {
 
     const actionStepRefs = workflowConfig?.actionSteps
 
-    // New array sorted by actionStepId to avoid refreshing the query on reorder
-    const sortedActionStepRefs = useMemo(() => {
-        return [...actionStepRefs ?? []].sort((a, b) => a.actionStepId.localeCompare(b.actionStepId))
-    }, [actionStepRefs])
-
-    const actionStepsQuery = useQuery(
-        api.data_functions.workflow_steps.getActionSteps,
-        {
-            actionStepRefs: sortedActionStepRefs
-        }
+    // Fetch all action steps (including children) for this workflow configuration
+    const allActionStepsQuery = useQuery(
+        api.data_functions.workflow_steps.getAllActionStepsForConfig,
+        workflowConfig?._id ? {
+            workflowConfigId: workflowConfig._id
+        } : 'skip'
     )
 
     // Temporary reference to actionSteps to prevent flashing during updates
     const actionStepsRef = useRef<Record<Id<'action_steps'>, Doc<'action_steps'>>>({})
     const actionSteps = useMemo(() => {
-        if (actionStepsQuery) {
-            actionStepsRef.current = actionStepsQuery
-            return actionStepsQuery
+        if (allActionStepsQuery) {
+            actionStepsRef.current = allActionStepsQuery
+            return allActionStepsQuery
         }
         // Return previous data if query is undefined (loading)
         return actionStepsRef.current
-    }, [actionStepsQuery])
+    }, [allActionStepsQuery])
 
     const actionDefinitionIds = useMemo(() => {
         return Object.values(actionSteps ?? {} as Record<Id<'action_steps'>, Doc<'action_steps'>>)
@@ -87,7 +83,7 @@ export function useWorkflowData() {
         triggerStep,
         triggerDefinition,
         actionStepRefs,
-        actionSteps,
+        actionSteps: actionSteps,
         actionDefinitions
     }
 } 

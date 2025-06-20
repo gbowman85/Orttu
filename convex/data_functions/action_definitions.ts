@@ -62,6 +62,11 @@ export const createActionDefinitionInternal = internalMutation({
             outputTitle: v.string(),
             outputDescription: v.string()
         })),
+        childListKeys: v.optional(v.array(v.object({
+            key: v.string(),
+            title: v.string(),
+            description: v.string()
+        }))),
         bgColour: v.optional(v.string()),
         borderColour: v.optional(v.string()),
         textColour: v.optional(v.string()),
@@ -121,6 +126,11 @@ export const updateActionDefinitionInternal = internalMutation({
             outputTitle: v.string(),
             outputDescription: v.string()
         })),
+        childListKeys: v.optional(v.array(v.object({
+            key: v.string(),
+            title: v.string(),
+            description: v.string()
+        }))),
         serviceKey: v.optional(v.string()),
         bgColour: v.optional(v.string()),
         borderColour: v.optional(v.string()),

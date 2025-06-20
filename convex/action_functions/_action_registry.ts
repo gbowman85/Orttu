@@ -77,6 +77,11 @@ export type ActionRegistryEntry = {
         textColour?: string,
         icon?: string,
         parameters: Parameter[],
+        childListKeys?: {
+            key: string,
+            title: string,
+            description: string,
+        }[],
         outputs: {
             outputKey: string,
             outputDataType: DataType,

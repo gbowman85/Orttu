@@ -28,7 +28,7 @@ export function TriggerCard({ triggerStep, triggerDefinition }: { triggerStep: D
   }
 
   return (
-    <div className="w-90 flex flex-col gap-2">
+    <div className="w-90 flex flex-col  justify-self-center gap-2">
       <div 
         onClick={handleClick}
         className={`border-4 rounded-3xl p-4 text-center text-muted-foreground cursor-pointer transition-all relative ${isSelected ? 'border-gray-400 shadow-lg' : ''}`}
