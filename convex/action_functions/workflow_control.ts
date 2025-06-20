@@ -103,7 +103,9 @@ export const conditionalDefinition: ActionRegistryEntry['actionDefinition'] = {
             outputTitle: "Action Step IDs",
             outputDescription: "The action step ids that were executed",
         }
-    ]
+    ],
+    bgColour: "#D5D1E8",
+    borderColour: "#4C4279"
 }
 
 export const loop = internalAction({
@@ -209,7 +211,9 @@ export const loopDefinition: ActionRegistryEntry['actionDefinition'] = {
             outputTitle: "Output",
             outputDescription: "The output of the loop",
         }
-    ]
+    ],
+    bgColour: "#F0F0F0",
+    borderColour: "#C0C0C0"
 }
 
 const executeCondition = function (condition: Condition) {

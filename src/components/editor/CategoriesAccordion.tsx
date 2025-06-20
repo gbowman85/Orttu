@@ -1,11 +1,10 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ActionDefinitionCard } from "@/components/editor/ActionDefinitionCard";
 import { CategorySkeleton, SelectSkeleton, ActionsSkeleton } from "./LoadingStates";
 import { SelectItem } from "@/components/ui/select";
 import { api } from "@/../convex/_generated/api";
 import { useQuery } from "convex/react";
 import { CategoryActions } from "./CategoryActions";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export const CategoriesOptions = () => {
     const categories = useQuery(api.data_functions.action_categories.listActionCategories);

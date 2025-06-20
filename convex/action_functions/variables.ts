@@ -75,7 +75,9 @@ export const setVariableDefinition: ActionRegistryEntry['actionDefinition'] = {
             outputTitle: "Variable Name" as const,
             outputDescription: "The name of the variable that was set",
         }
-    ]
+    ],
+    bgColour: "#FFF5E1",
+    borderColour: "#FEC14E"
 }
 
 export const getVariable: ActionRegistryEntry['actionFunction'] = internalAction({
@@ -118,5 +120,7 @@ export const getVariableDefinition: ActionRegistryEntry['actionDefinition'] = {
             outputTitle: "Value" as const,
             outputDescription: "The value of the variable",
         }
-    ]
+    ],
+    bgColour: "#FFF5E1",
+    borderColour: "#FEC14E"
 }

@@ -23,4 +23,6 @@ export const manualTriggerDefinition: TriggerRegistryEntry['triggerDefinition'] 
     description: "Manually trigger a workflow with a button",
     parameters: [],
     outputs: [],
+    bgColour: "#FFE6E3",
+    borderColour: "#C22916"
 }

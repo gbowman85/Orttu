@@ -94,4 +94,6 @@ export const scheduleTriggerDefinition: TriggerRegistryEntry['triggerDefinition'
             outputDescription: "The date and time the workflow starts",
         }
     ],
+    bgColour: "#d2ecff",
+    borderColour: "#87cbff"
 };

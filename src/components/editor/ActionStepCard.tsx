@@ -68,7 +68,7 @@ export const ActionStepCard = React.memo(function ActionStepCard({
                     <div className="text-sm text-muted-foreground">{actionStep?.title ? actionDefinition?.title : null}</div>
 
                     {/* Display child lists if this action has childListKeys */}
-                    {hasChildLists && !sortable.isDragging && actionDefinition.childListKeys && (
+                    {hasChildLists && actionDefinition.childListKeys && (
                         <div className="space-y-4">
                             {actionDefinition.childListKeys.map((childList) => {
                                 const childStepIds = actionStep.children?.[childList.key] || []
@@ -80,6 +80,7 @@ export const ActionStepCard = React.memo(function ActionStepCard({
                                         childListTitle={childList.title}
                                         childListDescription={childList.description}
                                         childStepIds={childStepIds}
+                                        textColour={actionDefinition?.textColour}
                                     />
                                 )
                             })}
