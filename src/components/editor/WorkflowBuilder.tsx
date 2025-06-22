@@ -1,11 +1,10 @@
 'use client'
 
 import { useWorkflowEditor } from '@/contexts/WorkflowEditorContext'
-import { TriggerCard } from "./TriggerCard"
+import { TriggerCard } from "@/components/editor/TriggerCard"
 import { ActionStepCard } from "@/components/editor/ActionStepCard"
 import { ActionTarget } from "@/components/editor/ActionTarget"
-import { AddActionButton } from "@/components/editor/AddActionButton"
-import PropertiesPanel from "./PropertiesPanel"
+import PropertiesPanel from "@/components/editor/PropertiesPanel"
 
 export default function WorkflowBuilder() {
     const {
@@ -52,7 +51,7 @@ export default function WorkflowBuilder() {
                             )
                         })}
                         {actionStepRefs !== undefined && actionStepRefs.length === 0 && (
-                            <ActionTarget index={-1} />
+                            <ActionTarget id="root-initial-action" index={0} />
                         )}
                     </div>
                 </div>

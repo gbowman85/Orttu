@@ -42,7 +42,7 @@ export function TriggerCard({ triggerStep, triggerDefinition }: { triggerStep: D
         <div className="text-lg font-bold">{triggerStep.title}</div>
         <div className="text-sm text-muted-foreground">{triggerStep.title ? triggerDefinition?.title : null}</div>
       </div>
-      <AddActionButton index={-1} />
+      <AddActionButton index={0} className="root-0" />
     </div>
   )
 } 

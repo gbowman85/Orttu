@@ -2,6 +2,7 @@
 
 import { Id } from "@/../convex/_generated/dataModel"
 import { useDroppable } from '@dnd-kit/react'
+import { CollisionPriority } from '@dnd-kit/abstract';
 import { ActionStepCard } from './ActionStepCard'
 import React from 'react'
 import { useWorkflowEditor } from '@/contexts/WorkflowEditorContext'
@@ -37,8 +38,9 @@ export const ActionStepChildren = React.memo(function ActionStepChildren({
             type: 'child-container',
             parentId: parentStepId,
             parentKey: childListKey,
-            index: childStepIds.length // Add new items at the end
-        }
+            index: childStepIds.length
+        },
+        collisionPriority: CollisionPriority.Highest
     })
 
     return (

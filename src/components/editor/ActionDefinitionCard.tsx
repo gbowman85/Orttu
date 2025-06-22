@@ -8,7 +8,9 @@ export function ActionDefinitionCard({ actionDefinition }: { actionDefinition: D
         id: actionDefinition._id,
         data: {
             actionDefinition: actionDefinition
-        }
+        },
+        type: 'actionDefinition',
+        feedback: 'clone'
     });
 
     return (
