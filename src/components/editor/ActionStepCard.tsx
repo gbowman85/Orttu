@@ -86,7 +86,7 @@ export const ActionStepCard = React.memo(function ActionStepCard({
                 )}
             </div>
             {/* If dragging an existing action, don't show the add action button */}
-            {!sortable.isDragging && <AddActionButton index={index + 1} parentId={parentId} parentKey={parentKey} className={sortable.isDropping ? 'opacity-0' : ''}/>}
+            {!sortable.isDragging && <AddActionButton index={index + 1} parentId={parentId} parentKey={parentKey} isDropping={sortable.isDropping}/>}
         </div>
     )
 })
