@@ -1,7 +1,7 @@
 'use client'
 import { useWorkflowData } from '@/hooks/useWorkflowData'
 import { useWorkflowActions } from '@/hooks/useWorkflowActions'
-import { WorkflowEditorLayout } from '@/components/editor/WorkflowEditorLayout'
+import { WorkflowEditor } from '@/components/editor/WorkflowEditor'
 
 export default function EditorPage() {
   const {
@@ -14,10 +14,12 @@ export default function EditorPage() {
     actionDefinitions
   } = useWorkflowData()
 
-  const { handleDragEnd } = useWorkflowActions(workflowConfig?._id)
+  const { handleDragStart, handleDragOver, handleDragEnd } = useWorkflowActions(workflowConfig?._id)
 
   return (
-    <WorkflowEditorLayout
+    <WorkflowEditor
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       triggerStep={triggerStep ?? undefined}
       triggerDefinition={triggerDefinition ?? undefined}

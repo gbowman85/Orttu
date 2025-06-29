@@ -1,12 +1,13 @@
 'use client'
 
 import { Id } from "@/../convex/_generated/dataModel"
-import { useDroppable } from '@dnd-kit/react'
 import { CollisionPriority } from '@dnd-kit/abstract';
-import { ActionStepCard } from './ActionStepCard'
 import React from 'react'
 import { useWorkflowEditor } from '@/contexts/WorkflowEditorContext'
-import { ActionTarget } from "./ActionTarget"
+import { ActionStepCard, DummyActionStepCard } from "./ActionStepCard"
+import { ActionTarget } from "@/components/editor/ActionTarget"
+import { AddActionButton } from "@/components/editor/AddActionButton"
+import { useDragState } from './DragMonitor'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { Info } from "lucide-react"
 
@@ -17,6 +18,7 @@ interface ActionStepChildrenProps {
     childListDescription: string
     childStepIds: Id<"action_steps">[]
     textColour: string | undefined
+    disableDroppable: boolean
 }
 
 export const ActionStepChildren = React.memo(function ActionStepChildren({
@@ -25,49 +27,57 @@ export const ActionStepChildren = React.memo(function ActionStepChildren({
     childListTitle,
     childListDescription,
     childStepIds,
-    textColour
+    textColour,
+    disableDroppable
 }: ActionStepChildrenProps) {
     const { actionSteps, actionDefinitions } = useWorkflowEditor()
 
-    const containerId = `child-container-${parentStepId}-${childListKey}}`
+    const hasChildSteps = childStepIds.length > 0
 
-    // Make this container a drop target for child action steps
-    const { isDropTarget, ref } = useDroppable({
-        id: containerId,
-        data: {
-            type: 'child-container',
-            parentId: parentStepId,
-            parentKey: childListKey,
-            index: childStepIds.length
-        },
-        collisionPriority: CollisionPriority.Highest
-    })
+    // Create a unique container ID for this child list
+    const containerId = `child-container-${parentStepId}-${childListKey}`
 
     return (
-        <>
+        <div>
             <div className="flex gap-2 items-center text-left group">
                 <span className="text-sm font-semibold" style={{ color: textColour }}>{childListTitle}</span>
-                    <HoverCard>
-                        <HoverCardTrigger>
-                            <Info className="h-4 w-4 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity cursor-help" style={{ color: textColour }} />
-                        </HoverCardTrigger>
-                        <HoverCardContent className="bg-gray-50 opacity-95 text-sm border-gray-400">
-                            <p>{childListDescription}</p>
-                        </HoverCardContent>
-                    </HoverCard>
-                
+                <HoverCard>
+                    <HoverCardTrigger>
+                        <Info className="h-4 w-4 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity cursor-help" style={{ color: textColour }} />
+                    </HoverCardTrigger>
+                    <HoverCardContent className="bg-gray-50 opacity-95 text-sm border-gray-400">
+                        <p>{childListDescription}</p>
+                    </HoverCardContent>
+                </HoverCard>
+
             </div>
             <div
-                ref={ref}
-                className={`p-4 inset-shadow-sm inset-shadow-gray-400 bg-gray-100/50 rounded-lg transition-colors ${isDropTarget ? 'bg-blue-50 border-blue-300' : ''
-                    }`}
+                // ref={ref}
+                className={"p-4 inset-shadow-sm inset-shadow-gray-400 bg-gray-100/50 rounded-lg transition-colors"}
                 style={{
                     color: textColour
                 }}
             >
-
-
                 <div className="flex flex-col items-center space-y-2">
+
+                    {/* Droppable target or dummy sortable if there are no child steps */}
+                    {childStepIds.length === 0 ? (
+                        <>
+                            <ActionTarget id={containerId} index={-1} parentId={parentStepId} parentKey={childListKey} disableDroppable={disableDroppable} />
+
+                            {/* <AddActionButton index={0} parentId={parentStepId} parentKey={childListKey} disableDroppable={disableDroppable} /> */}
+
+                            {/* Dummy action step card for dragging sortable to empty child list */}
+                            <DummyActionStepCard
+                                id={`dummy-${parentStepId}-${childListKey}`}
+                                parentId={parentStepId} parentKey={childListKey} disableDroppable={disableDroppable}
+                            />
+
+                        </>
+                    ) : (
+                        <AddActionButton index={0} parentId={parentStepId} parentKey={childListKey} disableDroppable={false} />
+                    )}
+                    
                     {childStepIds.map((stepId, index) => {
                         const actionStep = actionSteps[stepId]
                         if (!actionStep) return null
@@ -83,15 +93,13 @@ export const ActionStepChildren = React.memo(function ActionStepChildren({
                                 index={index}
                                 parentId={parentStepId}
                                 parentKey={childListKey}
+                                disableDroppable={disableDroppable}
                             />
                         )
                     })}
 
-                    {childStepIds !== undefined && childStepIds.length === 0 && (
-                        <ActionTarget id={containerId} index={-1} />
-                    )}
                 </div>
             </div>
-        </>
+        </div>
     )
 }) 

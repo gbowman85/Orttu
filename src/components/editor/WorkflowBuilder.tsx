@@ -47,11 +47,13 @@ export default function WorkflowBuilder() {
                                     actionStep={actionStep}
                                     actionDefinition={actionDefinitions[actionStep.actionDefinitionId] ?? {}}
                                     index={index}
+                                    parentId='root'
+                                    disableDroppable={false}
                                 />
                             )
                         })}
                         {actionStepRefs !== undefined && actionStepRefs.length === 0 && (
-                            <ActionTarget id="root-initial-action" index={0} />
+                            <ActionTarget id="root-initial-action" index={0} parentId="root" parentKey={undefined} disableDroppable={false} />
                         )}
                     </div>
                 </div>

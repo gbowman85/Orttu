@@ -7,14 +7,17 @@ import { ActionStepChildren } from './ActionStepsChildren'
 import React from 'react'
 import { useWorkflowEditor } from '@/contexts/WorkflowEditorContext'
 import { CommentIcon } from './CommentIcon'
-import { pointerIntersection } from '@dnd-kit/collision'
+import { closestCenter } from '@dnd-kit/collision'
+import { RestrictToVerticalAxis } from '@dnd-kit/abstract/modifiers'
+import { useDragState } from './DragMonitor'
 
 interface ActionStepCardProps {
     actionStep: Doc<"action_steps">
     actionDefinition: Doc<"action_definitions">
     index: number
-    parentId?: Id<"action_steps">
+    parentId?: Id<"action_steps"> | 'root'
     parentKey?: string
+    disableDroppable: boolean
 }
 
 export const ActionStepCard = React.memo(function ActionStepCard({
@@ -22,10 +25,19 @@ export const ActionStepCard = React.memo(function ActionStepCard({
     actionDefinition,
     index,
     parentId,
-    parentKey
+    parentKey,
+    disableDroppable
 }: ActionStepCardProps) {
     const { selectedStepId, setSelectedStepId } = useWorkflowEditor()
+    const { currentDropTarget, draggedActionStepId } = useDragState()
     const isSelected = selectedStepId === actionStep._id
+
+    let group = parentId
+    if (parentId !== 'root') {
+        group = parentId + '-' + parentKey
+    }
+
+    const addActionButtonRef = React.useRef(null)
 
     const sortable = useSortable({
         id: actionStep._id,
@@ -36,7 +48,11 @@ export const ActionStepCard = React.memo(function ActionStepCard({
             parentId,
             parentKey
         },
-        collisionDetector: pointerIntersection
+        type: 'action-step',
+        group: group,
+        collisionDetector: closestCenter,
+        modifiers: [RestrictToVerticalAxis],
+        target: addActionButtonRef,
     })
 
     const handleClick = (e: React.MouseEvent) => {
@@ -50,8 +66,22 @@ export const ActionStepCard = React.memo(function ActionStepCard({
     // Check if this action has child areas
     const hasChildLists = actionDefinition?.childListKeys && actionDefinition.childListKeys.length > 0
 
+    const shouldDisableDroppable = disableDroppable || sortable.isDragging;
+
+    // Determine if this dragged element should be hidden
+    const isThisDraggedElement = draggedActionStepId === actionStep._id
+    const shouldHideDraggedElement = isThisDraggedElement &&
+        currentDropTarget?.isChildContainer &&
+        currentDropTarget?.group !== group
+
     return (
-        <div ref={sortable.ref} data-dragging={sortable.isDragging} className="min-w-90 w-fit justify-self-center">
+        <div
+            ref={sortable.ref}
+            data-unique-id={actionStep._id}
+            data-dragging={sortable.isDragging}
+            className={`min-w-90 w-fit justify-self-center transition-all duration-200 ${shouldHideDraggedElement ? 'h-0 overflow-hidden opacity-0' : ''}`}
+
+        >
             <div
                 onClick={handleClick}
                 className={`mb-2 border-4 rounded-3xl p-4 text-center text-muted-foreground cursor-pointer transition-all relative ${sortable.isDragging ? 'opacity-50' : ''} ${isSelected ? 'ring-4 ring-gray-200 shadow-lg' : ''}`}
@@ -64,6 +94,7 @@ export const ActionStepCard = React.memo(function ActionStepCard({
                 <CommentIcon comment={actionStep?.comment || null} className="absolute top-2 right-2" />
                 <div className="text-lg font-bold">{actionStep?.title || actionDefinition?.title}</div>
                 <div className="text-sm text-muted-foreground">{actionStep?.title ? actionDefinition?.title : null}</div>
+                <div className="text-xs text-muted-foreground">{actionStep._id}</div>
 
                 {/* Display child lists if this action has childListKeys */}
                 {hasChildLists && actionDefinition.childListKeys && (
@@ -79,6 +110,7 @@ export const ActionStepCard = React.memo(function ActionStepCard({
                                     childListDescription={childList.description}
                                     childStepIds={childStepIds}
                                     textColour={actionDefinition?.textColour}
+                                    disableDroppable={shouldDisableDroppable}
                                 />
                             )
                         })}
@@ -86,7 +118,43 @@ export const ActionStepCard = React.memo(function ActionStepCard({
                 )}
             </div>
             {/* If dragging an existing action, don't show the add action button */}
-            {!sortable.isDragging && <AddActionButton index={index + 1} parentId={parentId} parentKey={parentKey} isDropping={sortable.isDropping}/>}
+            {!sortable.isDragging && <AddActionButton index={index + 1} parentId={parentId} parentKey={parentKey} isDropping={sortable.isDropping} />}
         </div>
+    )
+})
+
+interface DummyActionStepCardProps {
+    id: string
+    parentId?: Id<"action_steps"> | 'root'
+    parentKey?: string
+    disableDroppable: boolean
+}
+
+export const DummyActionStepCard = React.memo(function DummyActionStepCard({
+    id,
+    parentId,
+    parentKey,
+    disableDroppable
+}: DummyActionStepCardProps) {
+    let group = parentId
+    if (parentId !== 'root') {
+        group = parentId + '-' + parentKey
+    }
+
+    const sortable = useSortable({
+        id: id,
+        index: 0,
+        group: group,
+        data: {
+            parentId,
+            parentKey
+        },
+        type: 'dummy-action-step',
+        collisionDetector: closestCenter,
+        disabled: disableDroppable,
+    })
+
+    return (
+        <div ref={sortable.ref} className="h-5 w-90"></div>
     )
 })

@@ -17,7 +17,7 @@ interface WorkflowEditorContextType {
   actionSteps: Record<Id<'action_steps'>, Doc<'action_steps'>>
   actionDefinitions: Record<Id<'action_definitions'>, Doc<'action_definitions'>>
   
-  // Future extensibility
+  // Action step properties
   actionStepProperties?: Record<string, any>
   setActionStepProperties?: (properties: Record<string, any>) => void
 }
