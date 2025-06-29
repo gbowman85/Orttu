@@ -2,19 +2,26 @@
 
 import { useDroppable } from "@dnd-kit/react";
 import { closestCenter,  } from "@dnd-kit/collision";
+import { Id } from "@/../convex/_generated/dataModel";
+import { CollisionPriority } from '@dnd-kit/abstract';
 
 interface ActionTargetProps {
   id: string
   index: number
+  parentId: Id<"action_steps"> | "root"
+  parentKey: string | undefined
 }
 
-export function ActionTarget({ id, index }: ActionTargetProps) {
+export function ActionTarget({ id, index, parentId, parentKey }: ActionTargetProps) {
   const { isDropTarget, ref } = useDroppable({
     id: id,
     data: {
       index,
+      parentId,
+      parentKey
     },
-    collisionDetector: closestCenter
+    collisionDetector: closestCenter,
+    collisionPriority: CollisionPriority.High,
   });
 
   return (

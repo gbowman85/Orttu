@@ -14,10 +14,12 @@ export default function EditorPage() {
     actionDefinitions
   } = useWorkflowData()
 
-  const { handleDragEnd } = useWorkflowActions(workflowConfig?._id)
+  const { handleDragStart, handleDragOver, handleDragEnd } = useWorkflowActions(workflowConfig?._id)
 
   return (
     <WorkflowEditorLayout
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       triggerStep={triggerStep ?? undefined}
       triggerDefinition={triggerDefinition ?? undefined}
