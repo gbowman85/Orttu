@@ -5,10 +5,10 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FlaskConical } from "lucide-react"
 import { BackToWorkflowsButton } from "./BackToWorkflowsButton"
-import { useWorkflowData } from "@/hooks/useWorkflowData"
+import { useWorkflowEditor } from "@/contexts/WorkflowEditorContext"
 
 export default function EditorToolbar() {
-    const { workflow } = useWorkflowData()
+    const { workflow } = useWorkflowEditor()
 
     const isEnabled = workflow?.enabled ?? false
 

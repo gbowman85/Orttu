@@ -4,20 +4,22 @@ import { useEffect, useMemo } from "react"
 import { useHeaderSlot } from "@/contexts/HeaderSlotContext"
 import WorkflowHeader from "@/components/editor/WorkflowHeader"
 import { Doc } from "@/../convex/_generated/dataModel"
-import { useWorkflowData } from "@/hooks/useWorkflowData"
+import { useWorkflowEditor } from "@/contexts/WorkflowEditorContext"
 
 export default function WorkflowEditorHeader() {
-  const { workflow } = useWorkflowData()
-  const { setSlot, clearSlot } = useHeaderSlot()
+    const { workflow } = useWorkflowEditor()
+    const { setSlot, clearSlot } = useHeaderSlot()
 
-  const headerContent = useMemo(() => (
-    <WorkflowHeader workflow={workflow as Doc<"workflows">} />
-  ), [workflow])
+    const headerContent = useMemo(() => (
+        workflow ? <WorkflowHeader workflow={workflow as Doc<"workflows">} /> : null
+    ), [workflow])
 
-  useEffect(() => {
-    setSlot('afterLogo', headerContent)
-    return () => clearSlot('afterLogo')
-  }, [setSlot, clearSlot, headerContent])
+    useEffect(() => {
+        if (headerContent) {
+            setSlot('afterLogo', headerContent)
+        }
+        return () => clearSlot('afterLogo')
+    }, [setSlot, clearSlot, headerContent])
 
-  return null
+    return null
 } 

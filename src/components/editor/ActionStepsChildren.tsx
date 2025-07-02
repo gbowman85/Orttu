@@ -9,6 +9,7 @@ import { ActionTarget } from "./ActionTarget"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { Info } from "lucide-react"
 import { useDragState } from './DragMonitor'
+import { AddActionButton } from "./AddActionButton";
 
 interface ActionStepChildrenProps {
     parentStepId: Id<"action_steps">
@@ -17,6 +18,14 @@ interface ActionStepChildrenProps {
     childListDescription: string
     childStepIds: Id<"action_steps">[]
     textColour: string | undefined
+    disableDroppable: boolean
+}
+
+function arrayMove(array: Id<"action_steps">[], from: number, to: number) {
+  const arr = array.slice()
+  const [item] = arr.splice(from, 1)
+  arr.splice(to, 0, item)
+  return arr
 }
 
 export const ActionStepChildren = React.memo(function ActionStepChildren({
@@ -25,15 +34,26 @@ export const ActionStepChildren = React.memo(function ActionStepChildren({
     childListTitle,
     childListDescription,
     childStepIds,
-    textColour
+    textColour,
+    disableDroppable
 }: ActionStepChildrenProps) {
     const { actionSteps, actionDefinitions } = useWorkflowEditor()
-    const { isDraggingActionStep, draggedActionStepId } = useDragState()
+    const { draggedActionStepId, dropTargetIndex, dropTargetParentId, dropTargetParentKey } = useDragState()
+    let childIdsToRender = childStepIds
+    if (
+      draggedActionStepId &&
+      dropTargetIndex !== null &&
+      dropTargetParentId === parentStepId &&
+      dropTargetParentKey === childListKey &&
+      childStepIds
+    ) {
+      const from = childStepIds.findIndex(id => id === draggedActionStepId)
+      if (from !== -1) {
+        childIdsToRender = arrayMove(childStepIds, from, dropTargetIndex)
+      }
+    }
 
-    // Disable droppable when THIS action step is being dragged to prevent interference
-    const disableDroppable = isDraggingActionStep && draggedActionStepId === parentStepId
-
-    const hasChildSteps = childStepIds.length > 0
+    const hasChildSteps = childIdsToRender.length > 0
 
     // Create a unique container ID for this child list
     const containerId = `child-container-${parentStepId}-${childListKey}`
@@ -59,14 +79,25 @@ export const ActionStepChildren = React.memo(function ActionStepChildren({
                     color: textColour
                 }}
             >
-                <div> childStepIds: {childStepIds.length}</div>
+                <div> childStepIds: {childIdsToRender.length}</div>
                 <div className="flex flex-col items-center space-y-2">
-                    {childStepIds.map((stepId, index) => {
+
+                    {childIdsToRender !== undefined && childIdsToRender.length === 0 ? (
+                        <ActionTarget id={containerId} index={0} parentId={parentStepId} parentKey={childListKey} disableDroppable={disableDroppable}/>
+                    ) : (
+                        <AddActionButton index={0} parentId={parentStepId} parentKey={childListKey} disableDroppable={disableDroppable} />
+                    )}
+
+
+
+                    {childIdsToRender.map((stepId, index) => {
                         const actionStep = actionSteps[stepId]
                         if (!actionStep) return null
 
                         const actionDefinition = actionDefinitions[actionStep.actionDefinitionId]
                         if (!actionDefinition) return null
+
+                        const isHidden = draggedActionStepId === stepId
 
                         return (
                             <ActionStepCard
@@ -76,13 +107,13 @@ export const ActionStepChildren = React.memo(function ActionStepChildren({
                                 index={index}
                                 parentId={parentStepId}
                                 parentKey={childListKey}
+                                disableDroppable={disableDroppable}
+                                isHidden={isHidden}
                             />
                         )
                     })}
 
-                    {childStepIds !== undefined && childStepIds.length === 0 && (
-                        <ActionTarget id={containerId} index={-1} parentId={parentStepId} parentKey={childListKey} />
-                    )}
+
                 </div>
             </div>
         </>

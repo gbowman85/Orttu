@@ -9,8 +9,10 @@ interface DragStateContextType {
   isDraggingActionDefinition: boolean
   isDraggingActionStep: boolean
   draggedActionStepId: Id<"action_steps"> | null
-  currentDropTarget: { group: string | null, isChildContainer: boolean } | null
-  setCurrentDropTarget: (target: { group: string | null, isChildContainer: boolean } | null) => void
+  dropTargetIndex: number | null
+  dropTargetParentId: Id<"action_steps"> | 'root' | null
+  dropTargetParentKey: string | null
+  setDropTarget: (index: number | null, parentId: Id<"action_steps"> | 'root' | null, parentKey: string | null) => void
 }
 
 const DragStateContext = createContext<DragStateContextType>({ 
@@ -18,8 +20,10 @@ const DragStateContext = createContext<DragStateContextType>({
   isDraggingActionDefinition: false,
   isDraggingActionStep: false,
   draggedActionStepId: null,
-  currentDropTarget: null,
-  setCurrentDropTarget: () => {},
+  dropTargetIndex: null,
+  dropTargetParentId: null,
+  dropTargetParentKey: null,
+  setDropTarget: () => {},
 })
 
 export function useDragState() {
@@ -31,7 +35,15 @@ export function DragMonitor({ children }: { children: ReactNode }) {
   const [isDraggingActionDefinition, setIsDraggingActionDefinition] = useState(false)
   const [isDraggingActionStep, setIsDraggingActionStep] = useState(false)
   const [draggedActionStepId, setDraggedActionStepId] = useState<Id<"action_steps"> | null>(null)
-  const [currentDropTarget, setCurrentDropTarget] = useState<{ group: string | null, isChildContainer: boolean } | null>(null)
+  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null)
+  const [dropTargetParentId, setDropTargetParentId] = useState<Id<"action_steps"> | 'root' | null>(null)
+  const [dropTargetParentKey, setDropTargetParentKey] = useState<string | null>(null)
+
+  const setDropTarget = (index: number | null, parentId: Id<"action_steps"> | 'root' | null, parentKey: string | null) => {
+    setDropTargetIndex(index)
+    setDropTargetParentId(parentId)
+    setDropTargetParentKey(parentKey)
+  }
 
   useDragDropMonitor({
     onDragStart: (event) => {
@@ -48,14 +60,22 @@ export function DragMonitor({ children }: { children: ReactNode }) {
       }
     },
     onDragOver: (event) => {
-      console.log('onDragOver', event)
+      if (event.operation?.target?.data) {
+        setDropTarget(
+          event.operation.target.data.index ?? null,
+          event.operation.target.data.parentId ?? null,
+          event.operation.target.data.parentKey ?? null
+        )
+      } else {
+        setDropTarget(null, null, null)
+      }
     },
     onDragEnd: () => {
       setIsDragging(false)
       setIsDraggingActionDefinition(false)
       setIsDraggingActionStep(false)
       setDraggedActionStepId(null)
-      setCurrentDropTarget(null)
+      setDropTarget(null, null, null)
     },
   })
 
@@ -65,8 +85,10 @@ export function DragMonitor({ children }: { children: ReactNode }) {
       isDraggingActionStep, 
       isDraggingActionDefinition,
       draggedActionStepId,
-      currentDropTarget,
-      setCurrentDropTarget
+      dropTargetIndex,
+      dropTargetParentId,
+      dropTargetParentKey,
+      setDropTarget
     }}>
       {children}
     </DragStateContext.Provider>
