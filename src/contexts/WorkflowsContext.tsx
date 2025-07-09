@@ -5,6 +5,10 @@ import { Doc, Id } from '@/../convex/_generated/dataModel';
 import { api } from '@/../convex/_generated/api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { z } from 'zod';
+
+// Tag validation schema
+const tagSchema = z.string().min(1, 'Tag cannot be empty').max(20, 'Tag must be 20 characters or less');
 
 // Default preferences
 const DEFAULT_VIEW_MODE: ViewMode = 'grid';
@@ -41,6 +45,8 @@ interface WorkflowsContextType {
     handleShare: (workflowId: Id<"workflows">) => void;
     handleExport: (workflowId: Id<"workflows">) => void;
     handleDelete: (workflowId: Id<"workflows">, workflowTitle: string) => Promise<void>;
+    handleAddTag: (workflowId: Id<"workflows">, tag: string) => Promise<void>;
+    handleRemoveTag: (workflowId: Id<"workflows">, tag: string) => Promise<void>;
     sortBy: SortBy;
     setSortBy: (field: SortBy) => void;
     sortDirection: SortDirection;
@@ -181,6 +187,34 @@ export function WorkflowsProvider({ children }: { children: ReactNode }) {
     }
 
     const deleteWorkflowMutation = useMutation(api.data_functions.workflows.deleteWorkflow);
+    const addWorkflowTagMutation = useMutation(api.data_functions.workflows.addWorkflowTag).withOptimisticUpdate(
+        (localStore, args) => {
+            const { workflowId, tag } = args;
+            const currentWorkflows = localStore.getQuery(api.data_functions.workflows.listWorkflows);
+            if (currentWorkflows !== undefined) {
+                const updatedWorkflows = currentWorkflows.map(workflow =>
+                    workflow._id === workflowId
+                        ? { ...workflow, tags: [...(workflow.tags || []), tag] }
+                        : workflow
+                );
+                localStore.setQuery(api.data_functions.workflows.listWorkflows, {}, updatedWorkflows);
+            }
+        }
+    );
+    const removeWorkflowTagMutation = useMutation(api.data_functions.workflows.removeWorkflowTag).withOptimisticUpdate(
+        (localStore, args) => {
+            const { workflowId, tag } = args;
+            const currentWorkflows = localStore.getQuery(api.data_functions.workflows.listWorkflows);
+            if (currentWorkflows !== undefined) {
+                const updatedWorkflows = currentWorkflows.map(workflow =>
+                    workflow._id === workflowId
+                        ? { ...workflow, tags: (workflow.tags || []).filter(t => t !== tag) }
+                        : workflow
+                );
+                localStore.setQuery(api.data_functions.workflows.listWorkflows, {}, updatedWorkflows);
+            }
+        }
+    );
     const setWorkflowStarredMutation = useMutation(api.data_functions.workflows.setWorkflowStarred).withOptimisticUpdate(
         (localStore, args) => {
             const { workflowId, starred } = args;
@@ -239,6 +273,33 @@ export function WorkflowsProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const handleAddTag = async (workflowId: Id<"workflows">, tag: string) => {
+        try {
+            // Validate the tag using Zod
+            const validatedTag = tagSchema.parse(tag.trim());
+            
+            await addWorkflowTagMutation({ workflowId, tag: validatedTag });
+            toast.success(`Tag "${validatedTag}" added to workflow`);
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                toast.error(error.errors[0].message);
+            } else {
+                console.error('Failed to add tag to workflow:', error);
+                toast.error('Failed to add tag to workflow');
+            }
+        }
+    };
+
+    const handleRemoveTag = async (workflowId: Id<"workflows">, tag: string) => {
+        try {
+            await removeWorkflowTagMutation({ workflowId, tag });
+            toast.success(`Tag "${tag}" removed from workflow`);
+        } catch (error) {
+            console.error('Failed to remove tag from workflow:', error);
+            toast.error('Failed to remove tag from workflow');
+        }
+    };
+
     // Get filtered workflows based on search query and tags
     const filteredWorkflows = useMemo(() => {
         let results = rawWorkflows;
@@ -292,6 +353,8 @@ export function WorkflowsProvider({ children }: { children: ReactNode }) {
                 handleShare,
                 handleExport,
                 handleDelete,
+                handleAddTag,
+                handleRemoveTag,
                 sortBy,
                 setSortBy: handleSortByChange,
                 sortDirection,

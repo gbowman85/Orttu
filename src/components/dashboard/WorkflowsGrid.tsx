@@ -8,6 +8,11 @@ import { NoResults } from '@/components/dashboard/WorkflowsNoResults'
 import { WorkflowMenu } from '@/components/dashboard/WorkflowMenu'
 import { Id } from '@/../convex/_generated/dataModel'
 import Link from 'next/link'
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card'
 
 export default function WorkflowsGrid() {
     const {
@@ -18,6 +23,8 @@ export default function WorkflowsGrid() {
         handleShare,
         handleExport,
         handleDelete,
+        handleAddTag,
+        handleRemoveTag,
         isFiltering,
         clearFilters
     } = useWorkflows();
@@ -54,14 +61,51 @@ export default function WorkflowsGrid() {
                                 <div className="relative">
                                     <div className="max-h-[5.25rem] overflow-y-auto">
                                         <div className="flex flex-wrap-reverse gap-1 pr-2">
-                                            {workflow.tags?.map((tag) => (
-                                                <span
-                                                    key={tag}
-                                                    className="inline-block px-2 py-1 bg-white/80 rounded text-xs text-gray-600"
-                                                >
-                                                    {tag}
-                                                </span>
-                                            ))}
+                                            {workflow.tags && workflow.tags.length > 0 && (
+                                                <>
+                                                    {/* Show first 2 tags */}
+                                                    {workflow.tags.slice(0, 2).map((tag) => (
+                                                        <span
+                                                            key={tag}
+                                                            className="inline-block px-2 py-1 bg-white/80 rounded text-xs text-gray-600"
+                                                        >
+                                                            {tag}
+                                                        </span>
+                                                    ))}
+
+                                                    {/* Show "x other tags" if there are more than 3 tags */}
+                                                    {workflow.tags.length > 3 && (
+                                                        <HoverCard>
+                                                            <HoverCardTrigger asChild>
+                                                                <span className="inline-block px-2 py-1 bg-white/80 rounded text-xs text-gray-600 cursor-help">
+                                                                    {workflow.tags.length - 2} other tags
+                                                                </span>
+                                                            </HoverCardTrigger>
+                                                            <HoverCardContent className="w-auto p-2">
+                                                                <div className="flex flex-col gap-1">
+                                                                    {workflow.tags.slice(2).map((tag) => (
+                                                                        <span
+                                                                            key={tag}
+                                                                            className="inline-block px-2 py-1 bg-secondary rounded-full text-xs"
+                                                                        >
+                                                                            {tag}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            </HoverCardContent>
+                                                        </HoverCard>
+                                                    )}
+
+                                                    {/* Show 3rd tag if there are exactly 3 tags */}
+                                                    {workflow.tags.length === 3 && (
+                                                        <span
+                                                            className="inline-block px-2 py-1 bg-white/80 rounded text-xs text-gray-600"
+                                                        >
+                                                            {workflow.tags[2]}
+                                                        </span>
+                                                    )}
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -93,6 +137,8 @@ export default function WorkflowsGrid() {
                                     onShare={handleShare}
                                     onExport={handleExport}
                                     onDelete={handleDelete}
+                                    onAddTag={handleAddTag}
+                                    onRemoveTag={handleRemoveTag}
                                 />
                             </div>
                             <Link 

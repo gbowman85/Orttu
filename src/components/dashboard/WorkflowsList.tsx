@@ -7,6 +7,11 @@ import { useWorkflows } from '@/contexts/WorkflowsContext'
 import { WorkflowsEmpty } from "./WorkflowsEmpty"
 import { NoResults } from "./WorkflowsNoResults"
 import { WorkflowMenu } from '@/components/dashboard/WorkflowMenu'
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card'
 
 export default function WorkflowsList() {
     const { 
@@ -17,6 +22,8 @@ export default function WorkflowsList() {
         handleShare,
         handleExport,
         handleDelete,
+        handleAddTag,
+        handleRemoveTag,
         isFiltering, 
         clearFilters 
     } = useWorkflows();
@@ -58,14 +65,51 @@ export default function WorkflowsList() {
                     <div className="flex items-center gap-4">
                         {/* Tags */}
                         <div className="flex gap-1">
-                            {workflow.tags?.map((tag) => (
-                                <span
-                                    key={tag}
-                                    className="px-2 py-1 bg-gray-100 rounded text-xs text-gray-600"
-                                >
-                                    {tag}
-                                </span>
-                            ))}
+                            {workflow.tags && workflow.tags.length > 0 && (
+                                <>
+                                    {/* Show first 2 tags */}
+                                    {workflow.tags.slice(0, 2).map((tag) => (
+                                        <span
+                                            key={tag}
+                                            className="px-2 py-1 bg-gray-100 rounded text-xs text-gray-600"
+                                        >
+                                            {tag}
+                                        </span>
+                                    ))}
+
+                                    {/* Show "x other tags" if there are more than 3 tags */}
+                                    {workflow.tags.length > 3 && (
+                                        <HoverCard>
+                                            <HoverCardTrigger asChild>
+                                                <span className="px-2 py-1 bg-gray-100 rounded text-xs text-gray-600 cursor-help">
+                                                    {workflow.tags.length - 2} other tags
+                                                </span>
+                                            </HoverCardTrigger>
+                                            <HoverCardContent className="w-auto p-2">
+                                                <div className="flex flex-col gap-1">
+                                                    {workflow.tags.slice(2).map((tag) => (
+                                                        <span
+                                                            key={tag}
+                                                            className="px-2 py-1 bg-secondary rounded-full text-xs"
+                                                        >
+                                                            {tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </HoverCardContent>
+                                        </HoverCard>
+                                    )}
+
+                                    {/* Show 3rd tag if there are exactly 3 tags */}
+                                    {workflow.tags.length === 3 && (
+                                        <span
+                                            className="px-2 py-1 bg-gray-100 rounded text-xs text-gray-600"
+                                        >
+                                            {workflow.tags[2]}
+                                        </span>
+                                    )}
+                                </>
+                            )}
                         </div>
 
                         <StarToggle
@@ -81,6 +125,8 @@ export default function WorkflowsList() {
                             onShare={handleShare}
                             onExport={handleExport}
                             onDelete={handleDelete}
+                            onAddTag={handleAddTag}
+                            onRemoveTag={handleRemoveTag}
                         />
                     </div>
                 </div>

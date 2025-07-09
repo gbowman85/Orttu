@@ -185,8 +185,7 @@ export const addWorkflowTag = mutation({
         const currentTags = workflow.tags || [];
         if (!currentTags.includes(tag)) {
             await ctx.db.patch(workflowId, {
-                tags: [...currentTags, tag],
-                updated: Date.now()
+                tags: [...currentTags, tag]
             });
         }
 
@@ -204,8 +203,7 @@ export const removeWorkflowTag = mutation({
 
         const currentTags = workflow.tags || [];
         await ctx.db.patch(workflowId, {
-            tags: currentTags.filter(t => t !== tag),
-            updated: Date.now()
+            tags: currentTags.filter(t => t !== tag)
         });
 
         return workflow;
