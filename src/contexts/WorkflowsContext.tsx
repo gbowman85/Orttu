@@ -3,6 +3,8 @@ import Fuse from 'fuse.js';
 import { useMutation, useQuery } from 'convex/react';
 import { Doc, Id } from '@/../convex/_generated/dataModel';
 import { api } from '@/../convex/_generated/api';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 // Default preferences
 const DEFAULT_VIEW_MODE: ViewMode = 'grid';
@@ -33,8 +35,12 @@ const fuseOptions = {
 // WorkflowsContextType to pass to the provider
 interface WorkflowsContextType {
     workflows: Doc<"workflows">[];
-    handleStarToggle: (workflowId: Id<"workflows">, isStarred: boolean) => void;
-    handleEnableToggle: (workflowId: Id<"workflows">, isEnabled: boolean) => void;
+    handleStarToggle: (workflowId: Id<"workflows">, isStarred: boolean) => Promise<void>;
+    handleEnableToggle: (workflowId: Id<"workflows">, isEnabled: boolean) => Promise<void>;
+    handleOpen: (workflowId: Id<"workflows">) => void;
+    handleShare: (workflowId: Id<"workflows">) => void;
+    handleExport: (workflowId: Id<"workflows">) => void;
+    handleDelete: (workflowId: Id<"workflows">, workflowTitle: string) => Promise<void>;
     sortBy: SortBy;
     setSortBy: (field: SortBy) => void;
     sortDirection: SortDirection;
@@ -55,6 +61,7 @@ const WorkflowsContext = createContext<WorkflowsContextType | undefined>(undefin
 
 // WorkflowsProvider handles preferences and state for the workflows page
 export function WorkflowsProvider({ children }: { children: ReactNode }) {
+    const router = useRouter();
     const preferences = useQuery(api.data_functions.users.getUserPreferences, { prefType: "dashWorkflows" }) as WorkflowPreferences | null;
     const updatePreferences = useMutation(api.data_functions.users.updateUserPreferences);
     
@@ -156,24 +163,80 @@ export function WorkflowsProvider({ children }: { children: ReactNode }) {
         setSortDirection(field === 'name' ? 'asc' : 'desc');
     };
 
-    const handleStarToggle = (workflowId: Id<"workflows">, isStarred: boolean) => {
-        setRawWorkflows(currentWorkflows => 
-            currentWorkflows.map(workflow => 
-                workflow._id === workflowId 
-                    ? { ...workflow, starred: isStarred }
-                    : workflow
-            )
-        );
+
+
+    const handleOpen = (workflowId: Id<"workflows">) => {
+        // Navigate to workflow editor
+        router.push(`/w/${workflowId}/edit`)
+    }
+
+    const handleShare = (workflowId: Id<"workflows">) => {
+        // TODO: Implement share functionality
+        console.log('Share workflow:', workflowId)
+    }
+
+    const handleExport = (workflowId: Id<"workflows">) => {
+        // TODO: Implement export functionality
+        console.log('Export workflow:', workflowId)
+    }
+
+    const deleteWorkflowMutation = useMutation(api.data_functions.workflows.deleteWorkflow);
+    const setWorkflowStarredMutation = useMutation(api.data_functions.workflows.setWorkflowStarred).withOptimisticUpdate(
+        (localStore, args) => {
+            const { workflowId, starred } = args;
+            const currentWorkflows = localStore.getQuery(api.data_functions.workflows.listWorkflows);
+            if (currentWorkflows !== undefined) {
+                const updatedWorkflows = currentWorkflows.map(workflow =>
+                    workflow._id === workflowId
+                        ? { ...workflow, starred }
+                        : workflow
+                );
+                localStore.setQuery(api.data_functions.workflows.listWorkflows, {}, updatedWorkflows);
+            }
+        }
+    );
+    const setWorkflowEnabledMutation = useMutation(api.data_functions.workflows.setWorkflowEnabled).withOptimisticUpdate(
+        (localStore, args) => {
+            const { workflowId, enabled } = args;
+            const currentWorkflows = localStore.getQuery(api.data_functions.workflows.listWorkflows);
+            if (currentWorkflows !== undefined) {
+                const updatedWorkflows = currentWorkflows.map(workflow =>
+                    workflow._id === workflowId
+                        ? { ...workflow, enabled }
+                        : workflow
+                );
+                localStore.setQuery(api.data_functions.workflows.listWorkflows, {}, updatedWorkflows);
+            }
+        }
+    );
+
+    const handleDelete = async (workflowId: Id<"workflows">, workflowTitle: string) => {
+        try {
+            await deleteWorkflowMutation({ workflowId });
+            toast.success(`Workflow deleted: ${workflowTitle}`);
+            // The workflow will be automatically removed from the list due to the query filter
+        } catch (error) {
+            console.error('Failed to delete workflow:', error);
+            toast.error('Failed to delete workflow. Please try again.');
+        }
+    }
+
+    const handleStarToggle = async (workflowId: Id<"workflows">, isStarred: boolean) => {
+        try {
+            await setWorkflowStarredMutation({ workflowId, starred: isStarred });
+        } catch (error) {
+            console.error('Failed to toggle workflow star:', error);
+            toast.error('Failed to update workflow star status');
+        }
     };
 
-    const handleEnableToggle = (workflowId: Id<"workflows">, isEnabled: boolean) => {
-        setRawWorkflows(currentWorkflows =>
-            currentWorkflows.map(workflow =>
-                workflow._id === workflowId
-                    ? { ...workflow, enabled: isEnabled }
-                    : workflow
-            )
-        );
+    const handleEnableToggle = async (workflowId: Id<"workflows">, isEnabled: boolean) => {
+        try {
+            await setWorkflowEnabledMutation({ workflowId, enabled: isEnabled });
+        } catch (error) {
+            console.error('Failed to toggle workflow enabled status:', error);
+            toast.error('Failed to update workflow enabled status');
+        }
     };
 
     // Get filtered workflows based on search query and tags
@@ -225,6 +288,10 @@ export function WorkflowsProvider({ children }: { children: ReactNode }) {
                 workflows, 
                 handleStarToggle, 
                 handleEnableToggle,
+                handleOpen,
+                handleShare,
+                handleExport,
+                handleDelete,
                 sortBy,
                 setSortBy: handleSortByChange,
                 sortDirection,

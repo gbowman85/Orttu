@@ -136,6 +136,7 @@ export const listWorkflows = query({
 
         const workflows = await ctx.db.query("workflows")
             .filter((q) => q.eq(q.field("ownerId"), userId))
+            .filter((q) => q.neq(q.field("deleted"), true))
             .collect();
 
         return workflows;
@@ -166,8 +167,7 @@ export const setWorkflowStarred = mutation({
         const { workflow } = await requireWorkflowAccess(ctx, workflowId, "editor");
 
         await ctx.db.patch(workflowId, {
-            starred,
-            updated: Date.now()
+            starred
         });
 
         return workflow;
@@ -271,8 +271,7 @@ export const setWorkflowEnabled = mutation({
         const { workflow } = await requireWorkflowAccess(ctx, workflowId, "owner");
 
         await ctx.db.patch(workflowId, {
-            enabled,
-            updated: Date.now()
+            enabled
         });
 
         return workflow;

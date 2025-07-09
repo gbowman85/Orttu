@@ -1,8 +1,13 @@
 import { StarToggle } from '@/components/ui/star-toggle'
 import { Doc } from '@/../convex/_generated/dataModel'
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton'
+import { useMutation } from 'convex/react'
+import { api } from '@/../convex/_generated/api'
+import { toast } from 'sonner'
 
 export default function WorkflowHeader({ workflow }: { workflow: Doc<"workflows"> }) {
+  const setWorkflowStarred = useMutation(api.data_functions.workflows.setWorkflowStarred)
+
   let status;
   // If workflow is loading, show skeleton
   if (workflow === undefined) {
@@ -14,6 +19,16 @@ export default function WorkflowHeader({ workflow }: { workflow: Doc<"workflows"
   } else {
     status = workflow.enabled ? "active" : "paused";
   }
+
+  const handleStarToggle = async (isStarred: boolean) => {
+    try {
+      await setWorkflowStarred({ workflowId: workflow._id, starred: isStarred });
+    } catch (error) {
+      console.error('Failed to toggle workflow star:', error);
+      toast.error('Failed to update workflow star status');
+    }
+  };
+
   return (
     <div className="flex items-center gap-4">
 
@@ -22,7 +37,7 @@ export default function WorkflowHeader({ workflow }: { workflow: Doc<"workflows"
 
       <StarToggle
         isStarred={workflow.starred}
-        onToggle={(isStarred) => { }}
+        onToggle={handleStarToggle}
       />
 
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
