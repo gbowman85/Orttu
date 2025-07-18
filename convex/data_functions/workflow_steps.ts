@@ -169,6 +169,81 @@ export const addActionStep = mutation({
     }
 });
 
+// Remove an action step from a workflow configuration
+export const removeActionStep = mutation({
+    args: {
+        workflowConfigId: v.id("workflow_configurations"),
+        actionStepId: v.id("action_steps"),
+        parentId: v.optional(v.union(v.id("action_steps"), v.literal("root"))),
+        parentKey: v.optional(v.string())
+    },
+    handler: async (ctx, { workflowConfigId, actionStepId, parentId, parentKey }) => {
+        const workflowConfig = await ctx.db.get(workflowConfigId);
+        if (!workflowConfig) throw new Error("Configuration not found");
+
+        // Root level
+        if (!parentId || parentId === 'root') {
+            // Remove from root level
+            workflowConfig.actionSteps = workflowConfig.actionSteps.filter(step => step.actionStepId !== actionStepId);
+
+            // Update the workflow configuration
+            await ctx.db.patch(workflowConfigId, {
+                actionSteps: workflowConfig.actionSteps,
+                updated: Date.now()
+            });
+        } else if (!parentKey) {
+            // parent key is required for child level
+            throw new Error("Parent key not found");
+        } else {
+            // Remove from parent's children
+            const parentStep = await ctx.db.get(parentId);
+            if (!parentStep) throw new Error("Parent step not found");
+            if (!parentStep.children?.[parentKey]) throw new Error("Parent key not found");
+            parentStep.children[parentKey] = parentStep.children[parentKey].filter(child => child !== actionStepId);
+            await ctx.db.patch(parentId, {
+                children: parentStep.children
+            });
+        }
+    }
+});
+
+// Replace an action step in a workflow configuration
+export const replaceActionStep = mutation({
+    args: {
+        workflowConfigId: v.id("workflow_configurations"),
+        actionStepId: v.id("action_steps"),
+        parentId: v.optional(v.union(v.id("action_steps"), v.literal("root"))),
+        parentKey: v.optional(v.string()),
+        index: v.number()
+    },
+    handler: async (ctx, { workflowConfigId, actionStepId, parentId, parentKey, index }) => {
+        const workflowConfig = await ctx.db.get(workflowConfigId);
+        if (!workflowConfig) throw new Error("Configuration not found");
+
+        // Root level
+        if (!parentId || parentId === 'root') {
+            // Replace in root level
+            workflowConfig.actionSteps[index] = { actionStepId };
+            await ctx.db.patch(workflowConfigId, {
+                actionSteps: workflowConfig.actionSteps,
+                updated: Date.now()
+            });
+        } else if (!parentKey) {
+            // parent key is required for child level
+            throw new Error("Parent key not found");
+        } else {
+            // Replace in parent's children
+            const parentStep = await ctx.db.get(parentId);
+            if (!parentStep) throw new Error("Parent step not found");
+            if (!parentStep.children?.[parentKey]) throw new Error("Parent key not found");
+            parentStep.children[parentKey][index] = actionStepId;
+            await ctx.db.patch(parentId, {
+                children: parentStep.children
+            });
+        } 
+    }
+});
+
 // Move an action step to a new position
 export const moveActionStep = mutation({
     args: {
@@ -184,6 +259,61 @@ export const moveActionStep = mutation({
     handler: async (ctx, { workflowConfigId, actionStepId, sourceIndex, sourceParentId, sourceParentKey, targetIndex, targetParentId, targetParentKey }) => {
         const workflowConfig = await ctx.db.get(workflowConfigId);
         if (!workflowConfig) throw new Error("Configuration not found");
+
+        // Helper to find the parent and index of an actionStepId
+        async function findStepLocation(actionStepId: Id<'action_steps'>): Promise<{ parentId: Id<'action_steps'> | undefined, parentKey: string | undefined, index: number } | null> {
+          // Check root level
+          for (let i = 0; i < workflowConfig!.actionSteps.length; i++) {
+            if (workflowConfig!.actionSteps[i].actionStepId === actionStepId) {
+              return { parentId: undefined, parentKey: undefined, index: i };
+            }
+          }
+          // Recursively check children
+          async function searchChildren(parentId: Id<'action_steps'>): Promise<{ parentId: Id<'action_steps'>, parentKey: string, index: number } | null> {
+            const parentStep = await ctx.db.get(parentId) as Doc<'action_steps'> | null;
+            if (!parentStep || !parentStep.children) return null;
+            for (const [key, childIds] of Object.entries(parentStep.children)) {
+              if (!Array.isArray(childIds)) continue;
+              for (let i = 0; i < childIds.length; i++) {
+                const childId = childIds[i] as Id<'action_steps'>;
+                if (childId === actionStepId) {
+                  return { parentId, parentKey: key, index: i };
+                }
+                const found = await searchChildren(childId);
+                if (found) return found;
+              }
+            }
+            return null;
+          }
+          for (const ref of workflowConfig!.actionSteps) {
+            const found = await searchChildren(ref.actionStepId);
+            if (found) return found;
+          }
+          return null;
+        }
+
+        // Validate the source location
+        let validSource = false;
+        if (!sourceParentId || sourceParentId === 'root') {
+          if (workflowConfig.actionSteps[sourceIndex]?.actionStepId === actionStepId) {
+            validSource = true;
+          }
+        } else if (sourceParentKey) {
+          const parentStep = await ctx.db.get(sourceParentId);
+          if (parentStep && parentStep.children && Array.isArray(parentStep.children[sourceParentKey])) {
+            if (parentStep.children[sourceParentKey][sourceIndex] === actionStepId) {
+              validSource = true;
+            }
+          }
+        }
+        // If not valid, find the correct location
+        if (!validSource) {
+          const found = await findStepLocation(actionStepId);
+          if (!found) throw new Error('Could not find action step in workflow');
+          sourceParentId = found.parentId ?? 'root';
+          sourceParentKey = found.parentKey;
+          sourceIndex = found.index;
+        }
 
         console.log("Moving action step", actionStepId, "to", targetParentId, "with key", targetParentKey, "at index", targetIndex);
         console.log("Current steps", workflowConfig.actionSteps)

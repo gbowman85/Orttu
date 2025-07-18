@@ -10,8 +10,10 @@ import { CommentIcon } from './CommentIcon'
 import { closestCenter } from '@dnd-kit/collision'
 import { RestrictToVerticalAxis } from '@dnd-kit/abstract/modifiers'
 import { useDragState } from './DragMonitor'
+import { unique } from 'next/dist/build/utils'
 
 interface ActionStepCardProps {
+    id: string
     actionStep: Doc<"action_steps">
     actionDefinition: Doc<"action_definitions">
     index: number
@@ -20,7 +22,8 @@ interface ActionStepCardProps {
     disableDroppable: boolean
 }
 
-export const ActionStepCard = React.memo(function ActionStepCard({
+export function ActionStepCard({
+    id,
     actionStep,
     actionDefinition,
     index,
@@ -40,7 +43,7 @@ export const ActionStepCard = React.memo(function ActionStepCard({
     const addActionButtonRef = React.useRef(null)
 
     const sortable = useSortable({
-        id: actionStep._id,
+        id,
         index,
         data: {
             actionStep,
@@ -94,7 +97,7 @@ export const ActionStepCard = React.memo(function ActionStepCard({
                 <CommentIcon comment={actionStep?.comment || null} className="absolute top-2 right-2" />
                 <div className="text-lg font-bold">{actionStep?.title || actionDefinition?.title}</div>
                 <div className="text-sm text-muted-foreground">{actionStep?.title ? actionDefinition?.title : null}</div>
-                <div className="text-xs text-muted-foreground">{actionStep._id}</div>
+                <div className="text-xs text-muted-foreground">{id}</div>
 
                 {/* Display child lists if this action has childListKeys */}
                 {hasChildLists && actionDefinition.childListKeys && (
@@ -103,7 +106,7 @@ export const ActionStepCard = React.memo(function ActionStepCard({
                             const childStepIds = actionStep.children?.[childList.key] || []
                             return (
                                 <ActionStepChildren
-                                    key={childList.key}
+                                    key={actionStep._id + '-' + childList.key}
                                     parentStepId={actionStep._id}
                                     childListKey={childList.key}
                                     childListTitle={childList.title}
@@ -121,7 +124,7 @@ export const ActionStepCard = React.memo(function ActionStepCard({
             {!sortable.isDragging && <AddActionButton index={index + 1} parentId={parentId} parentKey={parentKey} isDropping={sortable.isDropping} />}
         </div>
     )
-})
+}
 
 interface DummyActionStepCardProps {
     id: string

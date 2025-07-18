@@ -46,7 +46,7 @@ export function WorkflowEditor({
                 onDragStart={onDragStart}
                 onDragOver={onDragOver}
                 onDragEnd={onDragEnd}
-                plugins={[...defaultPreset.plugins, Debug]}
+                //plugins={[...defaultPreset.plugins, Debug]}
             >
                 <DragMonitor>
                     <div className="flex-1 flex flex-col">

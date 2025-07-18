@@ -86,9 +86,12 @@ export const ActionStepChildren = React.memo(function ActionStepChildren({
                         const actionDefinition = actionDefinitions[actionStep.actionDefinitionId]
                         if (!actionDefinition) return null
 
+                        const uniqeId = parentStepId + '-' + childListKey + '-' + stepId
+
                         return (
                             <ActionStepCard
-                                key={stepId}
+                                id={uniqeId}
+                                key={uniqeId}
                                 actionStep={actionStep}
                                 actionDefinition={actionDefinition}
                                 index={index}

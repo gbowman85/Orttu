@@ -41,9 +41,12 @@ export default function WorkflowBuilder() {
                         {actionStepsOrder?.map((step, index) => {
                             const actionStep = actionStepsDetails[step.actionStepId]
                             if (!actionStep) return null
+
+                            const uniqeId = 'root-' + step.actionStepId
                             return (
                                 <ActionStepCard
-                                    key={step.actionStepId}
+                                    key={uniqeId}
+                                    id={uniqeId}
                                     actionStep={actionStep}
                                     actionDefinition={actionDefinitions[actionStep.actionDefinitionId] ?? {}}
                                     index={index}

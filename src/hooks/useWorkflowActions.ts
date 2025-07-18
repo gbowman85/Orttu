@@ -7,6 +7,8 @@ import { useDragState } from "@/components/editor/DragMonitor"
 export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations"> | undefined) {
     // Define mutations for adding and moving action steps
     const addActionStep = useMutation(api.data_functions.workflow_steps.addActionStep)
+    const removeActionStep = useMutation(api.data_functions.workflow_steps.removeActionStep)
+    const replaceActionStep = useMutation(api.data_functions.workflow_steps.replaceActionStep)
     const moveActionStep = useMutation(api.data_functions.workflow_steps.moveActionStep)
 
     // Define state for tracking dragged action step
@@ -16,8 +18,16 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
         parentKey: string | undefined
         index: number
     }>(null)
-    
+
     const { currentDropTarget, setCurrentDropTarget } = useDragState()
+
+    // Track last moved parent and debounce timer for drag over
+    const lastMovedParent = useRef<{
+        actionStepId: Id<'action_steps'>
+        targetParentId: Id<'action_steps'> | 'root'
+        targetParentKey: string | undefined
+    } | null>(null)
+    const dragOverDebounceTimer = useRef<NodeJS.Timeout | null>(null)
 
     // When a drag starts, clear any pending move and store the parentId, parentKey, and index of the sortable element
     const handleDragStart = useCallback((event: any) => {
@@ -39,26 +49,79 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
     const handleDragOver = useCallback((event: any) => {
         const { manager } = event.operation.source;
         const { dragOperation } = manager;
-
-        // Get the actual drop target (not the dragged element)
         const dropTarget = dragOperation.target;
 
-        if (dropTarget && dropTarget.id !== event.operation.source.id) {
-            setCurrentDropTarget({
-                group: dropTarget.sortable?.group,
-                isChildContainer: dropTarget.data?.parentKey ? true : false
-            });
+        // if (dropTarget && dropTarget.id !== event.operation.source.id) {
+        //     setCurrentDropTarget({
+        //         group: dropTarget.sortable?.group,
+        //         isChildContainer: dropTarget.data?.parentKey ? true : false
+        //     });
 
-            console.log('Drop target info:', {
-                id: dropTarget.id,
-                group: dropTarget.sortable?.group,
-                index: dropTarget.sortable?.index,
-                data: dropTarget.data
-            });
-        }
-    }, [])
+        //     // Debounced moveActionStep logic
+        //     const source = event.operation.source
+        //     const draggedType = source?.type
+        //     if (draggedType === 'action-step' && initialActionStepPosition.current && workflowConfigId) {
+        //         const actionStepId = source.data.actionStep._id
+        //         // Extract target info (same as in handleDragEnd)
+        //         let targetParentId: Id<'action_steps'> | 'root' = 'root'
+        //         let targetParentKey: string | undefined = undefined
+        //         let targetIndex: number = 0
+        //         const group = dropTarget.sortable?.group || dropTarget.group
+        //         if (group && group !== 'root') {
+        //             const groupParts = group.split('-')
+        //             if (groupParts.length >= 2) {
+        //                 targetParentId = groupParts[0] as Id<'action_steps'>
+        //                 targetParentKey = groupParts.slice(1).join('-')
+        //                 targetIndex = dropTarget.sortable?.index || 0
+        //             }
+        //         } else {
+        //             targetParentId = 'root'
+        //             targetIndex = dropTarget.sortable?.index || 0
+        //         }
+        //         // Only run if parent has changed
+        //         const last = lastMovedParent.current
+        //         if (!last || last.actionStepId !== actionStepId || last.targetParentId !== targetParentId || last.targetParentKey !== targetParentKey) {
+        //             // Debounce
+        //             if (dragOverDebounceTimer.current) {
+        //                 clearTimeout(dragOverDebounceTimer.current)
+        //             }
+        //             dragOverDebounceTimer.current = setTimeout(async () => {
+        //                 if (!initialActionStepPosition.current) return
+        //                 try {
+        //                     await moveActionStep({
+        //                         workflowConfigId,
+        //                         actionStepId,
+        //                         sourceParentId: initialActionStepPosition.current.parentId,
+        //                         sourceParentKey: initialActionStepPosition.current.parentKey,
+        //                         sourceIndex: initialActionStepPosition.current.index,
+        //                         targetParentId,
+        //                         targetParentKey,
+        //                         targetIndex
+        //                     })
+        //                     lastMovedParent.current = { actionStepId, targetParentId, targetParentKey }
+        //                 } catch (error) {
+        //                     console.error('Failed to move action step (drag over):', error)
+        //                 }
+        //             }, 500)
+        //         }
+        //     }
+
+        //     console.log('Drop target info:', {
+        //         id: dropTarget.id,
+        //         group: dropTarget.sortable?.group,
+        //         index: dropTarget.sortable?.index,
+        //         data: dropTarget.data
+        //     });
+        // }
+    }, [moveActionStep, workflowConfigId, setCurrentDropTarget])
 
     const handleDragEnd = useCallback(async (event: any) => {
+        // Clean up debounce timer
+        if (dragOverDebounceTimer.current) {
+            clearTimeout(dragOverDebounceTimer.current)
+            dragOverDebounceTimer.current = null
+        }
+        lastMovedParent.current = null
         const { operation, canceled } = event
         console.log('operation', operation)
 
@@ -68,7 +131,6 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
         }
 
         const source = operation.source
-
         const draggedType = source.type
 
         // Adding a new action step from an action definition
@@ -180,17 +242,17 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
                 }
             }
 
-            console.log('source', {
-                parentId: sourceParentId,
-                parentKey: sourceParentKey,
-                index: sourceIndex
-            })
+            // console.log('source', {
+            //     parentId: sourceParentId,
+            //     parentKey: sourceParentKey,
+            //     index: sourceIndex
+            // })
 
-            console.log('target', {
-                parentId: targetParentId,
-                parentKey: targetParentKey,
-                index: targetIndex
-            })
+            // console.log('target', {
+            //     parentId: targetParentId,
+            //     parentKey: targetParentKey,
+            //     index: targetIndex
+            // })
 
             // Check that there is a valid index
             if (targetIndex === undefined) {
@@ -226,15 +288,18 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
 
                 // Move the action step to the target position
                 console.log('DOM after drag:', document.querySelector(`[data-unique-id="${source.data?.actionStep._id}"]`));
-                await moveActionStep({
-                    workflowConfigId,
-                    actionStepId,
-                    sourceParentId,
-                    sourceParentKey,
-                    sourceIndex,
-                    targetParentId,
-                    targetParentKey,
-                    targetIndex,
+                requestAnimationFrame(async () => {
+                    // await moveActionStep({
+                    //     workflowConfigId,
+                    //     actionStepId,
+                    //     sourceParentId,
+                    //     sourceParentKey,
+                    //     sourceIndex,
+                    //     targetParentId,
+                    //     targetParentKey,
+                    //     targetIndex,
+                    // })
+                    console.log('DOM after animation frame:', document.querySelector(`[data-unique-id="${source.data?.actionStep._id}"]`));
                 })
 
 
