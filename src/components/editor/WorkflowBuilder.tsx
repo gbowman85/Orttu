@@ -10,8 +10,8 @@ export default function WorkflowBuilder() {
     const {
         triggerStep,
         triggerDefinition,
-        actionStepRefs,
-        actionSteps,
+        actionStepsOrder,
+        actionStepsDetails,
         actionDefinitions,
         setSelectedStepId,
         selectedStepId
@@ -38,8 +38,8 @@ export default function WorkflowBuilder() {
                     />
 
                     <div id="actions-container" className="flex flex-col items-center justify-top min-h-0 mt-2 gap-2">
-                        {actionStepRefs?.map((step, index) => {
-                            const actionStep = actionSteps[step.actionStepId]
+                        {actionStepsOrder?.map((step, index) => {
+                            const actionStep = actionStepsDetails[step.actionStepId]
                             if (!actionStep) return null
                             return (
                                 <ActionStepCard
@@ -52,7 +52,7 @@ export default function WorkflowBuilder() {
                                 />
                             )
                         })}
-                        {actionStepRefs !== undefined && actionStepRefs.length === 0 && (
+                        {actionStepsOrder !== undefined && actionStepsOrder.length === 0 && (
                             <ActionTarget id="root-initial-action" index={0} parentId="root" parentKey={undefined} disableDroppable={false} />
                         )}
                     </div>

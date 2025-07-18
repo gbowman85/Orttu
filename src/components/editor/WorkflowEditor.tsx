@@ -9,7 +9,7 @@ import {
     ResizablePanelGroup,
 } from "@/components/ui/resizable"
 import { Doc, Id } from "@/../convex/_generated/dataModel"
-import { ActionStepRefType } from '@/../convex/types'
+import { ActionStepReferenceType } from '@/../convex/types'
 import {Debug} from '@dnd-kit/dom/plugins/debug'
 import {defaultPreset} from '@dnd-kit/dom'
 
@@ -19,8 +19,8 @@ interface WorkflowEditorProps {
     onDragEnd: (event: any) => void
     triggerStep: Doc<"trigger_steps"> | undefined
     triggerDefinition: Doc<"trigger_definitions"> | undefined
-    actionStepRefs: ActionStepRefType[] | undefined
-    actionSteps: Record<Id<'action_steps'>, Doc<'action_steps'>>
+    actionStepsOrder: ActionStepReferenceType[] | undefined
+    actionStepsDetails: Record<Id<'action_steps'>, Doc<'action_steps'>>
     actionDefinitions: Record<Id<'action_definitions'>, Doc<'action_definitions'>>
 }
 
@@ -30,23 +30,23 @@ export function WorkflowEditor({
     onDragEnd,
     triggerStep,
     triggerDefinition,
-    actionStepRefs,
-    actionSteps,
+    actionStepsOrder,
+    actionStepsDetails,
     actionDefinitions
 }: WorkflowEditorProps) {
     return (
         <WorkflowEditorProvider
             triggerStep={triggerStep}
             triggerDefinition={triggerDefinition}
-            actionStepRefs={actionStepRefs}
-            actionSteps={actionSteps}
+            actionStepsOrder={actionStepsOrder}
+            actionStepsDetails={actionStepsDetails}
             actionDefinitions={actionDefinitions}
         >
             <DragDropProvider 
                 onDragStart={onDragStart}
                 onDragOver={onDragOver}
                 onDragEnd={onDragEnd}
-                // plugins={[...defaultPreset.plugins, Debug]}
+                plugins={[...defaultPreset.plugins, Debug]}
             >
                 <DragMonitor>
                     <div className="flex-1 flex flex-col">

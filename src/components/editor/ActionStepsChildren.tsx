@@ -30,7 +30,7 @@ export const ActionStepChildren = React.memo(function ActionStepChildren({
     textColour,
     disableDroppable
 }: ActionStepChildrenProps) {
-    const { actionSteps, actionDefinitions } = useWorkflowEditor()
+    const { actionStepsDetails, actionDefinitions } = useWorkflowEditor()
 
     const hasChildSteps = childStepIds.length > 0
 
@@ -39,6 +39,7 @@ export const ActionStepChildren = React.memo(function ActionStepChildren({
 
     return (
         <div>
+            <div>childStepIds: {childStepIds}</div>
             <div className="flex gap-2 items-center text-left group">
                 <span className="text-sm font-semibold" style={{ color: textColour }}>{childListTitle}</span>
                 <HoverCard>
@@ -79,7 +80,7 @@ export const ActionStepChildren = React.memo(function ActionStepChildren({
                     )}
                     
                     {childStepIds.map((stepId, index) => {
-                        const actionStep = actionSteps[stepId]
+                        const actionStep = actionStepsDetails[stepId]
                         if (!actionStep) return null
 
                         const actionDefinition = actionDefinitions[actionStep.actionDefinitionId]

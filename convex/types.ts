@@ -148,13 +148,13 @@ export type Output = {
 }
 
 // Convex schema for action steps
-export const ActionStepRef = v.object({
+export const ActionStepReference = v.object({
   actionStepId: v.id("action_steps"),
   children: v.optional(v.record(v.string(), v.array(v.id("action_steps"))))
 })
 
 // Type definition for action steps
-export type ActionStepRefType = {
+export type ActionStepReferenceType = {
   actionStepId: Id<"action_steps">
   children?: Record<string, Id<"action_steps">[]>
 }

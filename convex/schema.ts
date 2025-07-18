@@ -1,7 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import { DataTypeSchema, ParameterSchema, WorkflowStatus, StepStatus, ActionStepRef, OutputSchema, ParameterValueSchema } from './types'
+import { DataTypeSchema, ParameterSchema, WorkflowStatus, StepStatus, ActionStepReference, OutputSchema, ParameterValueSchema } from './types'
 
 const basePreferencesObject = v.object({
   sortBy: v.string(),
@@ -146,7 +146,7 @@ export default defineSchema({
         created: v.number(),
         updated: v.number(),
         triggerStepId: v.optional(v.id("trigger_steps")),
-        actionSteps: v.array(ActionStepRef)
+        actionSteps: v.array(ActionStepReference)
     }).index("by_workflow", ["workflowId"]),
 
     trigger_steps: defineTable({

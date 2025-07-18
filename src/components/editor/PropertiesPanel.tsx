@@ -10,10 +10,10 @@ import { EditableText } from '@/components/ui/editable-text'
 import { useStepActions } from '@/hooks/useStepActions'
 
 export default function PropertiesPanel() {
-  const { selectedStepId, triggerStep, triggerDefinition, actionSteps, actionDefinitions } = useWorkflowEditor()
+  const { selectedStepId, triggerStep, triggerDefinition, actionStepsDetails, actionDefinitions } = useWorkflowEditor()
   const { workflowConfig } = useWorkflowData()
   const { handleEditStepTitle, handleEditStepComment } = useStepActions()
-  const selectedStep = triggerStep?._id === selectedStepId ? triggerStep : selectedStepId && actionSteps[selectedStepId as Id<'action_steps'>]
+  const selectedStep = triggerStep?._id === selectedStepId ? triggerStep : selectedStepId && actionStepsDetails[selectedStepId as Id<'action_steps'>]
   const selectedDefinition = triggerStep?._id === selectedStepId ? triggerDefinition : selectedStep && 'actionDefinitionId' in selectedStep ? actionDefinitions[selectedStep.actionDefinitionId] : null
 
   // Get the parameter values for the selected step

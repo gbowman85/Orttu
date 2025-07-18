@@ -33,7 +33,7 @@ export function useWorkflowData() {
         } : 'skip'
     )
 
-    const actionStepRefs = workflowConfig?.actionSteps
+    const actionStepsOrder = workflowConfig?.actionSteps
 
     // Fetch all action steps (including children) for this workflow configuration
     const allActionStepsQuery = useQuery(
@@ -82,8 +82,8 @@ export function useWorkflowData() {
         workflowConfig,
         triggerStep,
         triggerDefinition,
-        actionStepRefs,
-        actionSteps: actionSteps,
+        actionStepsOrder,
+        actionStepsDetails: actionSteps,
         actionDefinitions
     }
 } 

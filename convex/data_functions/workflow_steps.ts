@@ -2,7 +2,7 @@ import { query, mutation, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
 import { requireWorkflowAccess } from "./workflows";
 import { Doc, Id } from "../_generated/dataModel";
-import { ActionStepRef, ParameterValueSchema } from "../types";
+import { ActionStepReference, ParameterValueSchema } from "../types";
 
 
 // Set a trigger for a workflow configuration
@@ -457,11 +457,11 @@ export const getActionStepsByIds = query({
 // Get multiple action steps array of action steps
 export const getActionSteps = query({
     args: {
-        actionStepRefs: v.array(ActionStepRef)
+        actionStepReferences: v.array(ActionStepReference)
     },
-    handler: async (ctx, { actionStepRefs }) => {
+    handler: async (ctx, { actionStepReferences }) => {
         const steps = await Promise.all(
-            actionStepRefs.map(actionStepRef => ctx.db.get(actionStepRef.actionStepId))
+            actionStepReferences.map(actionStepReference => ctx.db.get(actionStepReference.actionStepId))
         );
 
         return steps.reduce((acc, step) => {
@@ -503,10 +503,32 @@ export const getAllActionStepsForConfig = query({
         };
 
         // Fetch all top-level action steps and their children
-        for (const actionStepRef of workflowConfig.actionSteps) {
-            await fetchActionStepAndChildren(actionStepRef.actionStepId);
+        for (const actionStepReference of workflowConfig.actionSteps) {
+            await fetchActionStepAndChildren(actionStepReference.actionStepId);
         }
 
         return allActionSteps;
+    }
+});
+
+// Optimistic mutation for moving action steps - takes the new order directly
+export const updateActionSteps = mutation({
+    args: {
+        workflowConfigId: v.id("workflow_configurations"),
+        newActionStepsOrder: v.array(ActionStepReference)
+    },
+    handler: async (ctx, { workflowConfigId, newActionStepsOrder }) => {
+        const workflowConfig = await ctx.db.get(workflowConfigId);
+        if (!workflowConfig) throw new Error("Configuration not found");
+
+        console.log("Updating workflow configuration with new action steps order");
+
+        // Simply update the workflow configuration with the new action steps order
+        await ctx.db.patch(workflowConfigId, {
+            actionSteps: newActionStepsOrder,
+            updated: Date.now()
+        });
+
+        return workflowConfigId;
     }
 }); 

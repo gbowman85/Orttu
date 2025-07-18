@@ -4,29 +4,30 @@ import { useWorkflowActions } from '@/hooks/useWorkflowActions'
 import { WorkflowEditor } from '@/components/editor/WorkflowEditor'
 
 export default function EditorPage() {
-  const {
-    workflow,
-    workflowConfig,
-    triggerStep,
-    triggerDefinition,
-    actionStepRefs,
-    actionSteps,
-    actionDefinitions
-  } = useWorkflowData()
+    const {
+        workflowConfig,
+        triggerStep,
+        triggerDefinition,
+        actionStepsOrder,
+        actionStepsDetails,
+        actionDefinitions
+    } = useWorkflowData()
 
-  const { handleDragStart, handleDragOver, handleDragEnd } = useWorkflowActions(workflowConfig?._id)
+    const { handleDragStart, handleDragOver, handleDragEnd } = useWorkflowActions(
+        workflowConfig?._id
+    )
 
-  return (
-    <WorkflowEditor
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-      triggerStep={triggerStep ?? undefined}
-      triggerDefinition={triggerDefinition ?? undefined}
-      actionStepRefs={actionStepRefs}
-      actionSteps={actionSteps ?? {}}
-      actionDefinitions={actionDefinitions}
-    />
+    return (
+        <WorkflowEditor
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+            triggerStep={triggerStep ?? undefined}
+            triggerDefinition={triggerDefinition ?? undefined}
+            actionStepsOrder={actionStepsOrder ?? []}
+            actionStepsDetails={actionStepsDetails ?? {}}
+            actionDefinitions={actionDefinitions}
+        />
 
-  )
+    )
 }
