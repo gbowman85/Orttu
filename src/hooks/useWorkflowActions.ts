@@ -29,7 +29,7 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
     } | null>(null)
     const dragOverDebounceTimer = useRef<NodeJS.Timeout | null>(null)
 
-    // When a drag starts, clear any pending move and store the parentId, parentKey, and index of the sortable element
+    // When a drag starts, clear any pending move and store the parentId, parentKey, and index of the dragged element
     const handleDragStart = useCallback((event: any) => {
         const source = event.operation?.source
         const draggedType = source?.type
@@ -40,9 +40,8 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
                 actionStepId: source?.data?.actionStep._id,
                 parentId: source?.data?.parentId,
                 parentKey: source?.data?.parentKey,
-                index: source?.index
+                index: source?.data?.index
             }
-            console.log('initialActionStepPosition', initialActionStepPosition.current)
         }
     }, [])
 
@@ -51,68 +50,7 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
         const { dragOperation } = manager;
         const dropTarget = dragOperation.target;
 
-        // if (dropTarget && dropTarget.id !== event.operation.source.id) {
-        //     setCurrentDropTarget({
-        //         group: dropTarget.sortable?.group,
-        //         isChildContainer: dropTarget.data?.parentKey ? true : false
-        //     });
-
-        //     // Debounced moveActionStep logic
-        //     const source = event.operation.source
-        //     const draggedType = source?.type
-        //     if (draggedType === 'action-step' && initialActionStepPosition.current && workflowConfigId) {
-        //         const actionStepId = source.data.actionStep._id
-        //         // Extract target info (same as in handleDragEnd)
-        //         let targetParentId: Id<'action_steps'> | 'root' = 'root'
-        //         let targetParentKey: string | undefined = undefined
-        //         let targetIndex: number = 0
-        //         const group = dropTarget.sortable?.group || dropTarget.group
-        //         if (group && group !== 'root') {
-        //             const groupParts = group.split('-')
-        //             if (groupParts.length >= 2) {
-        //                 targetParentId = groupParts[0] as Id<'action_steps'>
-        //                 targetParentKey = groupParts.slice(1).join('-')
-        //                 targetIndex = dropTarget.sortable?.index || 0
-        //             }
-        //         } else {
-        //             targetParentId = 'root'
-        //             targetIndex = dropTarget.sortable?.index || 0
-        //         }
-        //         // Only run if parent has changed
-        //         const last = lastMovedParent.current
-        //         if (!last || last.actionStepId !== actionStepId || last.targetParentId !== targetParentId || last.targetParentKey !== targetParentKey) {
-        //             // Debounce
-        //             if (dragOverDebounceTimer.current) {
-        //                 clearTimeout(dragOverDebounceTimer.current)
-        //             }
-        //             dragOverDebounceTimer.current = setTimeout(async () => {
-        //                 if (!initialActionStepPosition.current) return
-        //                 try {
-        //                     await moveActionStep({
-        //                         workflowConfigId,
-        //                         actionStepId,
-        //                         sourceParentId: initialActionStepPosition.current.parentId,
-        //                         sourceParentKey: initialActionStepPosition.current.parentKey,
-        //                         sourceIndex: initialActionStepPosition.current.index,
-        //                         targetParentId,
-        //                         targetParentKey,
-        //                         targetIndex
-        //                     })
-        //                     lastMovedParent.current = { actionStepId, targetParentId, targetParentKey }
-        //                 } catch (error) {
-        //                     console.error('Failed to move action step (drag over):', error)
-        //                 }
-        //             }, 500)
-        //         }
-        //     }
-
-        //     console.log('Drop target info:', {
-        //         id: dropTarget.id,
-        //         group: dropTarget.sortable?.group,
-        //         index: dropTarget.sortable?.index,
-        //         data: dropTarget.data
-        //     });
-        // }
+        
     }, [moveActionStep, workflowConfigId, setCurrentDropTarget])
 
     const handleDragEnd = useCallback(async (event: any) => {
@@ -134,10 +72,8 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
         const draggedType = source.type
 
         // Adding a new action step from an action definition
-        if (draggedType === 'action-definition' && operation.target && !operation.target.sortable) {
+        if (draggedType === 'action-definition' && operation.target) {
             // Action-definition dropped on a droppable target
-            console.log('Action-definition dropped on droppable')
-
             const actionDefinitionId = source.data?.actionDefinition._id
 
             // Check that the source data exists
@@ -145,15 +81,6 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
                 console.log('No source data for action-definition')
                 return
             }
-            const sourceParentId = source.data.parentId
-            const sourceParentKey = source.data.parentKey
-            const sourceIndex = source.data.index
-
-            console.log('source', {
-                parentId: sourceParentId,
-                parentKey: sourceParentKey,
-                index: sourceIndex
-            })
 
             // Get the target data
             const targetData = operation.target.data
@@ -161,24 +88,15 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
                 console.log('No target data found')
                 return
             }
-            const targetParentId = targetData.parentId
-            const targetParentKey = targetData.parentKey
-            const targetIndex = targetData.index
-
-            console.log('target', {
-                parentId: targetParentId,
-                parentKey: targetParentKey,
-                index: targetIndex
-            })
 
             // Add new action step from the action definition
             try {
                 await addActionStep({
                     workflowConfigId,
                     actionDefinitionId,
-                    parentId: targetParentId,
-                    parentKey: targetParentKey,
-                    index: targetIndex
+                    parentId: targetData.parentId,
+                    parentKey: targetData.parentKey,
+                    index: targetData.index
                 })
             } catch (error) {
                 console.error('Failed to add action step:', error)
@@ -209,50 +127,10 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
                 return
             }
 
-            console.log('dropTarget', dropTarget)
-            console.log('dropTarget.id', dropTarget.id)
-
             // Extract target information
-            let targetParentId: Id<"action_steps"> | 'root' = 'root'
-            let targetParentKey: string | undefined = undefined
-            let targetIndex: number = 0
-
-            const group = dropTarget.sortable?.group || dropTarget.group
-            if (group && group !== 'root') {
-                // Group format: "parentId-parentKey" (from ActionStepCard.tsx)
-                const groupParts = group.split('-')
-                if (groupParts.length >= 2) {
-                    targetParentId = groupParts[0] as Id<"action_steps">
-                    targetParentKey = groupParts.slice(1).join('-') // Handle parentKey with hyphens
-                    targetIndex = dropTarget.sortable?.index || 0
-                    console.log('Target info from group:', { targetParentId, targetParentKey, targetIndex })
-                }
-            } else {
-                // Root level drop
-                targetParentId = 'root'
-                targetIndex = dropTarget.sortable?.index || 0
-                console.log('Target info for root:', { targetParentId, targetParentKey, targetIndex })
-            }
-
-            // Apply position-based adjustment (above/below logic)
-            if (dropTarget.shape && dragOperation.shape) {
-                const isBelowTarget = Math.round(dragOperation.shape.current.center.y) > Math.round(dropTarget.shape.center.y)
-                if (isBelowTarget) {
-                    targetIndex += 1
-                }
-            }
-
-            // console.log('source', {
-            //     parentId: sourceParentId,
-            //     parentKey: sourceParentKey,
-            //     index: sourceIndex
-            // })
-
-            // console.log('target', {
-            //     parentId: targetParentId,
-            //     parentKey: targetParentKey,
-            //     index: targetIndex
-            // })
+            let targetParentId: Id<"action_steps"> | 'root' = dropTarget.data?.parentId
+            let targetParentKey: string | undefined = dropTarget.data?.parentKey
+            let targetIndex: number = dropTarget.data?.index
 
             // Check that there is a valid index
             if (targetIndex === undefined) {
@@ -262,11 +140,10 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
 
             // Check that the target parentId exists and targetIndex >=0
             if (!targetParentId || targetIndex < 0) {
-                console.log('Target parent id or index is not valid, no move needed')
+                console.log('Target parent id or index is not valid, cancelled move')
                 return
             }
 
-            // Move existing action steps
             // Check that the target is not the same as the source
             if (targetParentId === sourceParentId &&
                 targetParentKey === sourceParentKey &&
@@ -275,34 +152,34 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
                 return
             }
 
+            // Check that the target parent is not the source parent
+            if (targetParentId === actionStepId) {
+                console.log('Target is source action step, cancelled move')
+                return
+            }
+
             try {
-                console.log('Move Action Step:', {
+                // console.log('Move Action Step:', {
+                //     actionStepId,
+                //     sourceParentId,
+                //     sourceParentKey,
+                //     sourceIndex,
+                //     targetParentId,
+                //     targetParentKey,
+                //     targetIndex
+                // })
+
+                // Move the action step to the target position
+                await moveActionStep({
+                    workflowConfigId,
                     actionStepId,
                     sourceParentId,
                     sourceParentKey,
                     sourceIndex,
                     targetParentId,
                     targetParentKey,
-                    targetIndex
+                    targetIndex,
                 })
-
-                // Move the action step to the target position
-                console.log('DOM after drag:', document.querySelector(`[data-unique-id="${source.data?.actionStep._id}"]`));
-                requestAnimationFrame(async () => {
-                    // await moveActionStep({
-                    //     workflowConfigId,
-                    //     actionStepId,
-                    //     sourceParentId,
-                    //     sourceParentKey,
-                    //     sourceIndex,
-                    //     targetParentId,
-                    //     targetParentKey,
-                    //     targetIndex,
-                    // })
-                    console.log('DOM after animation frame:', document.querySelector(`[data-unique-id="${source.data?.actionStep._id}"]`));
-                })
-
-
 
                 // Clear the initial action step position
                 initialActionStepPosition.current = null

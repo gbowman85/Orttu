@@ -4,7 +4,7 @@ import { Id } from "@/../convex/_generated/dataModel"
 import { CollisionPriority } from '@dnd-kit/abstract';
 import React from 'react'
 import { useWorkflowEditor } from '@/contexts/WorkflowEditorContext'
-import { ActionStepCard, DummyActionStepCard } from "./ActionStepCard"
+import { ActionStepCard } from "./ActionStepCard"
 import { ActionTarget } from "@/components/editor/ActionTarget"
 import { AddActionButton } from "@/components/editor/AddActionButton"
 import { useDragState } from './DragMonitor'
@@ -21,7 +21,7 @@ interface ActionStepChildrenProps {
     disableDroppable: boolean
 }
 
-export const ActionStepChildren = React.memo(function ActionStepChildren({
+export const ActionStepChildren = function ActionStepChildren({
     parentStepId,
     childListKey,
     childListTitle,
@@ -32,14 +32,8 @@ export const ActionStepChildren = React.memo(function ActionStepChildren({
 }: ActionStepChildrenProps) {
     const { actionStepsDetails, actionDefinitions } = useWorkflowEditor()
 
-    const hasChildSteps = childStepIds.length > 0
-
-    // Create a unique container ID for this child list
-    const containerId = `child-container-${parentStepId}-${childListKey}`
-
     return (
         <div>
-            <div>childStepIds: {childStepIds}</div>
             <div className="flex gap-2 items-center text-left group">
                 <span className="text-sm font-semibold" style={{ color: textColour }}>{childListTitle}</span>
                 <HoverCard>
@@ -61,24 +55,8 @@ export const ActionStepChildren = React.memo(function ActionStepChildren({
             >
                 <div className="flex flex-col items-center space-y-2">
 
-                    {/* Droppable target or dummy sortable if there are no child steps */}
-                    {childStepIds.length === 0 ? (
-                        <>
-                            <ActionTarget id={containerId} index={-1} parentId={parentStepId} parentKey={childListKey} disableDroppable={disableDroppable} />
+                    <AddActionButton index={0} parentId={parentStepId} parentKey={childListKey} disableDroppable={disableDroppable} isDragging={false} />
 
-                            {/* <AddActionButton index={0} parentId={parentStepId} parentKey={childListKey} disableDroppable={disableDroppable} /> */}
-
-                            {/* Dummy action step card for dragging sortable to empty child list */}
-                            <DummyActionStepCard
-                                id={`dummy-${parentStepId}-${childListKey}`}
-                                parentId={parentStepId} parentKey={childListKey} disableDroppable={disableDroppable}
-                            />
-
-                        </>
-                    ) : (
-                        <AddActionButton index={0} parentId={parentStepId} parentKey={childListKey} disableDroppable={false} />
-                    )}
-                    
                     {childStepIds.map((stepId, index) => {
                         const actionStep = actionStepsDetails[stepId]
                         if (!actionStep) return null
@@ -86,12 +64,10 @@ export const ActionStepChildren = React.memo(function ActionStepChildren({
                         const actionDefinition = actionDefinitions[actionStep.actionDefinitionId]
                         if (!actionDefinition) return null
 
-                        const uniqeId = parentStepId + '-' + childListKey + '-' + stepId
-
                         return (
                             <ActionStepCard
-                                id={uniqeId}
-                                key={uniqeId}
+                                id={stepId}
+                                key={stepId}
                                 actionStep={actionStep}
                                 actionDefinition={actionDefinition}
                                 index={index}
@@ -106,4 +82,4 @@ export const ActionStepChildren = React.memo(function ActionStepChildren({
             </div>
         </div>
     )
-}) 
+}

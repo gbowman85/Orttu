@@ -107,7 +107,6 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
                         />
                     )
                 case 'datetime':
-                    console.log('datetime value', value)
                     return (
                         <DatePicker
                             value={value}

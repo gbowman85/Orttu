@@ -150,7 +150,6 @@ export function WorkflowsProvider({ children }: { children: ReactNode }) {
 
     // Handle tag removal
     const onTagRemove = (tag: string) => {
-        console.log('Removing tag:', tag, 'Current selectedTags:', selectedTags);
         setSelectedTags(selectedTags.filter(t => t !== tag));
     };
 

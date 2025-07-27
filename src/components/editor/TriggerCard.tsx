@@ -2,10 +2,7 @@
 
 import { Doc } from "@/../convex/_generated/dataModel"
 import { useWorkflowEditor } from '@/contexts/WorkflowEditorContext'
-import { useDragState } from '@/components/editor/DragMonitor'
-import { DummyActionStepCard } from "@/components/editor/ActionStepCard"
 import { Button } from "@/components/ui/button"
-import { AddActionButton } from "@/components/editor/AddActionButton"
 import { TriggerCardSkeleton } from "@/components/editor/LoadingStates"
 import { CommentIcon } from '@/components/editor/CommentIcon'
 
@@ -44,7 +41,6 @@ export function TriggerCard({ triggerStep, triggerDefinition }: { triggerStep: D
                 <div className="text-lg font-bold">{triggerStep.title}</div>
                 <div className="text-sm text-muted-foreground">{triggerStep.title ? triggerDefinition?.title : null}</div>
             </div>
-            <AddActionButton index={0} className="root-0" disableDroppable={false} />
         </div>
     )
 } 
