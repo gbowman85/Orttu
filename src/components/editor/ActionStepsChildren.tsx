@@ -10,6 +10,7 @@ import { AddActionButton } from "@/components/editor/AddActionButton"
 import { useDragState } from './DragMonitor'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { Info } from "lucide-react"
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 
 interface ActionStepChildrenProps {
     parentStepId: Id<"action_steps">
@@ -31,6 +32,7 @@ export const ActionStepChildren = function ActionStepChildren({
     disableDroppable
 }: ActionStepChildrenProps) {
     const { actionStepsDetails, actionDefinitions } = useWorkflowEditor()
+    const [childStepsContainerRef] = useAutoAnimate()
 
     return (
         <div>
@@ -53,7 +55,10 @@ export const ActionStepChildren = function ActionStepChildren({
                     color: textColour
                 }}
             >
-                <div className="flex flex-col items-center space-y-2">
+                <div 
+                    ref={childStepsContainerRef}
+                    className="flex flex-col items-center space-y-2"
+                >
 
                     <AddActionButton index={0} parentId={parentStepId} parentKey={childListKey} disableDroppable={disableDroppable} isDragging={false} />
 

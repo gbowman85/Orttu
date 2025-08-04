@@ -28,7 +28,7 @@ export function useWorkflowData() {
 
     const triggerDefinition = useQuery(
         api.data_functions.trigger_definitions.getTriggerDefinition,
-        triggerStep?.triggerDefinitionId ? {
+        triggerStep && triggerStep._id !== "missing" && triggerStep.triggerDefinitionId ? {
             triggerDefinitionId: triggerStep.triggerDefinitionId
         } : 'skip'
     )

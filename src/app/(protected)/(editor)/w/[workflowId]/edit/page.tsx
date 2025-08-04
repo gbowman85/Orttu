@@ -14,6 +14,7 @@ import { useWorkflowActions } from '@/hooks/useWorkflowActions'
 
 export default function EditorPage() {
     const {
+        workflow,
         workflowConfig,
         triggerStep,
         triggerDefinition,
@@ -28,9 +29,10 @@ export default function EditorPage() {
 
     return (
         <WorkflowEditorProvider
+            workflow={workflow ?? undefined}
             triggerStep={triggerStep ?? undefined}
             triggerDefinition={triggerDefinition ?? undefined}
-            actionStepsOrder={actionStepsOrder ?? []}
+            actionStepsOrder={actionStepsOrder ?? undefined}
             actionStepsDetails={actionStepsDetails ?? {}}
             actionDefinitions={actionDefinitions}
         >

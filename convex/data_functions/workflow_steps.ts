@@ -22,8 +22,7 @@ export const setTrigger = mutation({
         const triggerStepId = await ctx.db.insert("trigger_steps", {
             triggerDefinitionId,
             parameterValues: {},
-            title: "",
-            connectionId: null as any // Will need to be set separately
+            connectionId: undefined
         });
 
         // Update the workflow configuration with the new trigger
@@ -39,9 +38,20 @@ export const setTrigger = mutation({
 // Get the trigger step from an ID
 export const getTriggerStepById = query({
     args: {
-        triggerStepId: v.id("trigger_steps")
+        triggerStepId: v.union(v.id("trigger_steps"), v.literal("missing"))
     },
     handler: async (ctx, { triggerStepId }) => {
+        if (triggerStepId === "missing") {
+            // Return a fake trigger step
+            return {
+                _id: "missing" as any,
+                _creationTime: Date.now(),
+                triggerDefinitionId: "missing" as any,
+                parameterValues: {},
+                connectionId: undefined,
+                comment: undefined
+            };
+        }
         return await ctx.db.get(triggerStepId);
     }
 });
@@ -61,7 +71,7 @@ export const getTriggerByWorkflowId = query({
         // Get workflow config
         const workflowConfig = await ctx.db.get(workflow.currentConfigId);
 
-        if (!workflowConfig || !workflowConfig.triggerStepId) {
+        if (!workflowConfig || !workflowConfig.triggerStepId || workflowConfig.triggerStepId === "missing") {
             throw new Error("Trigger step not found");
         }
 
@@ -85,7 +95,30 @@ export const getTriggerStepInternal = internalQuery({
     }
 });
 
+// Remove a trigger from a workflow configuration
+export const removeTrigger = mutation({
+    args: {
+        workflowConfigId: v.id("workflow_configurations")
+    },
+    handler: async (ctx, { workflowConfigId }) => {
+        
+        const workflowConfig = await ctx.db.get(workflowConfigId);
+        if (!workflowConfig) throw new Error("Configuration not found");
 
+        if (!workflowConfig.triggerStepId || workflowConfig.triggerStepId === "missing") {
+            throw new Error("No trigger to remove");
+        }
+
+        // Delete the trigger step from the database
+        await ctx.db.delete(workflowConfig.triggerStepId);
+
+        // Update the workflow configuration to remove the trigger reference
+        await ctx.db.patch(workflowConfigId, {
+            triggerStepId: "missing",
+            updated: Date.now()
+        });
+    }
+});
 
 // Get an action step
 export const getActionStep = query({
@@ -114,7 +147,6 @@ export const addActionStep = mutation({
         const actionStepId = await ctx.db.insert("action_steps", {
             actionDefinitionId,
             parameterValues: {},
-            title: "",
             parentId: parentId === 'root' ? undefined : parentId,
         });
 
@@ -176,6 +208,12 @@ export const removeActionStep = mutation({
         parentKey: v.optional(v.string())
     },
     handler: async (ctx, { workflowConfigId, actionStepId, parentId, parentKey }) => {
+        console.log('Removing action step')
+        console.log('workflowConfigId', workflowConfigId)
+        console.log('actionStepId', actionStepId)
+        console.log('parentId', parentId)
+        console.log('parentKey', parentKey)
+        
         const workflowConfig = await ctx.db.get(workflowConfigId);
         if (!workflowConfig) throw new Error("Configuration not found");
 

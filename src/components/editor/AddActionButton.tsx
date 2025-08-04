@@ -56,10 +56,10 @@ function AddActionButton({ onClick, className, index, parentId, parentKey, isDro
                     variant="ghost"
                     size="icon"
                     onClick={onClick}
-                    className={`group w-8 h-8 rounded-full border-2 border-gray-100 hover:border-gray-300 bg-white/25 hover:bg-gray-50 transition-opacity duration-200 ${className ?? ''} ${hideButton ? 'opacity-0' : ''}`}
+                    className={`group/add-action-button w-8 h-8 rounded-full border-2 border-gray-100 hover:border-gray-300 bg-white/25 hover:bg-gray-50 transition-opacity duration-200 ${className ?? ''} ${hideButton ? 'opacity-0' : ''}`}
                     data-index={index}
                 >
-                    <Plus className="h-4 w-4 text-gray-300 group-hover:text-gray-800 transition-colors duration-200" />
+                    <Plus className="h-4 w-4 text-gray-300 group-hover/add-action-button:text-gray-800 transition-colors duration-200" />
                 </Button>
             )}
         </div>

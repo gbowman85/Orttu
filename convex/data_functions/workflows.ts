@@ -61,6 +61,7 @@ export const createWorkflow = mutation({
         // Create the workflow configuration
         const workflowConfigId = await ctx.db.insert("workflow_configurations", {
             workflowId,
+            triggerStepId: "missing",
             actionSteps: [],
             created: Date.now(),
             updated: Date.now()

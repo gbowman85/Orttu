@@ -6,8 +6,9 @@ import { AddActionButton } from './AddActionButton'
 import { ActionStepChildren } from './ActionStepsChildren'
 import React from 'react'
 import { useWorkflowEditor } from '@/contexts/WorkflowEditorContext'
-import { CommentIcon } from './CommentIcon'
-import { useDragState } from './DragMonitor'
+import { CommentIcon } from '@/components/editor/CommentIcon'
+import { DeleteActionStepButton } from '@/components/editor/DeleteActionStepButton'
+import { useDragState } from '@/components/editor/DragMonitor'
 
 interface ActionStepCardProps {
     id: string
@@ -28,7 +29,7 @@ export function ActionStepCard({
     parentKey,
     disableDroppable
 }: ActionStepCardProps) {
-    const { selectedStepId, setSelectedStepId } = useWorkflowEditor()
+    const { selectedStepId, setSelectedStepId, openDeleteDialog } = useWorkflowEditor()
     const { currentDropTarget, draggedActionStepId } = useDragState()
     const isSelected = selectedStepId === actionStep._id
 
@@ -52,6 +53,11 @@ export function ActionStepCard({
         setSelectedStepId(actionStep._id)
     }
 
+    const handleDeleteClick = (actionStepId: Id<"action_steps">, parentId: Id<"action_steps"> | 'root', parentKey: string) => {
+        const actionStepTitle = actionStep?.title || actionDefinition?.title
+        openDeleteDialog('action-step', actionStepId, parentId, parentKey, actionStepTitle)
+    }
+
     // Check if this action has child areas
     const hasChildLists = actionDefinition?.childListKeys && actionDefinition.childListKeys.length > 0
 
@@ -67,7 +73,7 @@ export function ActionStepCard({
             key={actionStep._id}
             data-unique-id={actionStep._id}
             data-dragging={isDragging}
-            className={`min-w-90 w-fit justify-self-center transition-all duration-200 ${shouldHideDraggedElement ? 'h-0 overflow-hidden opacity-0' : ''}`}
+            className={`group min-w-90 w-fit justify-self-center transition-all duration-200 ${shouldHideDraggedElement ? 'h-0 overflow-hidden opacity-0' : ''}`}
         >
             <div
                 onClick={handleClick}
@@ -78,7 +84,17 @@ export function ActionStepCard({
                     color: actionDefinition?.textColour
                 }}
             >
-                <CommentIcon comment={actionStep?.comment || null} className="absolute top-2 right-2" />
+                <div className="absolute top-2 left-2">
+                    <CommentIcon comment={actionStep?.comment || null} />
+                </div>
+                <div className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity`}>
+                    <DeleteActionStepButton 
+                        actionStepId={actionStep._id} 
+                        parentId={parentId || 'root'} 
+                        parentKey={parentKey || ''} 
+                        onDeleteClick={handleDeleteClick}
+                    />
+                </div>
                 <div className="text-lg font-bold">{actionStep?.title || actionDefinition?.title}</div>
                 <div className="text-sm text-muted-foreground">{actionStep?.title ? actionDefinition?.title : null}</div>
 
