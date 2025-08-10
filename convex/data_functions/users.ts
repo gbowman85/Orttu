@@ -34,7 +34,8 @@ export async function requireAuthenticated(ctx: MutationCtx | QueryCtx) {
 export const currentUser = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireAuthenticated(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
     return await ctx.db.get(userId);
   },
 });
