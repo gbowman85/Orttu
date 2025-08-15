@@ -3,10 +3,11 @@
 
 import { internalAction, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { actionRegistry } from "./action_functions/_action_registry";
+import { actionRegistry, pipedreamApps } from "./action_functions/_action_registry";
 import { actionCategoryRegistry } from "./action_functions/_action_registry";
 import { triggerCategoryRegistry } from "./trigger_functions/_trigger_registry";
 import { triggerRegistry } from "./trigger_functions/_trigger_registry";
+import { getAppDetailsInternal, getActionsInternal } from "./action_functions/pipedream";
 
 
 export const syncAll = internalAction({
@@ -15,7 +16,7 @@ export const syncAll = internalAction({
         const triggersOutput: object = await ctx.runMutation(internal.sync_functions.syncTriggers) ?? {};
 
         // Sync actions function
-        const actionsOutput: object = await ctx.runMutation(internal.sync_functions.syncActions) ?? {}; 
+        const actionsOutput: object = await ctx.runAction(internal.sync_functions.syncActions) ?? {}; 
 
         return {
             "triggers": triggersOutput,
@@ -143,14 +144,16 @@ export const syncTriggerDefinitionsToDatabase = internalMutation({
     }
 })
 
-export const syncActions = internalMutation({
+export const syncActions = internalAction({
     handler: async (ctx): Promise<object> => {
         const actionCategoriesOutput: object = await ctx.runMutation(internal.sync_functions.syncActionCategoriesToDatabase) ?? 0;
         const actionDefinitionsOutput: object = await ctx.runMutation(internal.sync_functions.syncActionDefinitionsToDatabase) ?? 0;
+        const pipedreamOutput: object = await ctx.runAction(internal.sync_functions.syncPipedreamData) ?? 0;
 
         return {
             "actionCategories": actionCategoriesOutput,
             "actionDefinitions": actionDefinitionsOutput,
+            "pipedream": pipedreamOutput,
         };
     }
 })
@@ -166,9 +169,9 @@ export const syncActionCategoriesToDatabase = internalMutation({
         const existingCategories = await ctx.runQuery(internal.data_functions.action_categories.getAllActionCategoriesInternal);
         const registryCategoryKeys = new Set(categories.map(cat => cat.categoryKey));
 
-        // Delete categories that are no longer in the registry
+        // Delete categories that are no longer in the registry (excluding Pipedream categories)
         for (const existingCategory of existingCategories) {
-            if (!registryCategoryKeys.has(existingCategory.categoryKey)) {
+            if (!registryCategoryKeys.has(existingCategory.categoryKey) && !existingCategory.isPipedream) {
                 await ctx.runMutation(internal.data_functions.action_categories.deleteActionCategoryInternal, {
                     id: existingCategory._id
                 });
@@ -220,7 +223,7 @@ export const syncActionDefinitionsToDatabase = internalMutation({
 
         // Delete actions that are no longer in the registry
         for (const existingAction of existingActions) {
-            if (!registryActionKeys.has(existingAction.actionKey)) {
+            if (!registryActionKeys.has(existingAction.actionKey) && !existingAction.isPipedream) {
                 await ctx.runMutation(internal.data_functions.action_definitions.deleteActionDefinitionInternal, {
                     id: existingAction._id
                 });
@@ -257,6 +260,192 @@ export const syncActionDefinitionsToDatabase = internalMutation({
             created: actionDefinitionsCreated,
             updated: actionDefinitionsUpdated,
             deleted: actionDefinitionsDeleted
+        };
+    }
+})
+
+export const syncPipedreamData = internalAction({
+    handler: async (ctx): Promise<object> => {
+        const pipedreamCategoriesOutput: object = await ctx.runAction(internal.sync_functions.syncPipedreamCategoriesToDatabase) ?? 0;
+        const pipedreamActionsOutput: object = await ctx.runAction(internal.sync_functions.syncPipedreamActionsToDatabase) ?? 0;
+
+        return {
+            "pipedreamCategories": pipedreamCategoriesOutput,
+            "pipedreamActions": pipedreamActionsOutput,
+        };
+    }
+})
+
+export const syncPipedreamCategoriesToDatabase = internalAction({
+    handler: async (ctx) => {
+        let pipedreamCategoriesCreated = 0;
+        let pipedreamCategoriesUpdated = 0;
+        let pipedreamCategoriesDeleted = 0;
+
+        // Get all existing Pipedream categories
+        const existingCategories = await ctx.runQuery(internal.data_functions.action_categories.getAllActionCategoriesInternal);
+        const existingPipedreamCategories = existingCategories.filter(cat => cat.isPipedream);
+        
+        // Generate category keys for current apps
+        const currentCategoryKeys = new Set(pipedreamApps.map(app => `pipedream_${app.appId}`));
+
+        // Delete Pipedream categories that are no longer in the registry
+        for (const existingCategory of existingPipedreamCategories) {
+            if (!currentCategoryKeys.has(existingCategory.categoryKey)) {
+                await ctx.runMutation(internal.data_functions.action_categories.deleteActionCategoryInternal, {
+                    id: existingCategory._id
+                });
+                pipedreamCategoriesDeleted++;
+            }
+        }
+
+        // Create or update Pipedream categories
+        for (const app of pipedreamApps) {
+            const categoryKey = `pipedream_${app.appId}`;
+            
+            // Fetch app details from Pipedream API
+            const appDetails = await ctx.runAction(internal.action_functions.pipedream.getAppDetailsInternal, {
+                appId: app.appId
+            });
+            
+            const existingCategory = await ctx.runQuery(internal.data_functions.action_categories.getActionCategoryByCategoryKeyInternal, { 
+                categoryKey: categoryKey
+            });
+            
+            const categoryData = {
+                categoryKey: categoryKey,
+                title: appDetails.name,
+                description: appDetails.description,
+                colour: app.colour,
+                textColour: app.textColour,
+                icon: appDetails.icon,
+                isPipedream: true
+            };
+            
+            if (existingCategory) {
+                // Update existing category if it has changed
+                if (hasChanges(existingCategory, categoryData, ['_id', '_creationTime', 'categoryKey'])) {
+                    await ctx.runMutation(internal.data_functions.action_categories.updateActionCategoryInternal, {
+                        id: existingCategory._id,
+                        ...categoryData
+                    });
+                    pipedreamCategoriesUpdated++;
+                }
+            } else {
+                // Create new category
+                const newCategory = await ctx.runMutation(internal.data_functions.action_categories.createActionCategoryInternal, categoryData);
+                if (newCategory) {
+                    pipedreamCategoriesCreated++;
+                }
+            }
+        }
+
+        return {
+            total: pipedreamApps.length,
+            created: pipedreamCategoriesCreated,
+            updated: pipedreamCategoriesUpdated,
+            deleted: pipedreamCategoriesDeleted
+        };
+    }
+})
+
+export const syncPipedreamActionsToDatabase = internalAction({
+    handler: async (ctx) => {
+        let pipedreamActionsCreated = 0;
+        let pipedreamActionsUpdated = 0;
+        let pipedreamActionsDeleted = 0;
+
+        // Get all existing Pipedream action definitions
+        const existingActions = await ctx.runQuery(internal.data_functions.action_definitions.getAllActionDefinitionsInternal);
+        const existingPipedreamActions = existingActions.filter(action => action.isPipedream);
+        
+        // Get Pipedream actions for each app
+        const allPipedreamActions: Array<{
+            actionKey: string,
+            categoryKey: string,
+            title: string,
+            description: string,
+            parameters: any[],
+            outputs: any[],
+            isPipedream: boolean
+        }> = [];
+
+        for (const app of pipedreamApps) {
+            try {
+                // Get actions for this app from Pipedream API
+                const actions = await ctx.runAction(internal.action_functions.pipedream.getActionsInternal, {
+                    appId: app.appId
+                });
+                
+                // Transform actions to match the format of the action definitions
+                for (const action of actions) {
+                    allPipedreamActions.push({
+                        actionKey: `${app.appId}_${action.actionKey}`,
+                        categoryKey: `pipedream_${app.appId}`,
+                        title: action.name,
+                        description: action.description,
+                        parameters: action.parameters.map((param: any) => ({
+                            parameterKey: param.key,
+                            title: param.title,
+                            description: param.description,
+                            dataType: param.type === 'number' ? 'number' : 'string',
+                            inputType: param.type === 'number' ? 'number' : 'text',
+                            required: param.required
+                        })),
+                        outputs: [],
+                        isPipedream: true
+                    });
+                }
+            } catch (error) {
+                console.error(`Error fetching actions for app ${app.appId}:`, error);
+            }
+        }
+
+        const registryActionKeys = new Set(allPipedreamActions.map(action => action.actionKey));
+
+        // Delete Pipedream actions that are no longer in the registry
+        for (const existingAction of existingPipedreamActions) {
+            if (!registryActionKeys.has(existingAction.actionKey)) {
+                await ctx.runMutation(internal.data_functions.action_definitions.deleteActionDefinitionInternal, {
+                    id: existingAction._id
+                });
+                pipedreamActionsDeleted++;
+            }
+        }
+
+        // Create or update Pipedream actions
+        for (const action of allPipedreamActions) {
+            const existingAction = await ctx.runQuery(internal.data_functions.action_definitions.getActionDefinitionByActionKeyInternal, { 
+                actionKey: action.actionKey 
+            });
+            
+            if (existingAction) {
+                // Update existing action if it has changed
+                if (hasChanges(existingAction, action, ['_id', '_creationTime', 'categoryId', 'categoryKey'])) {
+                    await ctx.runMutation(internal.data_functions.action_definitions.updateActionDefinitionInternal, {
+                        id: existingAction._id,
+                        ...action,
+                        isPipedream: true
+                    });
+                    pipedreamActionsUpdated++;
+                }
+            } else {
+                // Create new action
+                const newAction = await ctx.runMutation(internal.data_functions.action_definitions.createActionDefinitionInternal, {
+                    ...action,
+                    isPipedream: true
+                });
+                if (newAction) {
+                    pipedreamActionsCreated++;
+                }
+            }
+        }
+
+        return {
+            total: allPipedreamActions.length,
+            created: pipedreamActionsCreated,
+            updated: pipedreamActionsUpdated,
+            deleted: pipedreamActionsDeleted
         };
     }
 })

@@ -70,7 +70,8 @@ export const createActionDefinitionInternal = internalMutation({
         bgColour: v.optional(v.string()),
         borderColour: v.optional(v.string()),
         textColour: v.optional(v.string()),
-        icon: v.optional(v.string())
+        icon: v.optional(v.string()),
+        isPipedream: v.optional(v.boolean())
     },
     handler: async (ctx, args): Promise<Id<"action_definitions"> | null> => {
         const existingActionDefinition = await ctx.db
@@ -135,7 +136,8 @@ export const updateActionDefinitionInternal = internalMutation({
         bgColour: v.optional(v.string()),
         borderColour: v.optional(v.string()),
         textColour: v.optional(v.string()),
-        icon: v.optional(v.string())
+        icon: v.optional(v.string()),
+        isPipedream: v.optional(v.boolean())
     },
     handler: async (ctx, args): Promise<Id<"action_definitions">> => {
         const { id, categoryKey, serviceKey, ...updateData } = args;

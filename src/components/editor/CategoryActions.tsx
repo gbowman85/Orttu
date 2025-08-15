@@ -5,7 +5,10 @@ import { Doc } from "@/../convex/_generated/dataModel";
 import { ActionsSkeleton } from "@/components/editor/LoadingStates";
 import React from "react";
 
-export const CategoryActions = React.memo(function CategoryActions({ categoryActions }: { categoryActions: Doc<"action_definitions">[] }) {
+export const CategoryActions = React.memo(function CategoryActions({ categoryActions, categoryColour }: {
+    categoryActions: Doc<"action_definitions">[],
+    categoryColour: string
+}) {
 
     if (categoryActions === undefined) {
         return <ActionsSkeleton />;
@@ -17,6 +20,7 @@ export const CategoryActions = React.memo(function CategoryActions({ categoryAct
                 <ActionDefinitionCard
                     key={action._id}
                     actionDefinition={action}
+                    categoryColour={categoryColour}
                 />
             ))}
         </div>

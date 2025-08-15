@@ -75,7 +75,8 @@ export default defineSchema({
         bgColour: v.optional(v.string()),
         borderColour: v.optional(v.string()),
         textColour: v.optional(v.string()),
-        icon: v.optional(v.string())
+        icon: v.optional(v.string()),
+        isPipedream: v.optional(v.boolean())
     }).index("by_action_key", ["actionKey"])
         .index("by_category", ["categoryId"])
         .index("by_service", ["serviceId"]),
@@ -95,7 +96,8 @@ export default defineSchema({
         description: v.string(),
         colour: v.string(),
         textColour: v.optional(v.string()),
-        icon: v.string()
+        icon: v.string(),
+        isPipedream: v.optional(v.boolean())
     }).index("by_category_key", ["categoryKey"]),
     
     // Connections

@@ -10,6 +10,7 @@
 
 import type * as action_functions__action_loader from "../action_functions/_action_loader.js";
 import type * as action_functions__action_registry from "../action_functions/_action_registry.js";
+import type * as action_functions_pipedream from "../action_functions/pipedream.js";
 import type * as action_functions_variables from "../action_functions/variables.js";
 import type * as action_functions_workflow_control from "../action_functions/workflow_control.js";
 import type * as auth from "../auth.js";
@@ -51,6 +52,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   "action_functions/_action_loader": typeof action_functions__action_loader;
   "action_functions/_action_registry": typeof action_functions__action_registry;
+  "action_functions/pipedream": typeof action_functions_pipedream;
   "action_functions/variables": typeof action_functions_variables;
   "action_functions/workflow_control": typeof action_functions_workflow_control;
   auth: typeof auth;

@@ -8,7 +8,8 @@ export const createActionCategoryInternal = internalMutation({
     textColour: v.string(),
     icon: v.string(),
     categoryKey: v.string(),
-    colour: v.string()
+    colour: v.string(),
+    isPipedream: v.optional(v.boolean())
   },
   handler: async (ctx, args) => {
     const existingCategory = await ctx.db
@@ -78,7 +79,8 @@ export const updateActionCategoryInternal = internalMutation({
     textColour: v.string(),
     icon: v.string(),
     categoryKey: v.string(),
-    colour: v.string()
+    colour: v.string(),
+    isPipedream: v.optional(v.boolean())
   },
   handler: async (ctx, args) => {
     const { id, ...updateData } = args;

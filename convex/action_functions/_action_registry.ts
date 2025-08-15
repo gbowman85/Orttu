@@ -43,22 +43,6 @@ export const actionCategoryRegistry = {
         colour: 'var(--color-orange-200)',
         textColour: 'var(--color-gray-900)',
         icon: '/images/icons/text.svg',
-    },
-    'gmail': {
-        categoryKey: 'gmail',
-        title: 'Gmail',
-        description: 'Gmail actions like sending and reading emails',
-        colour: 'var(--color-red-500)',
-        textColour: 'var(--color-white)',
-        icon: '/images/icons/gmail.svg',
-    },
-    'google-docs': {
-        categoryKey: 'google-docs',
-        title: 'Google Docs',
-        description: 'Google Docs actions like creating and editing documents',
-        colour: 'var(--color-blue-500)',
-        textColour: 'var(--color-white)',
-        icon: '/images/icons/docs.svg',
     }
 } satisfies Record<string, CategoryRegistryEntry>;
 
@@ -93,3 +77,27 @@ export type ActionRegistryEntry = {
 
 // Load all actions from the action files
 export const actionRegistry: Record<string, ActionRegistryEntry> = loadActions(actionFiles)
+
+// Pipedream apps supported
+export const pipedreamApps = [
+    {
+        appId: 'gmail',
+        colour: '#EA4335',
+        textColour: '#FFFFFF'
+    },
+    {
+        appId: 'google_drive',
+        colour: '#4285F4',
+        textColour: '#FFFFFF'
+    },
+    {
+        appId: 'microsoft_outlook',
+        colour: '#0072C6',
+        textColour: '#FFFFFF'
+    },
+    {
+        appId: 'microsoft_onedrive',
+        colour: '#0078D4',
+        textColour: '#FFFFFF'
+    }
+]

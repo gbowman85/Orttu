@@ -106,6 +106,15 @@ const CategoriesAccordionContent = ({
                             style={{ backgroundColor: `${category.colour}`, color: `${category.textColour}` }}
                         >
                             <span className="flex items-center gap-2">
+                                {category.icon && (
+                                    <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center aspect-square">
+                                        <img 
+                                            src={category.icon.endsWith('/orig') ? category.icon.replace('/orig', '/48') : category.icon} 
+                                            alt={`${category.title} icon`}
+                                            className="w-4 h-4 object-contain"
+                                        />
+                                    </div>
+                                )}
                                 {category.title}
                             </span>
                         </AccordionTrigger>
@@ -114,7 +123,7 @@ const CategoriesAccordionContent = ({
                                 {allActions === undefined ? (
                                     <ActionsSkeleton />
                                 ) : (
-                                    <CategoryActions categoryActions={categoryActions} />
+                                    <CategoryActions categoryActions={categoryActions} categoryColour={category.colour}/>
                                 )}
                             </div>
                         </AccordionContent>
