@@ -102,7 +102,7 @@ const CategoriesAccordionContent = ({
                         disabled={!!searchQuery}
                     >
                         <AccordionTrigger
-                            className="px-4 hover:no-underline rounded [&>svg]:text-current"
+                            className="px-2 hover:no-underline rounded [&>svg]:text-current"
                             style={{ backgroundColor: `${category.colour}`, color: `${category.textColour}` }}
                         >
                             <span className="flex items-center gap-2">
