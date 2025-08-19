@@ -367,15 +367,14 @@ export const syncPipedreamActionsToDatabase = internalAction({
             description: string,
             parameters: any[],
             outputs: any[],
+            borderColour: string,
             isPipedream: boolean
         }> = [];
 
         for (const app of pipedreamApps) {
             try {
                 // Get actions for this app from Pipedream API
-                const actions = await ctx.runAction(internal.action_functions.pipedream.getActionsInternal, {
-                    appId: app.appId
-                });
+                const actions = await ctx.runAction(internal.action_functions.pipedream.getActionsInternal, {app});
                 
                 // Transform actions to match the format of the action definitions
                 for (const action of actions) {
@@ -393,6 +392,7 @@ export const syncPipedreamActionsToDatabase = internalAction({
                             required: param.required
                         })),
                         outputs: [],
+                        borderColour: app.colour,
                         isPipedream: true
                     });
                 }
@@ -424,16 +424,14 @@ export const syncPipedreamActionsToDatabase = internalAction({
                 if (hasChanges(existingAction, action, ['_id', '_creationTime', 'categoryId', 'categoryKey'])) {
                     await ctx.runMutation(internal.data_functions.action_definitions.updateActionDefinitionInternal, {
                         id: existingAction._id,
-                        ...action,
-                        isPipedream: true
+                        ...action
                     });
                     pipedreamActionsUpdated++;
                 }
             } else {
                 // Create new action
                 const newAction = await ctx.runMutation(internal.data_functions.action_definitions.createActionDefinitionInternal, {
-                    ...action,
-                    isPipedream: true
+                    ...action
                 });
                 if (newAction) {
                     pipedreamActionsCreated++;

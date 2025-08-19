@@ -3,6 +3,7 @@
 import { internalAction } from "../_generated/server";
 import { v } from "convex/values";
 import { PipedreamClient } from "@pipedream/sdk/server";
+import app from "../convex.config";
 
 // Pipedream client configuration
 const PIPEDREAM_CLIENT_ID = process.env.PIPEDREAM_CLIENT_ID || '';
@@ -47,17 +48,21 @@ export const getAppDetailsInternal = internalAction({
 
 // Internal version for sync operations
 export const getActionsInternal = internalAction({
-    args: { appId: v.string() },
+    args: { app: v.object({
+        appId: v.string(),
+        colour: v.string(),
+        textColour: v.string()
+    }) },
     handler: async (ctx, args) => {
         try {
-            const response = await pipedreamClient.actions.list({ app: args.appId });
+            const response = await pipedreamClient.actions.list({ app: args.app.appId });
             const actionsData = response.data;
 
             return actionsData.map(action => ({
                 id: action.key,
                 name: action.name,
                 description: action.description || '',
-                appId: args.appId,
+                app: args.app.appId,
                 actionKey: action.key,
                 parameters: action.configurableProps?.map((param: any) => ({
                     key: param.key || '',
@@ -67,12 +72,12 @@ export const getActionsInternal = internalAction({
                     required: param.required || false
                 })) || [],
                 outputs: [], 
+                borderColor: args.app.colour,
                 bgColor: undefined,
-                borderColor: undefined,
                 textColor: undefined
             }));
         } catch (error) {
-            console.error(`Error fetching actions for app ${args.appId}:`, error);
+            console.error(`Error fetching actions for app ${args.app.appId}:`, error);
             return [];
         }
     }

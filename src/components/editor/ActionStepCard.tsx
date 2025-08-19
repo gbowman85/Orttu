@@ -9,6 +9,7 @@ import { useWorkflowEditor } from '@/contexts/WorkflowEditorContext'
 import { CommentIcon } from '@/components/editor/CommentIcon'
 import { DeleteActionStepButton } from '@/components/editor/DeleteActionStepButton'
 import { useDragState } from '@/components/editor/DragMonitor'
+import { reduceColour } from '@/lib/utils'
 
 interface ActionStepCardProps {
     id: string
@@ -67,6 +68,11 @@ export function ActionStepCard({
         currentDropTarget?.isChildContainer &&
         currentDropTarget?.group !== parentId
 
+    // Add a background colour if there is a border colour but no background colour
+    if (actionDefinition?.borderColour && !actionDefinition?.bgColour) {
+        actionDefinition.bgColour = reduceColour(actionDefinition.borderColour, 0.9);
+    }
+
     return (
         <div
             ref={dragRef}
@@ -119,7 +125,7 @@ export function ActionStepCard({
                     </div>
                 )}
             </div>
-            {/* If dragging an existing action, don't show the add action button */}
+            {/* Add Action button as a droppable target for new action steps */}
             <AddActionButton index={index + 1} parentId={parentId} parentKey={parentKey} isDragging={isDragging} isDropping={isDropping} />
         </div>
     )
