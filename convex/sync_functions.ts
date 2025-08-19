@@ -366,6 +366,7 @@ export const syncPipedreamActionsToDatabase = internalAction({
             title: string,
             description: string,
             parameters: any[],
+            configurableProps: any[],
             outputs: any[],
             borderColour: string,
             isPipedream: boolean
@@ -379,18 +380,12 @@ export const syncPipedreamActionsToDatabase = internalAction({
                 // Transform actions to match the format of the action definitions
                 for (const action of actions) {
                     allPipedreamActions.push({
-                        actionKey: `${app.appId}_${action.actionKey}`,
+                        actionKey: action.actionKey,
                         categoryKey: `pipedream_${app.appId}`,
                         title: action.name,
                         description: action.description,
-                        parameters: action.parameters.map((param: any) => ({
-                            parameterKey: param.key,
-                            title: param.title,
-                            description: param.description,
-                            dataType: param.type === 'number' ? 'number' : 'string',
-                            inputType: param.type === 'number' ? 'number' : 'text',
-                            required: param.required
-                        })),
+                        parameters: action.parameters,
+                        configurableProps: action.configurableProps,
                         outputs: [],
                         borderColour: app.colour,
                         isPipedream: true

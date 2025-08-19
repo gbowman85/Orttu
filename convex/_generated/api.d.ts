@@ -147,7 +147,14 @@ export declare const components: {
             generationNumber: number;
             logLevel?: any;
             name?: string;
-            onComplete?: { context?: any; fnHandle: string };
+            onComplete?: {
+              context: any;
+              result:
+                | { kind: "success"; returnValue: any }
+                | { error: string; kind: "failed" }
+                | { kind: "canceled" };
+              workId: string;
+            };
             runResult?:
               | { kind: "success"; returnValue: any }
               | { error: string; kind: "failed" }
@@ -250,7 +257,14 @@ export declare const components: {
         "internal",
         {
           maxParallelism?: number;
-          onComplete?: { context?: any; fnHandle: string };
+          onComplete?: {
+            context: any;
+            result:
+              | { kind: "success"; returnValue: any }
+              | { error: string; kind: "failed" }
+              | { kind: "canceled" };
+            workId: string;
+          };
           validateAsync?: boolean;
           workflowArgs: any;
           workflowHandle: string;
@@ -292,7 +306,14 @@ export declare const components: {
             generationNumber: number;
             logLevel?: any;
             name?: string;
-            onComplete?: { context?: any; fnHandle: string };
+            onComplete?: {
+              context: any;
+              result:
+                | { kind: "success"; returnValue: any }
+                | { error: string; kind: "failed" }
+                | { kind: "canceled" };
+              workId: string;
+            };
             runResult?:
               | { kind: "success"; returnValue: any }
               | { error: string; kind: "failed" }

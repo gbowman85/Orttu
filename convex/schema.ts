@@ -50,11 +50,13 @@ export default defineSchema({
         title: v.string(),
         description: v.string(),
         parameters: v.array(ParameterSchema),
+        configurableProps: v.optional(v.array(v.any())),
         outputs: v.array(OutputSchema),
         bgColour: v.optional(v.string()),
         borderColour: v.optional(v.string()),
         textColour: v.optional(v.string()),
-        icon: v.optional(v.string())
+        icon: v.optional(v.string()),
+        isPipedream: v.optional(v.boolean())
     }).index("by_trigger_key", ["triggerKey"])
         .index("by_category", ["categoryId"])
         .index("by_service", ["serviceId"]),
@@ -66,6 +68,7 @@ export default defineSchema({
         title: v.string(),
         description: v.string(),
         parameters: v.array(ParameterSchema),
+        configurableProps: v.optional(v.array(v.any())),
         outputs: v.array(OutputSchema),
         childListKeys: v.optional(v.array(v.object({
             key: v.string(),

@@ -61,6 +61,7 @@ export type ActionRegistryEntry = {
         textColour?: string,
         icon?: string,
         parameters: Parameter[],
+        configurableProps?: object[],
         childListKeys?: {
             key: string,
             title: string,

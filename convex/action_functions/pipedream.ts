@@ -3,7 +3,6 @@
 import { internalAction } from "../_generated/server";
 import { v } from "convex/values";
 import { PipedreamClient } from "@pipedream/sdk/server";
-import app from "../convex.config";
 
 // Pipedream client configuration
 const PIPEDREAM_CLIENT_ID = process.env.PIPEDREAM_CLIENT_ID || '';
@@ -64,13 +63,8 @@ export const getActionsInternal = internalAction({
                 description: action.description || '',
                 app: args.app.appId,
                 actionKey: action.key,
-                parameters: action.configurableProps?.map((param: any) => ({
-                    key: param.key || '',
-                    title: param.title || param.key || '',
-                    description: param.description || '',
-                    type: param.type || 'string',
-                    required: param.required || false
-                })) || [],
+                parameters: [],
+                configurableProps: action.configurableProps,
                 outputs: [], 
                 borderColor: args.app.colour,
                 bgColor: undefined,

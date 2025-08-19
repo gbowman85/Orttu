@@ -56,6 +56,7 @@ export const createActionDefinitionInternal = internalMutation({
         actionKey: v.string(),
         serviceKey: v.optional(v.string()),
         parameters: v.array(ParameterSchema),
+        configurableProps: v.optional(v.array(v.any())),
         outputs: v.array(v.object({
             outputKey: v.string(),
             outputDataType: DataTypeSchema,
