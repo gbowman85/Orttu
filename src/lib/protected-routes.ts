@@ -1,8 +1,9 @@
 export const PROTECTED_ROUTES = [
   "/workflows",
-  "/connections",
+  "/connections", 
   "/account",
   "/activity",
   "/reusable-data",
-  "/action-categories-test"
+  "/action-categories-test",
+  "/w/:workflowId*"
 ]; 
