@@ -84,7 +84,7 @@ const CategoriesAccordionContent = ({
     return (
         <Accordion 
             type="multiple" 
-            className="w-full"
+            className="h-full overflow-y-auto pb-12"
             value={expandedItems}
             onValueChange={setManuallyExpandedItems}
         >

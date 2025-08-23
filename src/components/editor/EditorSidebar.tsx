@@ -9,8 +9,9 @@ function EditorSidebar() {
     const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
     return (
-        <>
-            <div className="w-full flex flex-col gap-4">
+        <div className="w-full h-full flex flex-col">
+            {/* Fixed header section */}
+            <div className="flex flex-col gap-4 flex-shrink-0">
                 {/* Search Bar */}
                 <div className="relative">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -32,14 +33,16 @@ function EditorSidebar() {
                         <CategoriesOptions />
                     </SelectContent>
                 </Select>
+            </div>
 
-                {/* Categories Accordion */}
+            {/* Scrollable accordion section */}
+            <div className="flex-1 min-h-0 mt-4">
                 <CategoriesAccordion
                     searchQuery={searchQuery}
                     selectedCategory={selectedCategory}
                 />
             </div>
-        </>
+        </div>
     );
 }
 

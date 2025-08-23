@@ -267,10 +267,10 @@ export function ParameterForm({
                 parameterValues: values
             })
             setHasChanged(false)
-            toast.success('Parameters saved successfully')
+            toast.success('Changes saved')
             onSave?.()
         } catch (error) {
-            toast.error('Failed to save parameters')
+            toast.error('Failed to save, try again')
             console.error('Failed to save parameters:', error)
         }
     }
@@ -278,26 +278,28 @@ export function ParameterForm({
     const isValid = Object.keys(errors).length === 0
 
     return (
-        <div className="space-y-4">
-            {parameters.map(parameter => (
-                <ParameterInput
-                    key={parameter.parameterKey}
-                    parameter={parameter}
-                    value={values[parameter.parameterKey]}
-                    onChange={(value) => handleChange(parameter.parameterKey, value)}
-                    error={errors[parameter.parameterKey]}
-                    otherValues={getRelevantValues(parameter)}
-                />
-            ))}
+        <>
+            <div className="min-h-0 overflow-y-auto space-y-4">
+                {parameters.map(parameter => (
+                    <ParameterInput
+                        key={parameter.parameterKey}
+                        parameter={parameter}
+                        value={values[parameter.parameterKey]}
+                        onChange={(value) => handleChange(parameter.parameterKey, value)}
+                        error={errors[parameter.parameterKey]}
+                        otherValues={getRelevantValues(parameter)}
+                    />
+                ))}
+            </div>
             {hasChanged && (
                 <Button
                     onClick={handleSubmit}
-                    className="w-full"
+                    className="w-full mt-4 sticky bottom-0"
                     disabled={!isValid}
                 >
                     Save Changes
                 </Button>
             )}
-        </div>
+        </>
     )
 } 

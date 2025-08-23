@@ -220,26 +220,28 @@ export function PipedreamPropsForm({
     const isValid = Object.keys(errors).length === 0
 
     return (
-        <div className="space-y-4">
-            {configurableProps.map(prop => (
-                <PipedreamPropInput
-                    key={prop.name}
-                    prop={prop}
-                    value={values[prop.name]}
-                    onChange={(value) => handleChange(prop.name, value)}
-                    error={errors[prop.name]}
-                    options={remoteOptions[prop.name] || []}
-                />
-            ))}
+        <>
+            <div id="pipedream-properties-form" className="flex-1 min-h-0 overflow-y-auto space-y-4">
+                {configurableProps.map(prop => (
+                    <PipedreamPropInput
+                        key={prop.name}
+                        prop={prop}
+                        value={values[prop.name]}
+                        onChange={(value) => handleChange(prop.name, value)}
+                        error={errors[prop.name]}
+                        options={remoteOptions[prop.name] || []}
+                    />
+                ))}
+            </div>
             {hasChanged && (
                 <Button
                     onClick={handleSubmit}
-                    className="w-full"
+                    className="w-full mt-4 sticky bottom-0"
                     disabled={!isValid}
                 >
                     Save Changes
                 </Button>
             )}
-        </div>
+        </>
     )
 }

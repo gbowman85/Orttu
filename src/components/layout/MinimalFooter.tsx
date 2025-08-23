@@ -1,6 +1,6 @@
 export default function MinimalFooter() {
   return (
-    <footer className="w-full border-t">
+    <footer className="w-full bg-gray-50 border-t z-10">
       <div className="mx-auto px-2 py-2">
         <div className="flex justify-between items-center">
           <div className="flex gap-4">

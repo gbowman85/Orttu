@@ -62,10 +62,10 @@ export default function WorkflowBuilder() {
     }
 
     return (
-        <div className="relative flex flex-row flex-1">
+        <div className="relative flex flex-row h-full">
             <div
                 id="workflow-builder-container"
-                className="w-full "
+                className="w-full h-full overflow-y-auto"
                 onClick={(e) => {
                     if (selectedStepId && (e.target === e.currentTarget || (e.target as HTMLElement).parentElement === e.currentTarget)) {
                         setSelectedStepId(null)
