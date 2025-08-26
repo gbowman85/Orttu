@@ -108,10 +108,8 @@ export default defineSchema({
     connections: defineTable({
         serviceId: v.id("services"),
         ownerId: v.id("users"),
-        viewerIds: v.array(v.id("users")),
         title: v.string(),
-        token: v.string(),
-        refreshToken: v.string(),
+        pipedreamAccountId: v.string(),
         created: v.number(),
         updated: v.number(),
         lastUsed: v.number(),

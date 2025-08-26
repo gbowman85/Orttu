@@ -597,6 +597,31 @@ export const editStepConnection = mutation({
     }
 });
 
+// Remove a step's connection
+export const removeStepConnection = mutation({
+    args: {
+        workflowId: v.id("workflows"),
+        stepId: v.union(v.id("trigger_steps"), v.id("action_steps"))
+    },
+    handler: async (ctx, { workflowId, stepId }) => {
+        const { workflow } = await requireWorkflowAccess(ctx, workflowId, 'editor');
+
+        // Try to update the step (will work for either trigger or action step)
+        await ctx.db.patch(stepId, {
+            connectionId: undefined
+        });
+
+        // Update the workflow configuration's updated timestamp
+        if (workflow.currentConfigId) {
+            await ctx.db.patch(workflow.currentConfigId, {
+                updated: Date.now()
+            });
+        }
+
+        return stepId;
+    }
+});
+
 // Get step parameters
 export const getStepParameterValues = query({
     args: {

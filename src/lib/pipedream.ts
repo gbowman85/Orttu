@@ -9,16 +9,36 @@ const PIPEDREAM_PROJECT_ENVIRONMENT = process.env.PIPEDREAM_PROJECT_ENVIRONMENT 
 const PIPEDREAM_PROJECT_ID = process.env.PIPEDREAM_PROJECT_ID || '';
 
 // Initialize Pipedream client
-export const pipedreamClient = new PipedreamClient({
+const pipedreamClient = new PipedreamClient({
     clientId: PIPEDREAM_CLIENT_ID,
     clientSecret: PIPEDREAM_CLIENT_SECRET,
     projectEnvironment: PIPEDREAM_PROJECT_ENVIRONMENT,
     projectId: PIPEDREAM_PROJECT_ID,
 });
 
-// Generate connect token for frontend requests
-export async function getPipedreamToken(opts: { externalUserId: string }) {
-  return await pipedreamClient.tokens.create({
-    externalUserId: opts.externalUserId
-  })
+// Get Pipedream token for frontend
+export async function getPipedreamToken(externalUserId: string) {
+  try {
+    const result = await pipedreamClient.tokens.create({
+      allowedOrigins: ['http://localhost:3000/'],
+      externalUserId
+    })
+    return { success: true, data: result }
+  } catch (error) {
+    console.error('Failed to get Pipedream token:', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  }
+}
+
+// Get Pipedream accounts for a user
+export async function getPipedreamAccounts(externalUserId: string) {
+  try {
+    const result = await pipedreamClient.accounts.list({
+      externalUserId
+    })
+    return { success: true, data: result }
+  } catch (error) {
+    console.error('Failed to get Pipedream accounts:', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  }
 }

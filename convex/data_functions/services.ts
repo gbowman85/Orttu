@@ -38,6 +38,23 @@ export const getServiceByServiceKeyInternal = internalQuery({
     }
 })
 
+export const getAllServicesInternal = internalQuery({
+    args: {},
+    handler: async (ctx) => {
+        return await ctx.db.query('services').collect();
+    }
+})
+
+export const deleteServiceInternal = internalMutation({
+    args: {
+        id: v.id("services")
+    },
+    handler: async (ctx, args) => {
+        await ctx.db.delete(args.id);
+        return args.id;
+    }
+})
+
 export const listServices = query({
     args: {},
     handler: async (ctx) => {

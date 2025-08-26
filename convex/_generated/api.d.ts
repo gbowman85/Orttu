@@ -17,6 +17,7 @@ import type * as auth from "../auth.js";
 import type * as crons from "../crons.js";
 import type * as data_functions_action_categories from "../data_functions/action_categories.js";
 import type * as data_functions_action_definitions from "../data_functions/action_definitions.js";
+import type * as data_functions_connections from "../data_functions/connections.js";
 import type * as data_functions_scheduled_workflows from "../data_functions/scheduled_workflows.js";
 import type * as data_functions_services from "../data_functions/services.js";
 import type * as data_functions_trigger_categories from "../data_functions/trigger_categories.js";
@@ -59,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   "data_functions/action_categories": typeof data_functions_action_categories;
   "data_functions/action_definitions": typeof data_functions_action_definitions;
+  "data_functions/connections": typeof data_functions_connections;
   "data_functions/scheduled_workflows": typeof data_functions_scheduled_workflows;
   "data_functions/services": typeof data_functions_services;
   "data_functions/trigger_categories": typeof data_functions_trigger_categories;

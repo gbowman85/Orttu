@@ -281,13 +281,20 @@ export const syncPipedreamCategoriesToDatabase = internalAction({
         let pipedreamCategoriesCreated = 0;
         let pipedreamCategoriesUpdated = 0;
         let pipedreamCategoriesDeleted = 0;
+        let pipedreamServicesCreated = 0;
+        let pipedreamServicesUpdated = 0;
+        let pipedreamServicesDeleted = 0;
 
         // Get all existing Pipedream categories
         const existingCategories = await ctx.runQuery(internal.data_functions.action_categories.getAllActionCategoriesInternal);
         const existingPipedreamCategories = existingCategories.filter(cat => cat.isPipedream);
         
-        // Generate category keys for current apps
+        // Get all existing services
+        const existingServices = await ctx.runQuery(internal.data_functions.services.getAllServicesInternal);
+        
+        // Generate category keys and service keys for current apps
         const currentCategoryKeys = new Set(pipedreamApps.map(app => `pipedream_${app.appId}`));
+        const currentServiceKeys = new Set(pipedreamApps.map(app => `${app.appId}`));
 
         // Delete Pipedream categories that are no longer in the registry
         for (const existingCategory of existingPipedreamCategories) {
@@ -299,14 +306,56 @@ export const syncPipedreamCategoriesToDatabase = internalAction({
             }
         }
 
-        // Create or update Pipedream categories
+        // Delete services that are no longer in the registry
+        for (const existingService of existingServices) {
+            if (!currentServiceKeys.has(existingService.serviceKey)) {
+                await ctx.runMutation(internal.data_functions.services.deleteServiceInternal, {
+                    id: existingService._id
+                });
+                pipedreamServicesDeleted++;
+            }
+        }
+
+        // Create or update Pipedream categories and services
         for (const app of pipedreamApps) {
             const categoryKey = `pipedream_${app.appId}`;
+            const serviceKey = `${app.appId}`;
             
             // Fetch app details from Pipedream API
             const appDetails = await ctx.runAction(internal.action_functions.pipedream.getAppDetailsInternal, {
                 appId: app.appId
             });
+            
+            // Create or update service for this app
+            const existingService = await ctx.runQuery(internal.data_functions.services.getServiceByServiceKeyInternal, { 
+                serviceKey: serviceKey
+            });
+            
+            const serviceData = {
+                serviceKey: serviceKey,
+                title: appDetails.name,
+                description: appDetails.description,
+                parameters: []
+            };
+            
+            let serviceId: string;
+            if (existingService) {
+                // Update existing service if it has changed
+                if (hasChanges(existingService, serviceData, ['_id', '_creationTime', 'serviceKey'])) {
+                    await ctx.runMutation(internal.data_functions.services.createService, serviceData);
+                    pipedreamServicesUpdated++;
+                }
+                serviceId = existingService._id;
+            } else {
+                // Create new service
+                const newServiceId = await ctx.runMutation(internal.data_functions.services.createService, serviceData);
+                if (newServiceId) {
+                    serviceId = newServiceId;
+                    pipedreamServicesCreated++;
+                } else {
+                    throw new Error(`Failed to create service for ${app.appId}`);
+                }
+            }
             
             const existingCategory = await ctx.runQuery(internal.data_functions.action_categories.getActionCategoryByCategoryKeyInternal, { 
                 categoryKey: categoryKey
@@ -342,9 +391,16 @@ export const syncPipedreamCategoriesToDatabase = internalAction({
 
         return {
             total: pipedreamApps.length,
-            created: pipedreamCategoriesCreated,
-            updated: pipedreamCategoriesUpdated,
-            deleted: pipedreamCategoriesDeleted
+            categories: {
+                created: pipedreamCategoriesCreated,
+                updated: pipedreamCategoriesUpdated,
+                deleted: pipedreamCategoriesDeleted
+            },
+            services: {
+                created: pipedreamServicesCreated,
+                updated: pipedreamServicesUpdated,
+                deleted: pipedreamServicesDeleted
+            }
         };
     }
 })
@@ -363,6 +419,7 @@ export const syncPipedreamActionsToDatabase = internalAction({
         const allPipedreamActions: Array<{
             actionKey: string,
             categoryKey: string,
+            serviceKey: string,
             title: string,
             description: string,
             parameters: any[],
@@ -382,6 +439,7 @@ export const syncPipedreamActionsToDatabase = internalAction({
                     allPipedreamActions.push({
                         actionKey: action.actionKey,
                         categoryKey: `pipedream_${app.appId}`,
+                        serviceKey: `${app.appId}`,
                         title: action.name,
                         description: action.description,
                         parameters: action.parameters,
@@ -416,7 +474,7 @@ export const syncPipedreamActionsToDatabase = internalAction({
             
             if (existingAction) {
                 // Update existing action if it has changed
-                if (hasChanges(existingAction, action, ['_id', '_creationTime', 'categoryId', 'categoryKey'])) {
+                if (hasChanges(existingAction, action, ['_id', '_creationTime', 'categoryId', 'categoryKey', 'serviceId'])) {
                     await ctx.runMutation(internal.data_functions.action_definitions.updateActionDefinitionInternal, {
                         id: existingAction._id,
                         ...action

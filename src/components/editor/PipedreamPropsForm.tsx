@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react'
 import { useMutation } from 'convex/react'
 import { api } from '@/../convex/_generated/api'
 import { PipedreamConfigurableProp } from '@/../convex/types'
-import { PipedreamPropInput } from './PipedreamPropInput'
+import { PipedreamPropInput } from '@/components/editor/PipedreamPropInput'
+import { PropertiesConnection } from '@/components/editor/PropertiesConnection'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { Id } from '@/../convex/_generated/dataModel'
+import { Id, Doc } from '@/../convex/_generated/dataModel'
 import { z } from 'zod/v4'
 
 // Create a Zod schema from a configurable prop
@@ -89,6 +90,8 @@ interface PipedreamPropsFormProps {
     initialValues: Record<string, any>
     stepId: Id<'trigger_steps'> | Id<'action_steps'>
     workflowConfigId: Id<'workflow_configurations'>
+    actionDefinitionId?: Id<'action_definitions'>
+    selectedStep?: Doc<"action_steps">
     onSave?: () => void
     onReloadProps?: (propName: string) => Promise<void>
     remoteOptions?: Record<string, Array<{ label: string; value: any }>>
@@ -99,6 +102,8 @@ export function PipedreamPropsForm({
     initialValues,
     stepId,
     workflowConfigId,
+    actionDefinitionId,
+    selectedStep,
     onSave,
     onReloadProps,
     remoteOptions = {}
@@ -221,19 +226,39 @@ export function PipedreamPropsForm({
 
     return (
         <>
-            <div id="pipedream-properties-form" className="flex-1 min-h-0 overflow-y-auto space-y-4">
-                {configurableProps.map(prop => (
-                    <PipedreamPropInput
-                        key={prop.name}
-                        prop={prop}
-                        value={values[prop.name]}
-                        onChange={(value) => handleChange(prop.name, value)}
-                        error={errors[prop.name]}
-                        options={remoteOptions[prop.name] || []}
+            {/* Connection Display */}
+            {actionDefinitionId && (
+                <div className="mb-4">
+                    <PropertiesConnection
+                        actionDefinitionId={actionDefinitionId}
+                        stepId={stepId as Id<'action_steps'>}
+                        workflowConfigId={workflowConfigId}
+                        onConnectionSelected={() => {
+                            // Refresh the form when connection changes
+                            setValues(initialFormValues)
+                            setErrors({})
+                            setHasChanged(false)
+                        }}
                     />
-                ))}
-            </div>
-            {hasChanged && (
+                </div>
+            )}
+
+            {/* Show PipedreamPropInputs if there's a connection */}
+            {selectedStep?.connectionId && (
+                <div id="pipedream-properties-form" className="flex-1 min-h-0 overflow-y-auto space-y-4">
+                    {configurableProps.map(prop => (
+                        <PipedreamPropInput
+                            key={prop.name}
+                            prop={prop}
+                            value={values[prop.name]}
+                            onChange={(value) => handleChange(prop.name, value)}
+                            error={errors[prop.name]}
+                            options={remoteOptions[prop.name] || []}
+                        />
+                    ))}
+                </div>
+            )}
+            {hasChanged && selectedStep?.connectionId && (
                 <Button
                     onClick={handleSubmit}
                     className="w-full mt-4 sticky bottom-0"
