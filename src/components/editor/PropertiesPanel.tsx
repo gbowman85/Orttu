@@ -112,7 +112,7 @@ export default function PropertiesPanel() {
                                     configurableProps={selectedDefinition.configurableProps || []}
                                     initialValues={parameterValues || {}}
                                     stepId={selectedStepId}
-                                    selectedStep={selectedStep}
+                                    selectedStep={selectedStep && 'actionDefinitionId' in selectedStep ? selectedStep : undefined}
                                     workflowConfigId={workflowConfig._id}
                                     actionDefinitionId={selectedStep && 'actionDefinitionId' in selectedStep ? selectedStep.actionDefinitionId : undefined}
                                 />

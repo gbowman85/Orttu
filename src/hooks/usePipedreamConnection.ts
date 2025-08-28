@@ -1,12 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { PipedreamClient } from '@pipedream/sdk/browser'
-import { getPipedreamToken } from '@/lib/pipedream'
 import { toast } from 'sonner'
 import { useMutation } from 'convex/react'
 import { api } from '@/../convex/_generated/api'
 import { Doc, Id } from '@/../convex/_generated/dataModel'
+import { createPipedreamClient } from '@/lib/pipedream-client'
 
 interface UsePipedreamConnectionOptions {
     onSuccess?: (account: any) => void
@@ -23,38 +22,14 @@ export function usePipedreamConnection(options: UsePipedreamConnectionOptions = 
         const serviceId = service._id
         const app = service.serviceKey
 
-        // Call backend to get a connect token
-        const authTokenResult = await getPipedreamToken(externalUserId)
-
-        if (!authTokenResult.success) {
-            throw new Error(authTokenResult.error || 'Failed to get connection token')
-        }
-
-        const tokenData = authTokenResult.data
-        if (!tokenData) {
-            throw new Error('No token data received from server')
-        }
-
-        // Get Pipedream token from server
-        const tokenCallback = async ({ externalUserId }: { externalUserId: string }) => {
-            return tokenData
-        }
-
         try {
-            // Initialize Pipedream client
-            const PIPEDREAM_PROJECT_ENVIRONMENT = process.env.NEXT_PUBLIC_PIPEDREAM_PROJECT_ENVIRONMENT as 'production' | 'development'  || 'development' ;
-
-            const frontendClient = new PipedreamClient({
-                projectEnvironment: PIPEDREAM_PROJECT_ENVIRONMENT,
-                externalUserId,
-                tokenCallback,
-            });
+            // Initialize Pipedream client using shared utility
+            const frontendClient = await createPipedreamClient(externalUserId)
 
             // Use connectAccount method which opens an iFrame for the OAuth flow
             await frontendClient.connectAccount({
                 app: app,
-                token: tokenData.token,
-                onSuccess: (result) => {
+                onSuccess: (result: any) => {
 
                     // Add connection to database
                     if (result.id) {
