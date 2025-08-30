@@ -225,7 +225,6 @@ export function PipedreamPropsForm({
 
     return (
         <>
-            <div>{JSON.stringify(configuredProps)}</div>
             {/* Connection Display */}
             {actionDefinition && (
                 <div className="mb-4">
@@ -236,8 +235,6 @@ export function PipedreamPropsForm({
                         configuredProps={configuredProps}
                         updateConfiguredProps={updateConfiguredProps}
                         onConnectionSelected={() => {
-                            console.log('🔄 Connection selected')
-
 
                             //Save the step parameters
                             if (step?._id) {

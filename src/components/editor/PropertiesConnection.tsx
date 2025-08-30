@@ -52,7 +52,6 @@ export function PropertiesConnection({
                 authProvisionId: connection.pipedreamAccountId
             }
         }
-        console.log('🔗 Adding connection data to configured props:', connectionData)
         updateConfiguredProps(connectionData)
     }
 
@@ -114,7 +113,6 @@ export function PropertiesConnection({
                     }
                 }
                 updateConfiguredProps(connectionData)
-                console.log('🔗 Updated configured props with connection data:', connectionData)
             }
             onConnectionSelected?.()
 

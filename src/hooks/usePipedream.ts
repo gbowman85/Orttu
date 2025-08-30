@@ -100,6 +100,15 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
 
     const user = useQuery(api.data_functions.users.currentUser)
 
+    // Reset configuredProps when step or actionDefinition changes
+    useEffect(() => {
+        const newConfiguredProps = step?.parameterValues || {}
+        setConfiguredProps(newConfiguredProps)
+        configuredPropsRef.current = newConfiguredProps
+        // Clear remote options when switching actions
+        setRemoteOptions({})
+    }, [step?._id, step?.parameterValues, actionDefinition?._id])
+
     const updateConfiguredProps = useCallback((newValues: Record<string, any>) => {
         setConfiguredProps(prev => {
             const updated = {

@@ -6,10 +6,11 @@ import { Switch } from '@/components/ui/switch'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
 import { PipedreamConfigurableProp } from '@/../convex/types'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-import { Info } from 'lucide-react'
-import { useRef, useEffect } from 'react'
+import { Info, List, Type } from 'lucide-react'
+import { useRef, useEffect, useState } from 'react'
 
 interface PipedreamPropInputProps {
     prop: PipedreamConfigurableProp
@@ -26,6 +27,8 @@ export function PipedreamPropInput({
     error,
     options = []
 }: PipedreamPropInputProps) {
+    const [isSelectionMode, setIsSelectionMode] = useState(true)
+
     // Don't render if the prop is hidden
     if (prop.hidden) {
         return null
@@ -44,30 +47,81 @@ export function PipedreamPropInput({
     const renderInput = () => {
         // Handle remote options with label-value format
         if (prop.remoteOptions && options.length > 0) {
-            return (
-                <Select
-                    value={value?.__lv?.value ?? value ?? ''}
-                    onValueChange={(selectedValue) => {
-                        const option = options.find(opt => opt.value === selectedValue)
-                        if (option && prop.withLabel) {
-                            onChange({ __lv: { label: option.label, value: selectedValue } })
-                        } else {
-                            onChange(selectedValue)
-                        }
-                    }}
-                >
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select a value" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {options.map((option) => (
-                            <SelectItem key={option.value ?? option.label} value={option.value ?? ''}>
-                                {option.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            )
+            if (isSelectionMode) {
+                return (
+                    <div className="flex items-center gap-2">
+                        <Select
+                            value={value?.__lv?.value ?? value ?? ''}
+                            onValueChange={(selectedValue) => {
+                                const option = options.find(opt => opt.value === selectedValue)
+                                if (option && prop.withLabel) {
+                                    onChange({ __lv: { label: option.label, value: selectedValue } })
+                                } else {
+                                    onChange(selectedValue)
+                                }
+                            }}
+                        >
+                            <SelectTrigger className="flex-1 bg-white">
+                                <SelectValue placeholder="Select a value" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {options.map((option) => (
+                                    <SelectItem key={option.value ?? option.label} value={option.value ?? ''}>
+                                        {option.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsSelectionMode(false)}
+                            className="shrink-0"
+                            title="Switch to text input"
+                        >
+                            <Type className="h-4 w-4" />
+                        </Button>
+                    </div>
+                )
+            } else {
+                return (
+                    <div className="flex items-center gap-2">
+                        <Input
+                            value={value?.__lv?.value ?? value ?? ''}
+                            onChange={(e) => {
+                                const inputValue = e.target.value
+                                if (prop.withLabel) {
+                                    // Try to find a matching option
+                                    const option = options.find(opt => 
+                                        opt.label.toLowerCase().includes(inputValue.toLowerCase()) ||
+                                        opt.value?.toString().toLowerCase().includes(inputValue.toLowerCase())
+                                    )
+                                    if (option) {
+                                        onChange({ __lv: { label: option.label, value: option.value } })
+                                    } else {
+                                        onChange({ __lv: { label: inputValue, value: inputValue } })
+                                    }
+                                } else {
+                                    onChange(inputValue)
+                                }
+                            }}
+                            placeholder={`Enter ${prop.label?.toLowerCase() || prop.name.toLowerCase()}`}
+                            className="flex-1"
+                        />
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsSelectionMode(true)}
+                            className="shrink-0"
+                            title="Switch to selection mode"
+                        >
+                            <List className="h-4 w-4" />
+                        </Button>
+                    </div>
+                )
+            }
         }
 
         // Handle different types
