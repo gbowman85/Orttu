@@ -9,13 +9,14 @@ import { Label } from '@/components/ui/label'
 import { PipedreamConfigurableProp } from '@/../convex/types'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { Info } from 'lucide-react'
+import { useRef, useEffect } from 'react'
 
 interface PipedreamPropInputProps {
     prop: PipedreamConfigurableProp
     value: any
     onChange: (value: any) => void
     error?: string
-    options?: Array<{ label: string; value: any }>
+    options?: Array<{ label: string; value?: any }>
 }
 
 export function PipedreamPropInput({
@@ -60,7 +61,7 @@ export function PipedreamPropInput({
                     </SelectTrigger>
                     <SelectContent>
                         {options.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
+                            <SelectItem key={option.value ?? option.label} value={option.value ?? ''}>
                                 {option.label}
                             </SelectItem>
                         ))}

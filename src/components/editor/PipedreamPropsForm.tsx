@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { Id, Doc } from '@/../convex/_generated/dataModel'
 import { z } from 'zod/v4'
+import { usePipedreamProps } from '@/hooks/usePipedream'
 
 // Create a Zod schema from a configurable prop
 function createPropSchema(prop: PipedreamConfigurableProp) {
@@ -86,51 +87,46 @@ function createFormSchema(props: PipedreamConfigurableProp[]) {
 }
 
 interface PipedreamPropsFormProps {
-    configurableProps: PipedreamConfigurableProp[]
-    initialValues: Record<string, any>
-    stepId: Id<'trigger_steps'> | Id<'action_steps'>
     workflowConfigId: Id<'workflow_configurations'>
-    actionDefinitionId?: Id<'action_definitions'>
-    selectedStep?: Doc<"action_steps">
-    onSave?: () => void
-    onReloadProps?: (propName: string) => Promise<void>
-    remoteOptions?: Record<string, Array<{ label: string; value: any }>>
+    actionDefinition?: Doc<'action_definitions'>
+    step?: Doc<"action_steps">
 }
 
 export function PipedreamPropsForm({
-    configurableProps,
-    initialValues,
-    stepId,
     workflowConfigId,
-    actionDefinitionId,
-    selectedStep,
-    onSave,
-    onReloadProps,
-    remoteOptions = {}
+    actionDefinition,
+    step,
 }: PipedreamPropsFormProps) {
-    // Initialize values with defaults
-    const initialFormValues = configurableProps.reduce((acc, prop) => {
-        acc[prop.name] = initialValues[prop.name] ?? null
-        return acc
-    }, {} as Record<string, any>)
 
-    const [values, setValues] = useState<Record<string, any>>(initialFormValues)
+    // Use the Pipedream props hook
+    const {
+        configuredProps,
+        updateConfiguredProps,
+        remoteOptions,
+        reloadProps,
+    } = usePipedreamProps({
+        step,
+        workflowConfigId,
+        actionDefinition
+    })
+
+    const configurableProps = actionDefinition?.configurableProps || []
+
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [hasChanged, setHasChanged] = useState(false)
-    const [loadingProps, setLoadingProps] = useState<Set<string>>(new Set())
 
-    const editStepParameters = useMutation(api.data_functions.workflow_steps.editStepParameterValues)
+    const saveStepParameters = useMutation(api.data_functions.workflow_steps.editStepParameterValues)
+
+
 
     useEffect(() => {
-        setValues(initialFormValues)
         setErrors({})
         setHasChanged(false)
-    }, [initialValues, configurableProps])
+    }, [step?.parameterValues, configurableProps])
 
     // Cleanup on unmount
     useEffect(() => {
         return () => {
-            setValues({})
             setErrors({})
             setHasChanged(false)
         }
@@ -155,9 +151,10 @@ export function PipedreamPropsForm({
     }
 
     const handleChange = async (propName: string, value: any) => {
-        const newValues = { ...values, [propName]: value }
-        setValues(newValues)
         setHasChanged(true)
+
+        // Update configured props for Pipedream API calls
+        updateConfiguredProps({ [propName]: value })
 
         // Validate only the changed input
         const prop = configurableProps.find(p => p.name === propName)
@@ -181,26 +178,26 @@ export function PipedreamPropsForm({
         }
 
         // Handle reloadProps if needed
-        if (prop?.reloadProps && onReloadProps) {
-            setLoadingProps(prev => new Set(prev).add(propName))
+        if (prop?.reloadProps) {
+            console.log('🔄 Property has reloadProps flag - triggering reload for:', propName)
             try {
-                await onReloadProps(propName)
+                await reloadProps(propName)
             } catch (error) {
-                console.error('Failed to reload props:', error)
+                console.error('❌ Failed to reload props:', error)
                 toast.error('Failed to reload component properties')
-            } finally {
-                setLoadingProps(prev => {
-                    const newSet = new Set(prev)
-                    newSet.delete(propName)
-                    return newSet
-                })
             }
         }
     }
 
     const handleSubmit = async () => {
+        // Get all current values from configured props
+        const currentValues = configurableProps.reduce((acc, prop) => {
+            acc[prop.name] = configuredProps[prop.name] ?? null
+            return acc
+        }, {} as Record<string, any>)
+
         // Validate all inputs before submitting
-        const { isValid: formIsValid, errors: newErrors } = validateForm(values)
+        const { isValid: formIsValid, errors: newErrors } = validateForm(currentValues)
 
         if (!formIsValid) {
             setErrors(newErrors)
@@ -208,14 +205,16 @@ export function PipedreamPropsForm({
         }
 
         try {
-            await editStepParameters({
+            if (!step?._id) {
+                throw new Error('Step not found')
+            }
+            await saveStepParameters({
                 workflowConfigId,
-                stepId,
-                parameterValues: values
+                stepId: step?._id,
+                parameterValues: currentValues
             })
             setHasChanged(false)
             toast.success('Properties saved successfully')
-            onSave?.()
         } catch (error) {
             toast.error('Failed to save properties')
             console.error('Failed to save properties:', error)
@@ -226,16 +225,30 @@ export function PipedreamPropsForm({
 
     return (
         <>
+            <div>{JSON.stringify(configuredProps)}</div>
             {/* Connection Display */}
-            {actionDefinitionId && (
+            {actionDefinition && (
                 <div className="mb-4">
                     <PropertiesConnection
-                        actionDefinitionId={actionDefinitionId}
-                        stepId={stepId as Id<'action_steps'>}
                         workflowConfigId={workflowConfigId}
+                        step={step as Doc<'action_steps'>}
+                        actionDefinition={actionDefinition}
+                        configuredProps={configuredProps}
+                        updateConfiguredProps={updateConfiguredProps}
                         onConnectionSelected={() => {
+                            console.log('🔄 Connection selected')
+
+
+                            //Save the step parameters
+                            if (step?._id) {
+                                saveStepParameters({
+                                    workflowConfigId,
+                                    stepId: step?._id,
+                                    parameterValues: configuredProps
+                                })
+                            }
+
                             // Refresh the form when connection changes
-                            setValues(initialFormValues)
                             setErrors({})
                             setHasChanged(false)
                         }}
@@ -244,13 +257,13 @@ export function PipedreamPropsForm({
             )}
 
             {/* Show PipedreamPropInputs if there's a connection */}
-            {selectedStep?.connectionId && (
+            {step?.connectionId && (
                 <div id="pipedream-properties-form" className="flex-1 min-h-0 overflow-y-auto space-y-4">
                     {configurableProps.map(prop => (
                         <PipedreamPropInput
                             key={prop.name}
                             prop={prop}
-                            value={values[prop.name]}
+                            value={configuredProps[prop.name] ?? null}
                             onChange={(value) => handleChange(prop.name, value)}
                             error={errors[prop.name]}
                             options={remoteOptions[prop.name] || []}
@@ -258,7 +271,7 @@ export function PipedreamPropsForm({
                     ))}
                 </div>
             )}
-            {hasChanged && selectedStep?.connectionId && (
+            {hasChanged && step?.connectionId && (
                 <Button
                     onClick={handleSubmit}
                     className="w-full mt-4 sticky bottom-0"

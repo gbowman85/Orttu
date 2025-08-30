@@ -18,10 +18,6 @@ interface WorkflowEditorContextType {
     actionStepsDetails: Record<Id<'action_steps'>, Doc<'action_steps'>>
     actionDefinitions: Record<Id<'action_definitions'>, Doc<'action_definitions'>>
 
-    // Action step properties
-    actionStepProperties?: Record<string, any>
-    setActionStepProperties?: (properties: Record<string, any>) => void
-
     // Delete modal state
     deleteDialogState: {
         isOpen: boolean
@@ -57,7 +53,6 @@ export function WorkflowEditorProvider({
     actionDefinitions
 }: WorkflowEditorProviderProps) {
     const [selectedStepId, setSelectedStepId] = useState<Id<'trigger_steps'> | Id<'action_steps'> | null>(null)
-    const [actionStepProperties, setActionStepProperties] = useState<Record<string, any>>({})
     const [deleteDialogState, setDeleteDialogState] = useState({
         isOpen: false,
         type: null as 'action-step' | 'trigger' | null,
@@ -105,8 +100,6 @@ export function WorkflowEditorProvider({
         actionStepsOrder,
         actionStepsDetails,
         actionDefinitions,
-        actionStepProperties,
-        setActionStepProperties,
         deleteDialogState,
         openDeleteDialog,
         closeDeleteDialog

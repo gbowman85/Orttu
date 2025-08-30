@@ -3,7 +3,7 @@
 import { useWorkflowEditor } from '@/contexts/WorkflowEditorContext'
 import { useQuery } from 'convex/react'
 import { api } from '@/../convex/_generated/api'
-import { Id } from '@/../convex/_generated/dataModel'
+import { Doc, Id } from '@/../convex/_generated/dataModel'
 import { ParameterForm } from './ParameterForm'
 import { useWorkflowData } from '@/hooks/useWorkflowData'
 import { EditableText } from '@/components/ui/editable-text'
@@ -92,8 +92,16 @@ export default function PropertiesPanel() {
                             <div className="h-px mb-2 bg-gray-300" />
                         </div>
 
-                        {/* Parameters */}
-                        {!selectedDefinition?.isPipedream ? (
+                        {/* Parameters for Pipedream or standard */}
+                        {selectedDefinition?.isPipedream ? (
+                            <div className="flex-1 min-h-0 flex flex-col">
+                                <PipedreamPropsForm
+                                    workflowConfigId={workflowConfig._id}
+                                    step={selectedStep as Doc<'action_steps'>}
+                                    actionDefinition={selectedDefinition as Doc<'action_definitions'>}
+                                />
+                            </div>
+                        ) : (
                             <>
                                 {selectedDefinition.parameters.length > 0 && (
                                     <div className="flex-1 min-h-0">
@@ -106,17 +114,6 @@ export default function PropertiesPanel() {
                                     </div>
                                 )}
                             </>
-                        ) : (
-                            <div className="flex-1 min-h-0 flex flex-col">
-                                <PipedreamPropsForm
-                                    configurableProps={selectedDefinition.configurableProps || []}
-                                    initialValues={parameterValues || {}}
-                                    stepId={selectedStepId}
-                                    selectedStep={selectedStep && 'actionDefinitionId' in selectedStep ? selectedStep : undefined}
-                                    workflowConfigId={workflowConfig._id}
-                                    actionDefinitionId={selectedStep && 'actionDefinitionId' in selectedStep ? selectedStep.actionDefinitionId : undefined}
-                                />
-                            </div>
                         )}
 
                     </div>

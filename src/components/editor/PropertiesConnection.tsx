@@ -2,54 +2,64 @@
 
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '@/../convex/_generated/api'
-import { Id } from '@/../convex/_generated/dataModel'
+import { Doc, Id } from '@/../convex/_generated/dataModel'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Link2, ExternalLink, CheckCircle, XCircle } from 'lucide-react'
+import { Link2, CheckCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
-import { usePipedreamConnection } from '@/hooks/usePipedreamConnection'
+import { usePipedreamConnection } from '@/hooks/usePipedream'
 
 interface PropertiesConnectionProps {
-    actionDefinitionId: Id<'action_definitions'>
-    stepId: Id<'action_steps'>
     workflowConfigId: Id<'workflow_configurations'>
+    step: Doc<'action_steps'>
+    actionDefinition?: Doc<'action_definitions'>
+    configuredProps: Record<string, any>
+    updateConfiguredProps: (newValues: Record<string, any>) => void
     onConnectionSelected?: () => void
 }
 
 export function PropertiesConnection({
-    actionDefinitionId,
-    stepId,
     workflowConfigId,
+    step,
+    actionDefinition,
+    configuredProps,
+    updateConfiguredProps,
     onConnectionSelected
 }: PropertiesConnectionProps) {
-    // Get the action definition to find the service
-    const actionDefinition = useQuery(
-        api.data_functions.action_definitions.getActionDefinition,
-        { actionDefinitionId }
+
+    // Get the connection for this step
+    const connection = useQuery(
+        api.data_functions.connections.getConnection,
+        step.connectionId ? { connectionId: step.connectionId } : 'skip'
     )
 
-    // Get the current step to see if it has a connection
-    const step = useQuery(
-        api.data_functions.workflow_steps.getActionStep,
-        { actionStepId: stepId }
-    )
-
-    // Get the service if the action has one
+    // Get the service
     const service = useQuery(
         api.data_functions.services.getService,
         actionDefinition?.serviceId ? { serviceId: actionDefinition.serviceId } : "skip"
     )
 
+    // Get the service name from the action definition
+    const serviceName = actionDefinition?.configurableProps?.find(prop => prop.type === "app")?.name
+
+    // If there is a connectionId, check if it's included in the configuredProps
+    const isConnectedInProps = serviceName && configuredProps[serviceName]
+
+    if (connection && !isConnectedInProps && serviceName) {
+        // Add connection data to configured props
+        const connectionData = {
+            [serviceName]: {
+                authProvisionId: connection.pipedreamAccountId
+            }
+        }
+        console.log('🔗 Adding connection data to configured props:', connectionData)
+        updateConfiguredProps(connectionData)
+    }
+
     // Get connections for this service
     const connections = useQuery(
         api.data_functions.connections.getConnectionsByService,
         service?._id ? { serviceId: service._id } : "skip"
-    )
-
-    // Get the current connection if the step has one
-    const currentConnection = useQuery(
-        api.data_functions.connections.getConnection,
-        step?.connectionId ? { connectionId: step.connectionId } : "skip"
     )
 
     // Get the workflow configuration
@@ -64,8 +74,8 @@ export function PropertiesConnection({
     // Pipedream connection hook
     const { connectAccount, isConnecting } = usePipedreamConnection({
         onSuccess: (account) => {
-            toast.success(`Successfully connected to ${service?.title}`)
             onConnectionSelected?.()
+            toast.success(`Successfully connected to ${service?.title} with ID ${account.accountId}`)
         },
         onError: (error) => {
             console.error('Pipedream connection error:', error)
@@ -76,7 +86,11 @@ export function PropertiesConnection({
     const removeStepConnection = useMutation(api.data_functions.workflow_steps.removeStepConnection)
     const updateConnectionLastUsed = useMutation(api.data_functions.connections.updateConnectionLastUsed)
 
-    const handleConnect = async (connectionId: Id<'connections'>) => {
+    const handleConnect = async (connectionId: Id<'connections'>, pipedreamAccountId: string) => {
+        console.log('🔗 Connecting to service:', service?.title)
+        console.log('🔗 Connection ID:', connectionId)
+        console.log('🔗 Pipedream Account ID:', pipedreamAccountId)
+
         try {
             if (!workflowConfig) {
                 throw new Error('Workflow configuration not found')
@@ -85,15 +99,26 @@ export function PropertiesConnection({
             // Update the step's connection
             await editStepConnection({
                 workflowId: workflowConfig.workflowId,
-                stepId,
+                stepId: step._id,
                 connectionId
             })
 
             // Update the connection's last used timestamp
             await updateConnectionLastUsed({ connectionId })
 
-            toast.success('Connection updated successfully')
+            // Add connection data to configured props
+            if (serviceName) {
+                const connectionData = {
+                    [serviceName]: {
+                        authProvisionId: pipedreamAccountId
+                    }
+                }
+                updateConfiguredProps(connectionData)
+                console.log('🔗 Updated configured props with connection data:', connectionData)
+            }
             onConnectionSelected?.()
+
+            toast.success(`Successfully connected to ${service?.title} with ID ${pipedreamAccountId}`)
         } catch (error) {
             console.error('Failed to connect:', error)
             toast.error('Failed to connect to service')
@@ -109,7 +134,7 @@ export function PropertiesConnection({
             // Remove the connection from the step
             await removeStepConnection({
                 workflowId: workflowConfig.workflowId,
-                stepId
+                stepId: step._id
             })
 
             toast.success('Connection removed successfully')
@@ -136,7 +161,7 @@ export function PropertiesConnection({
     }
 
     // If there's a current connection, show it
-    if (currentConnection) {
+    if (connection) {
         return (
             <div className="p-4 border rounded-lg bg-green-50 border-green-200">
                 <div className="flex items-center justify-between mb-3">
@@ -151,10 +176,10 @@ export function PropertiesConnection({
 
                 <div className="mb-3">
                     <h4 className="text-sm font-medium text-gray-900 mb-1">
-                        {currentConnection.title}
+                        {connection.title}
                     </h4>
                     <p className="text-xs text-gray-600">
-                        Last used {new Date(currentConnection.lastUsed).toLocaleDateString()}
+                        Last used {new Date(connection.lastUsed).toLocaleDateString()}
                     </p>
                 </div>
 
@@ -208,7 +233,7 @@ export function PropertiesConnection({
                             </div>
                             <Button
                                 size="sm"
-                                onClick={() => handleConnect(connection._id)}
+                                onClick={() => handleConnect(connection._id, connection.pipedreamAccountId)}
                                 className="text-xs"
                             >
                                 Connect

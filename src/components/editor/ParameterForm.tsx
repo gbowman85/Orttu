@@ -159,7 +159,6 @@ interface ParameterFormProps {
     initialValues: Record<string, any>
     stepId: Id<'trigger_steps'> | Id<'action_steps'>
     workflowConfigId: Id<'workflow_configurations'>
-    onSave?: () => void
 }
 
 // Show the form for the parameters
@@ -167,8 +166,7 @@ export function ParameterForm({
     parameters,
     initialValues,
     stepId,
-    workflowConfigId,
-    onSave
+    workflowConfigId
 }: ParameterFormProps) {
     // Initialize values with defaults
     const initialFormValues = parameters.reduce((acc, param) => {
@@ -268,7 +266,6 @@ export function ParameterForm({
             })
             setHasChanged(false)
             toast.success('Changes saved')
-            onSave?.()
         } catch (error) {
             toast.error('Failed to save, try again')
             console.error('Failed to save parameters:', error)
