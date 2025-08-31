@@ -1,7 +1,7 @@
 'use client'
 
 import { PipedreamClient } from '@pipedream/sdk/browser'
-import { getPipedreamToken } from '@/lib/pipedream-server'
+import { getPipedreamToken, getOptionsFromPipedream } from '@/lib/pipedream-server'
 
 // Cache for PipedreamClient instances to avoid recreating them
 const clientCache = new Map<string, Promise<PipedreamClient>>()
@@ -58,3 +58,48 @@ export function clearPipedreamClientCache(externalUserId?: string) {
     }
 }
 
+// Fetch remote options from Pipedream and store them in the database
+export async function fetchAndStoreRemoteOptions(args: {
+    stepId: string
+    propName: string
+    configuredProps: Record<string, any>
+    externalUserId: string
+    actionKey: string
+    prop: {
+        name: string
+        type: string
+        label?: string
+        description?: string
+        optional?: boolean
+        remoteOptions?: boolean
+        default?: any
+    }
+    currentRemoteOptions: Record<string, any> | undefined
+    updateRemoteOptionsMutation: (args: { stepId: any; remoteOptions: Record<string, any> }) => Promise<void>
+}) {
+    try {
+        // Fetch options from Pipedream
+        const remoteOptions = await getOptionsFromPipedream(
+            args.prop,
+            args.configuredProps,
+            args.externalUserId,
+            args.actionKey
+        )
+
+        // Update the remote options for this specific property
+        const updatedRemoteOptions = {
+            ...args.currentRemoteOptions,
+            [args.propName]: remoteOptions
+        }
+
+        // Store the updated remote options in the database
+        await args.updateRemoteOptionsMutation({
+            stepId: args.stepId as any,
+            remoteOptions: updatedRemoteOptions
+        })
+        return { success: true, remoteOptions }
+    } catch (error) {
+        console.error(`❌ Failed to fetch and store remote options for ${args.propName}:`, error)
+        throw error
+    }
+}

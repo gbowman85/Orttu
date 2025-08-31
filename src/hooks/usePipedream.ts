@@ -6,7 +6,7 @@ import { useMutation, useQuery } from 'convex/react'
 import { api } from '@/../convex/_generated/api'
 import { Doc, Id } from '@/../convex/_generated/dataModel'
 import { getPipedreamClient } from '@/lib/pipedream-client'
-import { getOptionsFromPipedream, getPipedreamToken } from '@/lib/pipedream-server'
+import { fetchAndStoreRemoteOptions } from '@/lib/pipedream-client'
 
 interface UsePipedreamConnectionOptions {
     onSuccess?: (account: any) => void
@@ -100,6 +100,18 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
 
     const user = useQuery(api.data_functions.users.currentUser)
 
+    // Get remote options from the database
+    const storedRemoteOptions = useQuery(
+        api.data_functions.workflow_steps.getStepRemoteOptions,
+        step?._id ? { stepId: step._id as any } : 'skip'
+    )
+
+    const updateStepRemoteOptionsMutation = useMutation(api.data_functions.workflow_steps.updateStepRemoteOptions)
+    
+    const updateStepRemoteOptions = useCallback(async (args: { stepId: any; remoteOptions: Record<string, any> }) => {
+        await updateStepRemoteOptionsMutation(args)
+    }, [updateStepRemoteOptionsMutation])
+
     // Reset configuredProps when step or actionDefinition changes
     useEffect(() => {
         const newConfiguredProps = step?.parameterValues || {}
@@ -108,6 +120,13 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
         // Clear remote options when switching actions
         setRemoteOptions({})
     }, [step?._id, step?.parameterValues, actionDefinition?._id])
+
+    // Update remote options when stored options change
+    useEffect(() => {
+        if (storedRemoteOptions) {
+            setRemoteOptions(storedRemoteOptions)
+        }
+    }, [storedRemoteOptions])
 
     const updateConfiguredProps = useCallback((newValues: Record<string, any>) => {
         setConfiguredProps(prev => {
@@ -121,8 +140,8 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
     }, [])
 
     const loadPropertyOptions = useCallback(async (propName: string) => {
-        if (!user?._id || !actionDefinition?.actionKey) {
-            console.warn('Missing user ID or action key for loading property options')
+        if (!user?._id || !actionDefinition?.actionKey || !step?._id ) {
+            console.warn('Missing user ID, action key, or step ID for loading property options')
             return
         }
 
@@ -138,18 +157,26 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
 
         setLoadingProps(prev => new Set(prev).add(propName))
 
-        const requestPromise = getOptionsFromPipedream(
+        const requestPromise = fetchAndStoreRemoteOptions({
+            stepId: step._id,
+            propName,
+            configuredProps: configuredPropsRef.current,
+            externalUserId: user._id,
+            actionKey: actionDefinition.actionKey,
             prop,
-            configuredPropsRef.current,
-            user._id,
-            actionDefinition.actionKey
-        ).then(options => {
-            setRemoteOptions(prev => ({
-                ...prev,
-                [propName]: options
-            }))
-            console.log(`✅ Loaded options for ${propName}:`, options)
-            return options
+            currentRemoteOptions: storedRemoteOptions,
+            updateRemoteOptionsMutation: updateStepRemoteOptions
+        }).then(result => {
+            if (result.success) {
+                // Update local state with the new options
+                setRemoteOptions(prev => ({
+                    ...prev,
+                    [propName]: result.remoteOptions
+                }))
+                return result.remoteOptions
+            } else {
+                throw new Error('Failed to fetch and store options')
+            }
         }).catch(error => {
             console.error(`❌ Failed to load options for ${propName}:`, error)
             throw error
@@ -165,7 +192,7 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
         ongoingRequests.current.set(requestKey, requestPromise)
         
         return requestPromise
-    }, [user?._id, actionDefinition?.actionKey])
+    }, [user?._id, actionDefinition?.actionKey, step?._id, storedRemoteOptions, updateStepRemoteOptions])
 
     const reloadProps = useCallback(async (propName: string) => {
         const prop = actionDefinition?.configurableProps?.find(p => p.name === propName)
@@ -181,9 +208,7 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
         if (step?.parameterValues) {
             updateConfiguredProps(step.parameterValues)
         }
-    }, [actionDefinition?.configurableProps, step?.parameterValues, updateConfiguredProps])
-
-
+    }, [actionDefinition?.configurableProps, step?.parameterValues, updateConfiguredProps, loadPropertyOptions])
 
     const shouldTriggerPropLoading = useCallback(() => {
         const isConnected = !!connection?.pipedreamAccountId
@@ -203,11 +228,15 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
         if (shouldTriggerPropLoading()) {
             actionDefinition?.configurableProps?.forEach(async (prop) => {
                 if (prop.remoteOptions) {
-                    await loadPropertyOptions(prop.name)
+                    // Check if we already have options for this prop in the database
+                    const hasStoredOptions = storedRemoteOptions && storedRemoteOptions[prop.name]
+                    if (!hasStoredOptions) {
+                        await loadPropertyOptions(prop.name)
+                    }
                 }
             })
         }
-    }, [shouldTriggerPropLoading, actionDefinition?.configurableProps])
+    }, [shouldTriggerPropLoading, actionDefinition?.configurableProps, storedRemoteOptions, loadPropertyOptions])
 
     // Update ref when state changes
     useEffect(() => {

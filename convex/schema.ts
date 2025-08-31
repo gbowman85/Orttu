@@ -155,6 +155,10 @@ export default defineSchema({
     trigger_steps: defineTable({
         triggerDefinitionId: v.id("trigger_definitions"),
         parameterValues: v.record(v.string(), ParameterValueSchema),
+        remoteOptions: v.optional(v.record(v.string(), v.array(v.object({
+            label: v.string(),
+            value: v.optional(v.any())
+        })))),
         title: v.optional(v.string()),
         comment: v.optional(v.string()),
         connectionId: v.optional(v.id("connections"))
@@ -164,6 +168,10 @@ export default defineSchema({
     action_steps: defineTable({
         actionDefinitionId: v.id("action_definitions"),
         parameterValues: v.record(v.string(), ParameterValueSchema),
+        remoteOptions: v.optional(v.record(v.string(), v.array(v.object({
+            label: v.string(),
+            value: v.optional(v.any())
+        })))),
         title: v.optional(v.string()),
         comment: v.optional(v.string()),
         connectionId: v.optional(v.id("connections")),

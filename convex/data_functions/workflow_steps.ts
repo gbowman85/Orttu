@@ -750,3 +750,37 @@ export const updateActionSteps = mutation({
         return workflowConfigId;
     }
 }); 
+
+// Update remote options for an action step
+export const updateStepRemoteOptions = mutation({
+    args: {
+        stepId: v.id("action_steps"),
+        remoteOptions: v.record(v.string(), v.array(v.object({
+            label: v.string(),
+            value: v.optional(v.any())
+        })))
+    },
+    handler: async (ctx, { stepId, remoteOptions }) => {
+        const step = await ctx.db.get(stepId);
+        if (!step) throw new Error("Action step not found");
+
+        // Update the step with the new remote options
+        await ctx.db.patch(stepId, {
+            remoteOptions
+        });
+
+        return stepId;
+    }
+});
+
+// Get remote options for an action step
+export const getStepRemoteOptions = query({
+    args: {
+        stepId: v.id("action_steps")
+    },
+    handler: async (ctx, { stepId }) => {
+        const step = await ctx.db.get(stepId);
+        if (!step) throw new Error("Action step not found");
+        return step.remoteOptions || {};
+    }
+}); 
