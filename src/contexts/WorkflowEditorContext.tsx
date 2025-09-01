@@ -17,6 +17,8 @@ interface WorkflowEditorContextType {
     actionStepsOrder: ActionStepReferenceType[] | undefined
     actionStepsDetails: Record<Id<'action_steps'>, Doc<'action_steps'>>
     actionDefinitions: Record<Id<'action_definitions'>, Doc<'action_definitions'>>
+    currentTab: 'editor' | 'activity'
+    setCurrentTab: (tab: 'editor' | 'activity') => void
 
     // Delete modal state
     deleteDialogState: {
@@ -53,6 +55,7 @@ export function WorkflowEditorProvider({
     actionDefinitions
 }: WorkflowEditorProviderProps) {
     const [selectedStepId, setSelectedStepId] = useState<Id<'trigger_steps'> | Id<'action_steps'> | null>(null)
+    const [currentTab, setCurrentTab] = useState<'editor' | 'activity'>('editor')
     const [deleteDialogState, setDeleteDialogState] = useState({
         isOpen: false,
         type: null as 'action-step' | 'trigger' | null,
@@ -100,6 +103,8 @@ export function WorkflowEditorProvider({
         actionStepsOrder,
         actionStepsDetails,
         actionDefinitions,
+        currentTab,
+        setCurrentTab,
         deleteDialogState,
         openDeleteDialog,
         closeDeleteDialog

@@ -86,4 +86,16 @@ export function useWorkflowData() {
         actionStepsDetails: actionSteps,
         actionDefinitions
     }
+}
+
+export function useWorkflowRuns() {
+    const { workflowId } = useParams() as { workflowId: Id<"workflows"> }
+    
+    const workflowRuns = useQuery(api.data_functions.workflow_runs.getWorkflowRuns, {
+        workflowId: workflowId
+    })
+
+    return {
+        workflowRuns: workflowRuns || []
+    }
 } 
