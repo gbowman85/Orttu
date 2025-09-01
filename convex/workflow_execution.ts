@@ -43,6 +43,7 @@ export const executeWorkflow = convexWorkflow.define({
 
     // Create a workflow run
     const workflowRunId = await step.runMutation(internal.data_functions.workflow_runs.createWorkflowRun, {
+      workflowId: args.workflowId,
       workflowConfigId: workflowConfig._id
     });
 

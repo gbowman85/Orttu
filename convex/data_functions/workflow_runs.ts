@@ -1,4 +1,4 @@
-import { internalMutation, internalQuery } from "../_generated/server";
+import { internalMutation, internalQuery, query } from "../_generated/server";
 import { v } from "convex/values";
 import { Doc, Id } from "../_generated/dataModel";
 
@@ -7,11 +7,13 @@ type RunData = Doc<"run_data">;
 // Create a new workflow run in the database
 export const createWorkflowRun = internalMutation({
     args: {
+        workflowId: v.id("workflows"),
         workflowConfigId: v.id("workflow_configurations")
     },
     handler: async (ctx, args) => {
         const runId = await ctx.db.insert("workflow_runs", {
             status: "running",
+            workflowId: args.workflowId,
             workflowConfigId: args.workflowConfigId,
             started: Date.now(),
             finished: null as any,
@@ -108,5 +110,20 @@ export const setRunDataInternal = internalMutation({
             iterationCount: iterationCount,
         });
         return result;
+    }
+});
+
+// Get workflow runs for a specific workflow
+export const getWorkflowRuns = query({
+    args: {
+        workflowId: v.id("workflows"),
+    },
+    handler: async (ctx, args) => {
+        const workflowRuns = await ctx.db.query("workflow_runs")
+            .withIndex("by_workflow", (q) => q.eq("workflowId", args.workflowId))
+            .order("desc")
+            .collect();
+
+        return workflowRuns;
     }
 });

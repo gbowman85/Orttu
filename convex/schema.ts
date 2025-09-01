@@ -183,6 +183,7 @@ export default defineSchema({
     // Workflow Executions
 
     workflow_runs: defineTable({
+        workflowId: v.id("workflows"),
         workflowConfigId: v.id("workflow_configurations"),
         started: v.number(),
         finished: v.number(),
@@ -192,7 +193,8 @@ export default defineSchema({
             stepId: v.id("action_steps"),
             value: v.string()
         }))
-    }).index("by_config", ["workflowConfigId"])
+    }).index("by_workflow", ["workflowId"])
+        .index("by_config", ["workflowConfigId"])
         .index("by_status", ["status"]),
     
     run_data: defineTable({
