@@ -10,11 +10,13 @@ import { CommentIcon } from '@/components/editor/CommentIcon'
 import { DeleteActionStepButton } from '@/components/editor/DeleteActionStepButton'
 import { useDragState } from '@/components/editor/DragMonitor'
 import { reduceColour } from '@/lib/utils'
+import Image from 'next/image'
 
 interface ActionStepCardProps {
     id: string
     actionStep: Doc<"action_steps">
     actionDefinition: Doc<"action_definitions">
+    actionCategories: Record<Id<"action_categories">, Doc<"action_categories">>
     index: number
     parentId?: Id<"action_steps"> | 'root'
     parentKey?: string
@@ -25,6 +27,7 @@ export function ActionStepCard({
     id,
     actionStep,
     actionDefinition,
+    actionCategories,
     index,
     parentId,
     parentKey,
@@ -33,6 +36,9 @@ export function ActionStepCard({
     const { selectedStepId, setSelectedStepId, openDeleteDialog } = useWorkflowEditor()
     const { currentDropTarget, draggedActionStepId } = useDragState()
     const isSelected = selectedStepId === actionStep._id
+
+    // Get the icon from action definition or category
+    const icon = actionDefinition?.icon || (actionDefinition?.categoryId && actionCategories[actionDefinition.categoryId]?.icon)
 
     // Create a draggable element
     const { ref: dragRef, isDragging, isDropping } = useDraggable({
@@ -83,14 +89,25 @@ export function ActionStepCard({
         >
             <div
                 onClick={handleClick}
-                className={`mb-2 border-4 rounded-3xl p-4 text-center text-muted-foreground cursor-pointer transition-all relative ${isDragging ? 'opacity-50' : ''} ${isSelected ? 'ring-4 ring-gray-200 shadow-lg' : ''}`}
+                className={`action-step-card mb-2 border-4 rounded-3xl p-4 text-center text-muted-foreground cursor-pointer transition-all relative ${isDragging ? 'opacity-50' : ''} ${isSelected ? 'ring-4 ring-gray-200 shadow-lg' : ''}`}
                 style={{
                     backgroundColor: actionDefinition?.bgColour,
                     borderColor: actionDefinition?.borderColour,
                     color: actionDefinition?.textColour
                 }}
             >
-                <div className="absolute top-2 left-2">
+                <div className="absolute top-2 left-2 flex items-center gap-2">
+                    {icon && (
+                        <div className="w-12 h-12 bg-white/75 rounded-full flex items-center justify-center shadow-sm">
+                            <Image 
+                                src={icon} 
+                                alt="Action icon" 
+                                width={32}
+                                height={32}
+                                className="object-contain"
+                            />
+                        </div>
+                    )}
                     <CommentIcon comment={actionStep?.comment || null} />
                 </div>
                 <div className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity`}>

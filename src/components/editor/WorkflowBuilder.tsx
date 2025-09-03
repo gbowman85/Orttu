@@ -21,6 +21,7 @@ export default function WorkflowBuilder() {
         actionStepsOrder,
         actionStepsDetails,
         actionDefinitions,
+        actionCategories,
         setSelectedStepId,
         selectedStepId,
         deleteDialogState,
@@ -111,6 +112,7 @@ export default function WorkflowBuilder() {
                                     id={step.actionStepId}
                                     actionStep={actionStep}
                                     actionDefinition={actionDefinitions[actionStep.actionDefinitionId] ?? {}}
+                                    actionCategories={actionCategories}
                                     index={index}
                                     parentId='root'
                                     disableDroppable={false}

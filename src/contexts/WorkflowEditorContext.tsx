@@ -17,6 +17,7 @@ interface WorkflowEditorContextType {
     actionStepsOrder: ActionStepReferenceType[] | undefined
     actionStepsDetails: Record<Id<'action_steps'>, Doc<'action_steps'>>
     actionDefinitions: Record<Id<'action_definitions'>, Doc<'action_definitions'>>
+    actionCategories: Record<Id<'action_categories'>, Doc<'action_categories'>>
     currentTab: 'editor' | 'activity'
     setCurrentTab: (tab: 'editor' | 'activity') => void
 
@@ -41,6 +42,7 @@ interface WorkflowEditorProviderProps {
     actionStepsOrder: ActionStepReferenceType[] | undefined
     actionStepsDetails: Record<Id<'action_steps'>, Doc<'action_steps'>>
     actionDefinitions: Record<Id<'action_definitions'>, Doc<'action_definitions'>>
+    actionCategories: Record<Id<'action_categories'>, Doc<'action_categories'>>
 }
 
 const WorkflowEditorContext = createContext<WorkflowEditorContextType | undefined>(undefined)
@@ -52,7 +54,8 @@ export function WorkflowEditorProvider({
     triggerDefinition,
     actionStepsOrder,
     actionStepsDetails,
-    actionDefinitions
+    actionDefinitions,
+    actionCategories
 }: WorkflowEditorProviderProps) {
     const [selectedStepId, setSelectedStepId] = useState<Id<'trigger_steps'> | Id<'action_steps'> | null>(null)
     const [currentTab, setCurrentTab] = useState<'editor' | 'activity'>('editor')
@@ -103,6 +106,7 @@ export function WorkflowEditorProvider({
         actionStepsOrder,
         actionStepsDetails,
         actionDefinitions,
+        actionCategories,
         currentTab,
         setCurrentTab,
         deleteDialogState,

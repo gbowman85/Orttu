@@ -77,6 +77,36 @@ export function useWorkflowData() {
         return actionDefinitionsRef.current
     }, [actionDefinitionsQuery])
 
+    // Get unique category IDs from action definitions
+    const categoryIds = useMemo(() => {
+        const uniqueCategoryIds = new Set<Id<'action_categories'>>()
+        Object.values(actionDefinitions ?? {}).forEach(def => {
+            if (def?.categoryId) {
+                uniqueCategoryIds.add(def.categoryId)
+            }
+        })
+        return Array.from(uniqueCategoryIds)
+    }, [actionDefinitions])
+
+    // Fetch action categories
+    const actionCategoriesQuery = useQuery(
+        api.data_functions.action_categories.getActionCategories,
+        categoryIds.length > 0 ? {
+            categoryIds: categoryIds
+        } : 'skip'
+    )
+
+    // Keep a stable reference to actionCategories to prevent flashing during updates
+    const actionCategoriesRef = useRef<Record<Id<'action_categories'>, Doc<'action_categories'>>>({})
+    const actionCategories = useMemo(() => {
+        if (actionCategoriesQuery) {
+            actionCategoriesRef.current = actionCategoriesQuery
+            return actionCategoriesQuery
+        }
+        // Return previous data if query is undefined (loading)
+        return actionCategoriesRef.current
+    }, [actionCategoriesQuery])
+
     return {
         workflow,
         workflowConfig,
@@ -84,7 +114,8 @@ export function useWorkflowData() {
         triggerDefinition,
         actionStepsOrder,
         actionStepsDetails: actionSteps,
-        actionDefinitions
+        actionDefinitions,
+        actionCategories
     }
 }
 

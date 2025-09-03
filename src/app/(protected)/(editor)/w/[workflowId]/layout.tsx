@@ -35,7 +35,8 @@ export default function EditorPage({ children }: { children: React.ReactNode }) 
         triggerDefinition,
         actionStepsOrder,
         actionStepsDetails,
-        actionDefinitions
+        actionDefinitions,
+        actionCategories
     } = useWorkflowData()
 
     return (
@@ -46,6 +47,7 @@ export default function EditorPage({ children }: { children: React.ReactNode }) 
             actionStepsOrder={actionStepsOrder ?? undefined}
             actionStepsDetails={actionStepsDetails ?? {}}
             actionDefinitions={actionDefinitions}
+            actionCategories={actionCategories}
         >
             <EditorContent>
                 {children}

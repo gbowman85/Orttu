@@ -31,7 +31,7 @@ export const ActionStepChildren = function ActionStepChildren({
     textColour,
     disableDroppable
 }: ActionStepChildrenProps) {
-    const { actionStepsDetails, actionDefinitions } = useWorkflowEditor()
+    const { actionStepsDetails, actionDefinitions, actionCategories } = useWorkflowEditor()
     const [childStepsContainerRef] = useAutoAnimate()
 
     return (
@@ -75,6 +75,7 @@ export const ActionStepChildren = function ActionStepChildren({
                                 key={stepId}
                                 actionStep={actionStep}
                                 actionDefinition={actionDefinition}
+                                actionCategories={actionCategories}
                                 index={index}
                                 parentId={parentStepId}
                                 parentKey={childListKey}

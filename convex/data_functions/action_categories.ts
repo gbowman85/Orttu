@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, query } from "../_generated/server";
+import { Doc, Id } from "../_generated/dataModel";
 
 export const createActionCategoryInternal = internalMutation({
   args: {
@@ -70,6 +71,24 @@ export const getActionsByCategory = query({
       .collect();
   },
 });
+
+export const getActionCategories = query({
+  args: {
+    categoryIds: v.array(v.id("action_categories"))
+  },
+  handler: async (ctx, args) => {
+    const categories = await Promise.all(
+      args.categoryIds.map(id => ctx.db.get(id))
+    )
+    const categoriesById: Record<Id<'action_categories'>, Doc<'action_categories'>> = {}
+    categories.forEach((category) => {
+      if (category) {
+        categoriesById[category._id] = category
+      }
+    })
+    return categoriesById
+  }
+})
 
 export const updateActionCategoryInternal = internalMutation({
   args: {
