@@ -2,7 +2,7 @@ import { WorkflowManager } from "@convex-dev/workflow";
 import { components, internal } from "./_generated/api";
 import { v } from "convex/values";
 import { actionRegistry } from "./action_functions/_action_registry";
-import { internalAction } from "./_generated/server";
+import { internalAction, mutation } from "./_generated/server";
 
 type ActionStatus = {
   status: 'success' | 'failure' | 'skipped'
@@ -21,7 +21,10 @@ export const convexWorkflow = new WorkflowManager(components.workflow);
 export const executeWorkflow = convexWorkflow.define({
   args: {
     workflowId: v.id("workflows"),
-    triggerData: v.optional(v.any())
+    triggerData: v.optional(v.object({
+      type: v.string(),
+      triggeredAt: v.number()
+    }))
   },
   handler: async (step, args) => {
     // Get the workflow details
@@ -48,12 +51,14 @@ export const executeWorkflow = convexWorkflow.define({
     });
 
     // Store triggerData as a workflow variable if it exists
-    if (args.triggerData) {
+    if (args.triggerData && workflowConfig.triggerStepId !== "missing") {
       await step.runMutation(internal.data_functions.workflow_runs.setRunDataInternal, {
         workflowRunId,
-       source: "variable",
+        stepId: workflowConfig.triggerStepId,
+        source: "variable",
         key: "triggerData",
-        value: args.triggerData
+        value: args.triggerData,
+        dataType: "object",
       });
     }
 
@@ -79,15 +84,20 @@ export const executeWorkflow = convexWorkflow.define({
       }
 
       // Update the workflow run with the finished time
-      await step.runMutation(internal.data_functions.workflow_runs.updateWorkflowRunInternal, {
-        workflowRunId,
-        finished: Date.now(),
-        status: "completed"
-      });
+      try {
+        await step.runMutation(internal.data_functions.workflow_runs.updateWorkflowRunInternal, {
+          workflowRunId,
+          finished: true,
+          status: "completed"
+        });
+      } catch (updateError) {
+        console.error("Error updating workflow run:", updateError);
+        throw updateError;
+      }
     } catch (error) {
       await step.runMutation(internal.data_functions.workflow_runs.updateWorkflowRunInternal, {
         workflowRunId,
-        finished: Date.now(),
+        finished: true,
         status: "failed"
       });
       throw new Error(`Error executing workflow: ${error}`);
@@ -158,11 +168,16 @@ export const executeAction = internalAction({
       }
     }
 
+    console.log("Executing action", actionKey, parameters);
+
     // Execute the action function with the parameters
     const result: any = await step.runAction(registryEntry.actionFunction as any, {
       workflowRunId: args.workflowRunId,
+      stepId: args.stepId,
       ...parameters
     });
+
+    console.log("Result:", result);
 
   
     // Add the result to the workflow run data
@@ -203,5 +218,38 @@ export const executeMultipleActions = internalAction({
       results.push(result);
     }
     return results;
+  }
+});
+
+// Internal action to start workflow component with metadata
+export const startWorkflowAction = internalAction({
+  args: {
+    workflowId: v.id("workflows"),
+  },
+  handler: async (ctx, { workflowId }) => {
+    await convexWorkflow.start(
+      ctx,
+      internal.workflow_execution.executeWorkflow,
+      {
+        workflowId,
+        triggerData: {
+          type: "manual",
+          triggeredAt: Date.now(),
+        },
+      }
+    );
+  }
+});
+
+// Public mutation which authorizes and schedules the internal action
+export const triggerWorkflowManually = mutation({
+  args: {
+    workflowId: v.id("workflows")
+  },
+  handler: async (ctx, { workflowId }) => {
+    await ctx.scheduler.runAfter(0, internal.workflow_execution.startWorkflowAction, {
+      workflowId,
+    });
+    return { success: true };
   }
 });

@@ -8,15 +8,19 @@ import { ActionRegistryEntry } from "./_action_registry";
 export const setVariable: ActionRegistryEntry['actionFunction'] = internalAction({
     args: {
         workflowRunId: v.id("workflow_runs"),
+        stepId: v.optional(v.id("action_steps")),
         key: v.string(),
         value: v.any(),
+        dataType: v.string(),
     },
     handler: async (ctx, args) => {
-        const result: Id<"run_data"> = await ctx.runMutation(internal.data_functions.workflow_runs.setRunDataInternal, {
+        const result: Id<"workflow_run_data"> = await ctx.runMutation(internal.data_functions.workflow_runs.setRunDataInternal, {
             workflowRunId: args.workflowRunId,
+            stepId: args.stepId,
+            source: "variable" as const,
             key: args.key,
             value: args.value,
-            source: "variable"
+            dataType: args.dataType,
         });
         if (!result) {
             throw new Error("Failed to set variable");
@@ -83,6 +87,7 @@ export const setVariableDefinition: ActionRegistryEntry['actionDefinition'] = {
 export const getVariable: ActionRegistryEntry['actionFunction'] = internalAction({
     args: {
         workflowRunId: v.id("workflow_runs"),
+        stepId: v.optional(v.id("action_steps")),
         variableKey: v.string(),
     },
     handler: async (ctx, args): Promise<any> => {

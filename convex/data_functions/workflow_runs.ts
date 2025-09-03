@@ -1,8 +1,5 @@
 import { internalMutation, internalQuery, query } from "../_generated/server";
 import { v } from "convex/values";
-import { Doc, Id } from "../_generated/dataModel";
-
-type RunData = Doc<"run_data">;
 
 // Create a new workflow run in the database
 export const createWorkflowRun = internalMutation({
@@ -16,7 +13,6 @@ export const createWorkflowRun = internalMutation({
             workflowId: args.workflowId,
             workflowConfigId: args.workflowConfigId,
             started: Date.now(),
-            finished: null as any,
             runLogs: [],
             outputs: [] as any,
         });
@@ -29,22 +25,28 @@ export const createWorkflowRun = internalMutation({
 export const updateWorkflowRunInternal = internalMutation({
     args: {
         workflowRunId: v.id("workflow_runs"),
-        finished: v.optional(v.number()),
+        finished: v.optional(v.boolean()),
         status: v.union(v.literal("completed"), v.literal("failed"))
     },
     handler: async (ctx, args) => {
+        let finished: number | undefined = args.finished === true ? Date.now() : undefined;
 
-        await ctx.db.patch(args.workflowRunId, {
-            finished: args.finished || null as any,
-            status: args.status
-        });
+        try {
+            await ctx.db.patch(args.workflowRunId, {
+                finished,
+                status: args.status
+            });
+        } catch (error) {
+            console.error("Error in updateWorkflowRunInternal:", error);
+            throw error;
+        }
     }
 });
 
-// TODO: Store the workflow run data in a variable
+// Get a workflow run data by id
 export const getRunDataByIdInternal = internalQuery({
     args: {
-        runDataId: v.id("run_data"),
+        runDataId: v.id("workflow_run_data"),
     },
     handler: async (ctx, args) => {
         return await ctx.db.get(args.runDataId);
@@ -59,14 +61,14 @@ export const getRunDataInternal = internalQuery({
     },
     handler: async (ctx, args) => {
         if (args.key) {
-            let data = await ctx.db.query("run_data")
+            let data = await ctx.db.query("workflow_run_data")
                 .withIndex("by_workflow_run", (q) => q.eq("workflowRunId", args.workflowRunId))
                 .filter((q) => q.eq(q.field("key"), args.key))
                 .order("desc")
                 .first();
             return data;
         } else if (args.stepId) {
-            let data = await ctx.db.query("run_data")
+            let data = await ctx.db.query("workflow_run_data")
                 .withIndex("by_workflow_run", (q) => q.eq("workflowRunId", args.workflowRunId))
                 .filter((q) => q.eq(q.field("stepId"), args.stepId))
                 .order("desc")
@@ -80,10 +82,11 @@ export const getRunDataInternal = internalQuery({
 export const setRunDataInternal = internalMutation({
     args: {
         workflowRunId: v.id("workflow_runs"),
-        stepId: v.optional(v.id("action_steps")),
+        stepId: v.optional(v.union(v.id("action_steps"), v.id("trigger_steps"))),
         source: v.union(v.literal("variable"), v.literal("output")),
         key: v.optional(v.string()),
         value: v.any(),
+        dataType: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         // Validate that key is required when source is "variable"
@@ -93,7 +96,7 @@ export const setRunDataInternal = internalMutation({
 
         // Get current count of this step
         let iterationCount = 0;
-        let mostRecentData = await ctx.db.query("run_data")
+        let mostRecentData = await ctx.db.query("workflow_run_data")
             .withIndex("by_step", (q) => q.eq("stepId", args.stepId))
             .order("desc")
             .first();
@@ -101,12 +104,13 @@ export const setRunDataInternal = internalMutation({
             iterationCount = mostRecentData.iterationCount + 1;
         }
 
-        const result = await ctx.db.insert("run_data", {
+        const result = await ctx.db.insert("workflow_run_data", {
             workflowRunId: args.workflowRunId,
             stepId: args.stepId,
             source: args.source,
             key: args.key,
             value: args.value,
+            dataType: args.dataType,
             iterationCount: iterationCount,
         });
         return result;

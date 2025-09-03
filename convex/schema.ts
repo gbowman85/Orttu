@@ -186,9 +186,9 @@ export default defineSchema({
         workflowId: v.id("workflows"),
         workflowConfigId: v.id("workflow_configurations"),
         started: v.number(),
-        finished: v.number(),
+        finished: v.optional(v.number()),
         status: WorkflowStatus,
-        runLogs: v.array(v.id("run_logs")),
+        runLogs: v.array(v.id("workflow_run_logs")),
         outputs: v.array(v.object({
             stepId: v.id("action_steps"),
             value: v.string()
@@ -197,25 +197,25 @@ export default defineSchema({
         .index("by_config", ["workflowConfigId"])
         .index("by_status", ["status"]),
     
-    run_data: defineTable({
+    workflow_run_data: defineTable({
         workflowRunId: v.id("workflow_runs"),
-        stepId: v.optional(v.id("action_steps")),
+        stepId: v.optional(v.union(v.id("action_steps"), v.id("trigger_steps"))),
         source: v.union(v.literal("variable"), v.literal("output")),
         key: v.optional(v.string()),
         value: v.optional(v.any()),
+        dataType: v.optional(v.string()),
         iterationCount: v.number()
     }).index("by_workflow_run", ["workflowRunId"])
         .index("by_key", ["key"])
         .index("by_step", ["stepId"])
         .index("by_iteration_count", ["iterationCount"]),
     
-    run_logs: defineTable({
-        triggerStepId: v.id("trigger_steps"),
-        stepId: v.id("action_steps"),
+    workflow_run_logs: defineTable({
+        stepId: v.union(v.id("action_steps"), v.id("trigger_steps")),
         status: StepStatus,
         workflowRunId: v.id("workflow_runs"),
         started: v.number(),
-        finished: v.number()
+        finished: v.optional(v.number())
     }).index("by_workflow_run", ["workflowRunId"]),
 
     // Templates

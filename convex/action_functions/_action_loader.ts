@@ -1,12 +1,13 @@
 import { ActionRegistryEntry } from './_action_registry'
+import { internal } from '../_generated/api'
 
 // Define the pattern for action files
 type ActionFile = {
-    [key: string]: ActionRegistryEntry['actionFunction'] | ActionRegistryEntry['actionDefinition']
+    [key: string]: unknown
 }
 
 // Helper function to extract action pairs from a file
-function extractActionPairs(file: ActionFile): Record<string, ActionRegistryEntry> {
+function extractActionPairs(fileKey: string, file: ActionFile): Record<string, ActionRegistryEntry> {
     const actions: Record<string, ActionRegistryEntry> = {}
 
     // Get all exported items from the file
@@ -18,11 +19,16 @@ function extractActionPairs(file: ActionFile): Record<string, ActionRegistryEntr
             const actionKey = name.replace('Definition', '')
             const functionName = actionKey.charAt(0).toLowerCase() + actionKey.slice(1)
 
-            if (file[functionName] && file[name]) {
+            if (file[name]) {
                 const definition = file[name] as ActionRegistryEntry['actionDefinition']
                 if ('actionKey' in definition) {
+                    const fnRef = (internal as any)?.action_functions?.[fileKey]?.[functionName]
+                    if (!fnRef) {
+                        console.warn(`No internal reference found for action function ${fileKey}.${functionName}`)
+                        continue
+                    }
                     actions[definition.actionKey] = {
-                        actionFunction: file[functionName] as ActionRegistryEntry['actionFunction'],
+                        actionFunction: fnRef as ActionRegistryEntry['actionFunction'],
                         actionDefinition: definition
                     }
                 }
@@ -41,7 +47,7 @@ export function loadActions(actionFiles: string[]): Record<string, ActionRegistr
         try {
             // Import the module using dynamic import
             const module = require(`./${file}.ts`)
-            const actions = extractActionPairs(module)
+            const actions = extractActionPairs(file, module)
             Object.assign(registry, actions)
         } catch (error) {
             console.error(`Failed to load module for file: ${file}`, error)
