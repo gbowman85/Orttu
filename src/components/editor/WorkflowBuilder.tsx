@@ -7,12 +7,15 @@ import { ActionTarget } from "@/components/editor/ActionTarget"
 import PropertiesPanel from "@/components/editor/PropertiesPanel"
 import { AddActionButton } from './AddActionButton'
 import { DeleteStepDialog } from './DeleteStepDialog'
+import { DataPopup } from './DataPopup'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { useMutation } from 'convex/react'
 import { api } from '@/../convex/_generated/api'
 import { useWorkflowData } from '@/hooks/useWorkflowData'
 import { useState } from 'react'
 import { ActionsSkeleton } from './LoadingStates'
+import { Button } from '../ui/button'
+import { DatabaseIcon } from 'lucide-react'
 
 export default function WorkflowBuilder() {
     const {
@@ -32,6 +35,7 @@ export default function WorkflowBuilder() {
     const removeActionStep = useMutation(api.data_functions.workflow_steps.removeActionStep)
     const removeTrigger = useMutation(api.data_functions.workflow_steps.removeTrigger)
     const [isDeleting, setIsDeleting] = useState(false)
+    const [isDataPopupOpen, setIsDataPopupOpen] = useState(false)
 
     const [actionsContainerRef] = useAutoAnimate()
 
@@ -92,7 +96,7 @@ export default function WorkflowBuilder() {
                         ref={actionsContainerRef}
                         className="flex flex-col items-center justify-top min-h-0 mt-2 gap-2"
                     >
-                        
+
 
                         {actionStepsOrder !== undefined && actionStepsOrder.length === 0 && (
                             <ActionTarget id="root-initial-action" index={0} parentId="root" parentKey={undefined} disableDroppable={false} />
@@ -124,6 +128,9 @@ export default function WorkflowBuilder() {
                 </div>
             </div>
             <div id="properties-panel" className="absolute top-0 right-0">
+                <div className="flex justify-end mb-2 ">
+                    <DataPopup />
+                </div>
                 <PropertiesPanel />
             </div>
 
