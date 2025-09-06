@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button'
 import { PipedreamConfigurableProp } from '@/../convex/types'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { Info, List, Type } from 'lucide-react'
-import { useRef, useEffect, useState } from 'react'
+import { useState } from 'react'
+import { InputWithMentions } from './InputWithMentions'
 
 interface PipedreamPropInputProps {
     prop: PipedreamConfigurableProp
@@ -19,6 +20,7 @@ interface PipedreamPropInputProps {
     error?: string
     options?: Array<{ label: string; value?: any }>
 }
+
 
 export function PipedreamPropInput({
     prop,
@@ -93,7 +95,7 @@ export function PipedreamPropInput({
                                 const inputValue = e.target.value
                                 if (prop.withLabel) {
                                     // Try to find a matching option
-                                    const option = options.find(opt => 
+                                    const option = options.find(opt =>
                                         opt.label.toLowerCase().includes(inputValue.toLowerCase()) ||
                                         opt.value?.toString().toLowerCase().includes(inputValue.toLowerCase())
                                     )
@@ -128,20 +130,20 @@ export function PipedreamPropInput({
         switch (prop.type) {
             case 'string':
                 return (
-                    <Input
+                    <InputWithMentions
                         value={value ?? ''}
-                        onChange={(e) => onChange(e.target.value)}
+                        onChange={onChange}
                         placeholder={`Enter ${prop.label?.toLowerCase() || prop.name.toLowerCase()}`}
                     />
                 )
 
             case 'text':
                 return (
-                    <Textarea
+                    <InputWithMentions
                         value={value ?? ''}
-                        onChange={(e) => onChange(e.target.value)}
+                        onChange={onChange}
                         placeholder={`Enter ${prop.label?.toLowerCase() || prop.name.toLowerCase()}`}
-                        className="min-h-[4rem] resize-y"
+                        isTextarea={true}
                     />
                 )
 
@@ -240,9 +242,9 @@ export function PipedreamPropInput({
 
             default:
                 return (
-                    <Input
+                    <InputWithMentions
                         value={value ?? ''}
-                        onChange={(e) => onChange(e.target.value)}
+                        onChange={onChange}
                         placeholder={`Enter ${prop.label?.toLowerCase() || prop.name.toLowerCase()}`}
                     />
                 )

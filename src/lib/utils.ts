@@ -46,6 +46,17 @@ export function insertTextAtCursor(text: string, targetElement?: Element): boole
     return false
   }
 
+  // Check if the active element is inside a MentionsInput component
+  const mentionsInputContainer = activeElement.closest('[data-mentions-input]')
+  if (mentionsInputContainer) {
+    // Check if this MentionsInput is registered
+    const insertTextFn = (window as any).__mentionsInputRegistry?.get(mentionsInputContainer)
+    if (insertTextFn) {
+      insertTextFn(text)
+      return true
+    }
+  }
+
   // Handle input and textarea elements
   if (activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement) {
     const input = activeElement as HTMLInputElement | HTMLTextAreaElement

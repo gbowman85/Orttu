@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Parameter } from '@/../convex/types'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { Info } from 'lucide-react'
+import { InputWithMentions } from './InputWithMentions'
 
 interface ParameterInputProps {
     parameter: Parameter
@@ -57,19 +58,19 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
             switch (parameter.inputType) {
                 case 'text':
                     return (
-                        <Input
+                        <InputWithMentions
                             value={value ?? ''}
-                            onChange={(e) => onChange(e.target.value)}
+                            onChange={onChange}
                             placeholder={`Enter ${parameter.title.toLowerCase()}`}
                         />
                     )
                 case 'textarea':
                     return (
-                        <Textarea
+                        <InputWithMentions
                             value={value ?? ''}
-                            onChange={(e) => onChange(e.target.value)}
+                            onChange={onChange}
                             placeholder={`Enter ${parameter.title.toLowerCase()}`}
-                            className="min-h-[4rem] resize-y"
+                            isTextarea={true}
                         />
                     )
                 case 'select':
@@ -158,11 +159,10 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
                         </SelectContent>
                     </Select>
                 ) : (
-                    <Textarea
+                    <InputWithMentions
                         value={value ?? ''}
-                        onChange={(e) => onChange(e.target.value)}
+                        onChange={onChange}
                         placeholder={`Enter ${parameter.title.toLowerCase()}`}
-                        className="min-h-[1.5rem] resize-y"
                     />
                 )
 
@@ -230,9 +230,9 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
 
             default:
                 return (
-                    <Input
+                    <InputWithMentions
                         value={value ?? ''}
-                        onChange={(e) => onChange(e.target.value)}
+                        onChange={onChange}
                         placeholder={`Enter ${parameter.title.toLowerCase()}`}
                     />
                 )

@@ -104,7 +104,6 @@ export function DataPopup({ children }: DataPopupProps) {
         const success = insertTextAtCursor(outputReference, lastFocusedElement || undefined)
 
         if (success) {
-            toast.success(`Inserted: ${outputReference}`)
             // Restore focus to the text field after insertion
             if (lastFocusedElement instanceof HTMLElement) {
                 lastFocusedElement.focus()
@@ -195,7 +194,7 @@ export function DataPopup({ children }: DataPopupProps) {
                                                         key={output.outputKey}
                                                         onClick={() => handleOutputClick(output.outputKey, step.stepId)}
                                                         className="flex items-center justify-between p-2 rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer group"
-                                                        title={`Click to insert {{${step.stepId}.${output.outputKey}}}`}
+                                                        title={`Click to insert ${step.stepTitle} (${output.outputTitle})`}
                                                     >
                                                         <div className="flex-1">
                                                             <div className="flex items-center space-x-2">

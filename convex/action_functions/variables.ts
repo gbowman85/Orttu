@@ -74,59 +74,7 @@ export const setVariableDefinition: ActionRegistryEntry['actionDefinition'] = {
     ],
     outputs: [
         {
-            outputKey: "variableKey",
-            outputDataType: "string" as const,
-            outputTitle: "Variable Name" as const,
-            outputDescription: "The name of the variable that was set",
-        },
-        {
             outputKey: "variableValue",
-            outputDataType: "any" as const,
-            outputTitle: "Variable Value" as const,
-            outputDescription: "The value of the variable",
-        }
-    ],
-    bgColour: "#FFF5E1",
-    borderColour: "#FEC14E"
-}
-
-export const getVariable: ActionRegistryEntry['actionFunction'] = internalAction({
-    args: {
-        workflowRunId: v.id("workflow_runs"),
-        stepId: v.optional(v.id("action_steps")),
-        variableKey: v.string(),
-    },
-    handler: async (ctx, args): Promise<any> => {
-        const data = await ctx.runQuery(internal.data_functions.workflow_runs.getRunDataInternal, {
-            workflowRunId: args.workflowRunId,
-            key: args.variableKey
-        });
-        if (!data) {
-            return null;
-        }
-
-    
-        return data.value as any;
-    },
-});
-
-export const getVariableDefinition: ActionRegistryEntry['actionDefinition'] = {
-    actionKey: "get_variable",
-    title: "Get Variable",
-    description: "Get a variable that has been set in the workflow",
-    categoryKey: "variables",
-    parameters: [
-        {
-            parameterKey: "variableKey",
-            title: "Variable Name",
-            description: "The name of the variable to retrieve",
-            dataType: "string" as const,
-            required: true
-        }
-    ],
-    outputs: [
-        {
-            outputKey: "value",
             outputDataType: "any" as const,
             outputTitle: "Value" as const,
             outputDescription: "The value of the variable",
