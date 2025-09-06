@@ -208,11 +208,6 @@ export const removeActionStep = mutation({
         parentKey: v.optional(v.string())
     },
     handler: async (ctx, { workflowConfigId, actionStepId, parentId, parentKey }) => {
-        console.log('Removing action step')
-        console.log('workflowConfigId', workflowConfigId)
-        console.log('actionStepId', actionStepId)
-        console.log('parentId', parentId)
-        console.log('parentKey', parentKey)
         
         const workflowConfig = await ctx.db.get(workflowConfigId);
         if (!workflowConfig) throw new Error("Configuration not found");

@@ -45,12 +45,10 @@ export default function WorkflowBuilder() {
         setIsDeleting(true)
         try {
             if (deleteDialogState.type === 'trigger') {
-                console.log('Removing trigger')
                 await removeTrigger({
                     workflowConfigId: workflowConfig._id
                 })
             } else if (deleteDialogState.type === 'action-step' && deleteDialogState.actionStepId && deleteDialogState.parentId) {
-                console.log('Removing action step')
                 await removeActionStep({
                     workflowConfigId: workflowConfig._id,
                     actionStepId: deleteDialogState.actionStepId,
