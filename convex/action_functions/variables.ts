@@ -26,7 +26,8 @@ export const setVariable: ActionRegistryEntry['actionFunction'] = internalAction
             throw new Error("Failed to set variable");
         }
         let returnObject = {
-            variableKey: args.key
+            variableKey: args.key,
+            variableValue: args.value
         }
         return returnObject;
     }

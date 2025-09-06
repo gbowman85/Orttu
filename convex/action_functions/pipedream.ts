@@ -77,3 +77,69 @@ export const getActionsInternal = internalAction({
     }
 });
 
+// Execute a Pipedream action
+export const executePipedreamAction = internalAction({
+    args: {
+        externalUserId: v.string(),
+        actionId: v.string(),
+        configuredProps: v.any()
+    },
+    handler: async (ctx, args) => {
+        try {
+            const response = await pipedreamClient.actions.run({
+                externalUserId: args.externalUserId,
+                id: args.actionId,
+                configuredProps: args.configuredProps
+            });
+
+            console.log("Pipedream response:", response);
+
+            if (response?.os as any[] && (response.os as any[])[0]?.err) {
+                return {
+                    success: false,
+                    error: (response.os as any[])[0].err
+                }
+            }
+
+            return {
+                success: true,
+                data: {
+                    exports: sanitizeObject(response.exports),
+                    observations: sanitizeObject(response.os),
+                    returnValue: sanitizeObject(response.ret),
+                    stash: response.stashId
+                }
+            };
+        } catch (error) {
+            console.error(`Error executing Pipedream action ${args.actionId}:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error occurred',
+                data: null
+            };
+        }
+    }
+});
+
+// Helper function to sanitize object field names starting with '$'
+const sanitizeObject = (obj: any): any => {
+    if (obj === null || obj === undefined) {
+        return obj;
+    }
+    
+    if (Array.isArray(obj)) {
+        return obj.map(sanitizeObject);
+    }
+    
+    if (typeof obj === 'object') {
+        const sanitized: any = {};
+        for (const [key, value] of Object.entries(obj)) {
+            // Replace field names that start with '$' with a safe alternative
+            const sanitizedKey = key.startsWith('$') ? `_${key.slice(1)}` : key;
+            sanitized[sanitizedKey] = sanitizeObject(value);
+        }
+        return sanitized;
+    }
+    
+    return obj;
+};
