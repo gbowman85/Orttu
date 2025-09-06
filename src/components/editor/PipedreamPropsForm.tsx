@@ -20,44 +20,75 @@ function createPropSchema(prop: PipedreamConfigurableProp) {
     }
 
     let schema: z.ZodTypeAny
+    const isRequired = !prop.optional
 
     // Schema based on type
     switch (prop.type) {
         case 'string':
         case 'text':
-            schema = z.string({
-                error: 'You must enter some text'
-            })
+            if (isRequired) {
+                schema = z.string({
+                    error: 'You must enter some text'
+                })
+            } else {
+                // For optional fields, allow empty string, null, or undefined
+                schema = z.string().optional().or(z.literal('')).or(z.null()).or(z.undefined())
+            }
             break
         case 'number':
-            schema = z.number({
-                error: 'You must enter a number'
-            })
+            if (isRequired) {
+                schema = z.number({
+                    error: 'You must enter a number'
+                })
+            } else {
+                // For optional fields, allow null, undefined, or valid number
+                schema = z.number().optional().or(z.null()).or(z.undefined())
+            }
             break
         case 'boolean':
             schema = z.boolean()
             break
         case 'date':
         case 'datetime':
-            schema = z.number({ error: 'You must enter a date' })
+            if (isRequired) {
+                schema = z.number({ error: 'You must enter a date' })
+            } else {
+                // For optional fields, allow null, undefined, or valid timestamp
+                schema = z.number().optional().or(z.null()).or(z.undefined())
+            }
             break
         case 'array':
-            schema = z.array(z.string({
-                error: 'You must provide an array'
-            }))
+            if (isRequired) {
+                schema = z.array(z.string({
+                    error: 'You must provide an array'
+                }))
+            } else {
+                // For optional fields, allow null, undefined, or valid array
+                schema = z.array(z.string()).optional().or(z.null()).or(z.undefined())
+            }
             break
         case 'object':
-            schema = z.record(z.string(), z.any()).refine(
-                (val) => val !== null && val !== undefined,
-                'You must provide an object'
-            )
+            if (isRequired) {
+                schema = z.record(z.string(), z.any()).refine(
+                    (val) => val !== null && val !== undefined,
+                    'You must provide an object'
+                )
+            } else {
+                // For optional fields, allow null, undefined, or valid object
+                schema = z.record(z.string(), z.any()).optional().or(z.null()).or(z.undefined())
+            }
             break
         case 'file':
         case 'image':
-            schema = z.instanceof(File).refine(
-                (val) => val !== null && val !== undefined,
-                'You must provide a file'
-            )
+            if (isRequired) {
+                schema = z.instanceof(File).refine(
+                    (val) => val !== null && val !== undefined,
+                    'You must provide a file'
+                )
+            } else {
+                // For optional fields, allow null, undefined, or valid file
+                schema = z.instanceof(File).optional().or(z.null()).or(z.undefined())
+            }
             break
         case 'dir':
             // Directory props are typically handled by Pipedream internally
@@ -65,11 +96,6 @@ function createPropSchema(prop: PipedreamConfigurableProp) {
             break
         default:
             schema = z.any()
-    }
-
-    // Make optional if the prop is optional
-    if (prop.optional) {
-        schema = schema.optional()
     }
 
     return schema
@@ -116,8 +142,6 @@ export function PipedreamPropsForm({
     const [hasChanged, setHasChanged] = useState(false)
 
     const saveStepParameters = useMutation(api.data_functions.workflow_steps.editStepParameterValues)
-
-
 
     useEffect(() => {
         setErrors({})
