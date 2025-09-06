@@ -1,6 +1,7 @@
 'use client'
 
 import { useQuery, useMutation } from 'convex/react'
+import { useEffect } from 'react'
 import { api } from '@/../convex/_generated/api'
 import { Doc, Id } from '@/../convex/_generated/dataModel'
 import { Button } from '@/components/ui/button'
@@ -45,15 +46,18 @@ export function PropertiesConnection({
     // If there is a connectionId, check if it's included in the configuredProps
     const isConnectedInProps = serviceName && configuredProps[serviceName]
 
-    if (connection && !isConnectedInProps && serviceName) {
-        // Add connection data to configured props
-        const connectionData = {
-            [serviceName]: {
-                authProvisionId: connection.pipedreamAccountId
+    // Use useEffect to update configured props when connection changes
+    useEffect(() => {
+        if (connection && !isConnectedInProps && serviceName) {
+            // Add connection data to configured props
+            const connectionData = {
+                [serviceName]: {
+                    authProvisionId: connection.pipedreamAccountId
+                }
             }
+            updateConfiguredProps(connectionData)
         }
-        updateConfiguredProps(connectionData)
-    }
+    }, [connection, isConnectedInProps, serviceName, updateConfiguredProps])
 
     // Get connections for this service
     const connections = useQuery(
