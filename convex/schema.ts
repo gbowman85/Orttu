@@ -188,11 +188,6 @@ export default defineSchema({
         started: v.number(),
         finished: v.optional(v.number()),
         status: WorkflowStatus,
-        runLogs: v.array(v.id("workflow_run_logs")),
-        outputs: v.array(v.object({
-            stepId: v.id("action_steps"),
-            value: v.string()
-        }))
     }).index("by_workflow", ["workflowId"])
         .index("by_config", ["workflowConfigId"])
         .index("by_status", ["status"]),

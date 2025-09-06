@@ -13,8 +13,6 @@ export const createWorkflowRun = internalMutation({
             workflowId: args.workflowId,
             workflowConfigId: args.workflowConfigId,
             started: Date.now(),
-            runLogs: [],
-            outputs: [] as any,
         });
 
         return runId;
