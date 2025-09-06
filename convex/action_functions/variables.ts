@@ -78,6 +78,12 @@ export const setVariableDefinition: ActionRegistryEntry['actionDefinition'] = {
             outputDataType: "string" as const,
             outputTitle: "Variable Name" as const,
             outputDescription: "The name of the variable that was set",
+        },
+        {
+            outputKey: "variableValue",
+            outputDataType: "any" as const,
+            outputTitle: "Variable Value" as const,
+            outputDescription: "The value of the variable",
         }
     ],
     bgColour: "#FFF5E1",
