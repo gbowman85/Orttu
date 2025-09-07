@@ -62,7 +62,7 @@ export function clearPipedreamClientCache(externalUserId?: string) {
 export async function fetchAndStoreRemoteOptions(args: {
     stepId: string
     propName: string
-    configuredProps: Record<string, any>
+    configuredProps: Record<string, unknown>
     externalUserId: string
     actionKey: string
     prop: {
@@ -72,10 +72,10 @@ export async function fetchAndStoreRemoteOptions(args: {
         description?: string
         optional?: boolean
         remoteOptions?: boolean
-        default?: any
+        default?: unknown
     }
-    currentRemoteOptions: Record<string, any> | undefined
-    updateRemoteOptionsMutation: (args: { stepId: any; remoteOptions: Record<string, any> }) => Promise<void>
+    currentRemoteOptions: Record<string, unknown> | undefined
+    updateRemoteOptionsMutation: (args: { stepId: string; remoteOptions: Record<string, unknown> }) => Promise<void>
 }) {
     try {
         // Fetch options from Pipedream
@@ -94,7 +94,7 @@ export async function fetchAndStoreRemoteOptions(args: {
 
         // Store the updated remote options in the database
         await args.updateRemoteOptionsMutation({
-            stepId: args.stepId as any,
+            stepId: args.stepId,
             remoteOptions: updatedRemoteOptions
         })
         return { success: true, remoteOptions }

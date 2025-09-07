@@ -50,7 +50,7 @@ export function insertTextAtCursor(text: string, targetElement?: Element): boole
   const mentionsInputContainer = activeElement.closest('[data-mentions-input]')
   if (mentionsInputContainer) {
     // Check if this MentionsInput is registered
-    const insertTextFn = (window as any).__mentionsInputRegistry?.get(mentionsInputContainer)
+    const insertTextFn = (window as unknown as { __mentionsInputRegistry?: Map<Element, (text: string) => void> }).__mentionsInputRegistry?.get(mentionsInputContainer)
     if (insertTextFn) {
       insertTextFn(text)
       return true

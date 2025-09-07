@@ -14,8 +14,8 @@ interface PropertiesConnectionProps {
     workflowConfigId: Id<'workflow_configurations'>
     step: Doc<'action_steps'>
     actionDefinition?: Doc<'action_definitions'>
-    configuredProps: Record<string, any>
-    updateConfiguredProps: (newValues: Record<string, any>) => void
+    configuredProps: Record<string, unknown>
+    updateConfiguredProps: (newValues: Record<string, unknown>) => void
     onConnectionSelected?: () => void
 }
 
@@ -156,7 +156,7 @@ export function PropertiesConnection({
                     <span className="text-sm font-medium text-gray-700">No Service Required</span>
                 </div>
                 <p className="text-sm text-gray-600">
-                    This action doesn't require a service connection.
+                    This action doesn&apos;t require a service connection.
                 </p>
             </div>
         )
@@ -278,7 +278,7 @@ export function PropertiesConnection({
             </div>
 
             <p className="text-sm text-yellow-700 mb-3">
-                This action requires a connection to {service.title}. You don't have any connections set up yet.
+                This action requires a connection to {service.title}. You don&apos;t have any connections set up yet.
             </p>
 
             <Button

@@ -7,7 +7,7 @@ import { reduceColour } from "@/lib/utils";
 
 export function ActionDefinitionCard({ actionDefinition, categoryColour }: { actionDefinition: Doc<"action_definitions">, categoryColour: string }) {
 
-    const { ref, isDragging, isDropping } = useDraggable({
+    const { ref, isDragging } = useDraggable({
         id: actionDefinition._id,
         data: {
             actionDefinition: actionDefinition

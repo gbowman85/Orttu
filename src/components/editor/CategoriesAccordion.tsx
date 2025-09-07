@@ -5,6 +5,7 @@ import { api } from "@/../convex/_generated/api";
 import { useQuery } from "convex/react";
 import { CategoryActions } from "./CategoryActions";
 import { useState } from "react";
+import Image from "next/image";
 
 export const CategoriesOptions = () => {
     const categories = useQuery(api.data_functions.action_categories.listActionCategories);
@@ -108,10 +109,12 @@ const CategoriesAccordionContent = ({
                             <span className="flex items-center gap-2">
                                 {category.icon && (
                                     <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center aspect-square">
-                                        <img 
+                                        <Image 
                                             src={category.icon.endsWith('/orig') ? category.icon.replace('/orig', '/48') : category.icon} 
                                             alt={`${category.title} icon`}
                                             className="w-4 h-4 object-contain"
+                                            width={16}
+                                            height={16}
                                         />
                                     </div>
                                 )}

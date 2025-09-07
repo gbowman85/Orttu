@@ -58,15 +58,6 @@ interface ReusableDataContextType {
     updateVariable: (id: string, updates: Partial<UserVariable>) => void;
 }
 
-// Fuse.js options for searching
-const fuseOptions = {
-    keys: [
-        { name: 'title', weight: 2 },
-        { name: 'value', weight: 1 }
-    ],
-    threshold: 0.3,
-    ignoreLocation: true
-};
 
 const ReusableDataContext = createContext<ReusableDataContextType | undefined>(undefined);
 
@@ -195,14 +186,6 @@ export function ReusableDataProvider({ children }: { children: ReactNode }) {
         }));
     };
 
-    // Filter variables by date range
-    const filterByDateRange = (variables: UserVariable[], startDate?: Date, endDate?: Date) => {
-        if (!startDate || !endDate) return variables;
-        return variables.filter(variable => {
-            const createdTime = variable.created;
-            return createdTime >= startDate.getTime() && createdTime <= endDate.getTime();
-        });
-    };
 
     return (
         <ReusableDataContext.Provider 

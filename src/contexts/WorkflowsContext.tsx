@@ -119,7 +119,7 @@ export function WorkflowsProvider({ children }: { children: ReactNode }) {
         return () => clearTimeout(timer);
     }, [sortBy, sortDirection, viewMode, preferences, updatePreferences]);
 
-    let loadWorkflows = useQuery(api.data_functions.workflows.listWorkflows);
+    const loadWorkflows = useQuery(api.data_functions.workflows.listWorkflows);
 
     const [rawWorkflows, setRawWorkflows] = useState<Doc<"workflows">[]>([]);
 

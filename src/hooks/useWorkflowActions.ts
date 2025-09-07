@@ -1,14 +1,24 @@
 import { useMutation } from "convex/react"
 import { api } from "@/../convex/_generated/api"
 import { Id } from "@/../convex/_generated/dataModel"
-import { useCallback, useState, useRef } from "react"
+import { useCallback, useRef } from "react"
 import { useDragState } from "@/components/editor/DragMonitor"
+import { DragOperation } from "@dnd-kit/abstract"
+
+// Define proper types for dnd-kit events
+interface DragStartEvent {
+  operation: DragOperation<any, any>
+}
+
+interface DragEndEvent {
+  operation: DragOperation<any, any>
+  canceled: boolean
+}
+
 
 export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations"> | undefined) {
     // Define mutations for adding and moving action steps
     const addActionStep = useMutation(api.data_functions.workflow_steps.addActionStep)
-    const removeActionStep = useMutation(api.data_functions.workflow_steps.removeActionStep)
-    const replaceActionStep = useMutation(api.data_functions.workflow_steps.replaceActionStep)
     const moveActionStep = useMutation(api.data_functions.workflow_steps.moveActionStep)
 
     // Define state for tracking dragged action step
@@ -19,7 +29,7 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
         index: number
     }>(null)
 
-    const { currentDropTarget, setCurrentDropTarget } = useDragState()
+    const { currentDropTarget } = useDragState()
 
     // Track last moved parent and debounce timer for drag over
     const lastMovedParent = useRef<{
@@ -30,30 +40,35 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
     const dragOverDebounceTimer = useRef<NodeJS.Timeout | null>(null)
 
     // When a drag starts, clear any pending move and store the parentId, parentKey, and index of the dragged element
-    const handleDragStart = useCallback((event: any) => {
+    const handleDragStart = useCallback((event: DragStartEvent) => {
         const source = event.operation?.source
         const draggedType = source?.type
         if (draggedType === 'action-step') {
 
+            if (!source?.data?.actionStep || !source?.data?.parentId || !source?.data?.index) {
+                console.log('No source data for action-step')
+                return
+            }
+
             // Store the current action step position, this will be used to revert the state if the drag is canceled
             initialActionStepPosition.current = {
-                actionStepId: source?.data?.actionStep._id,
-                parentId: source?.data?.parentId,
-                parentKey: source?.data?.parentKey,
-                index: source?.data?.index
+                actionStepId: (source?.data?.actionStep as { _id: Id<"action_steps"> })._id,
+                parentId: source.data.parentId as Id<"action_steps"> | 'root' | undefined,
+                parentKey: source.data.parentKey as string | undefined,
+                index: source.data.index as number
             }
         }
     }, [])
 
-    const handleDragOver = useCallback((event: any) => {
-        const { manager } = event.operation.source;
-        const { dragOperation } = manager;
-        const dropTarget = dragOperation.target;
+    const handleDragOver = useCallback(() => {
+        // const { manager } = event.operation.source;
+        // const { dragOperation } = manager;
+        // const dropTarget = dragOperation.target;
 
         
-    }, [moveActionStep, workflowConfigId, setCurrentDropTarget])
+    }, [])
 
-    const handleDragEnd = useCallback(async (event: any) => {
+    const handleDragEnd = useCallback(async (event: DragEndEvent) => {
         // Clean up debounce timer
         if (dragOverDebounceTimer.current) {
             clearTimeout(dragOverDebounceTimer.current)
@@ -70,22 +85,31 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
 
         const source = operation.source
         const draggedType = source.type
-
+        
         // Adding a new action step from an action definition
         if (draggedType === 'action-definition' && operation.target) {
-            // Action-definition dropped on a droppable target
-            const actionDefinitionId = source.data?.actionDefinition._id
-
             // Check that the source data exists
             if (!source.data) {
                 console.log('No source data for action-definition')
                 return
             }
+            if (!source.data.actionDefinition) {
+                console.log('No actionDefinition')
+                return
+            }
+            // Action-definition dropped on a droppable target
+            const actionDefinitionId = (source.data.actionDefinition as { _id: Id<"action_definitions"> })._id
 
             // Get the target data
             const targetData = operation.target.data
             if (!targetData) {
                 console.log('No target data found')
+                return
+            }
+            
+            if (!targetData.parentId || !targetData.index) {
+                console.log('No parentId, parentKey, or index ')
+                console.log('targetData', targetData)
                 return
             }
 
@@ -94,9 +118,9 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
                 await addActionStep({
                     workflowConfigId,
                     actionDefinitionId,
-                    parentId: targetData.parentId,
-                    parentKey: targetData.parentKey,
-                    index: targetData.index
+                    parentId: targetData.parentId as Id<"action_steps"> | 'root',
+                    parentKey: targetData.parentKey as string | undefined,
+                    index: targetData.index as number
                 })
             } catch (error) {
                 console.error('Failed to add action step:', error)
@@ -104,7 +128,7 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
 
         } else if (draggedType === 'action-step') {
 
-            const actionStepId = source.data.actionStep._id
+            const actionStepId = (source.data?.actionStep as { _id: Id<"action_steps"> })._id
 
             // Get the source data from the initial action step position
 
@@ -119,8 +143,8 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
 
             // Get the drop target from the drag operation
             const { manager } = source
-            const { dragOperation } = manager
-            const dropTarget = dragOperation.target
+            const { dragOperation } = manager || {}
+            const dropTarget = dragOperation?.target
 
             if (!dropTarget) {
                 console.log('No drop target found')
@@ -128,9 +152,9 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
             }
 
             // Extract target information
-            let targetParentId: Id<"action_steps"> | 'root' = dropTarget.data?.parentId
-            let targetParentKey: string | undefined = dropTarget.data?.parentKey
-            let targetIndex: number = dropTarget.data?.index
+            const targetParentId: Id<"action_steps"> | 'root' = dropTarget.data?.parentId as Id<"action_steps"> | 'root'
+            const targetParentKey: string | undefined = dropTarget.data?.parentKey as string | undefined
+            const targetIndex: number = dropTarget.data?.index as number
 
             // Check that there is a valid index
             if (targetIndex === undefined) {

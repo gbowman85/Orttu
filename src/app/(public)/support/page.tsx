@@ -18,7 +18,7 @@ export default function SupportPage() {
                 <section>
                     <h2 className="text-2xl font-semibold mb-4">Self-Help Resources</h2>
                     <p className="text-gray-700 leading-relaxed mb-4">
-                        If you're interested in learning about workflow automation or understanding how this platform works, 
+                        If you&apos;re interested in learning about workflow automation or understanding how this platform works, 
                         you can explore these resources:
                     </p>
                     <ul className="list-disc list-inside space-y-2 text-gray-700">
@@ -52,7 +52,7 @@ export default function SupportPage() {
                     </p>
                     <ul className="list-disc list-inside space-y-2 text-gray-700">
                         <li>Try refreshing the page or clearing your browser cache</li>
-                        <li>Check that you're using a modern web browser</li>
+                        <li>Check that you&apos;re using a modern web browser</li>
                         <li>Ensure you have a stable internet connection</li>
                         <li>Consider that the platform may be temporarily unavailable</li>
                         <li>Remember that this is a demonstration project, not a production service</li>

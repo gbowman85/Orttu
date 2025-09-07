@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 export default function PublicFooter() {
     return (
         <footer className="w-full border-t">
@@ -12,7 +14,7 @@ export default function PublicFooter() {
                         </a>
                     </div>
                     <div>
-                        <img src="/images/logo/novaLearn-logo-120.png" alt="novaLearn Logo" className="h-16" />
+                        <Image src="/images/logo/novaLearn-logo-120.png" alt="novaLearn Logo" className="h-16" width={120} height={120} />
                     </div>
                 </div>
             </div>

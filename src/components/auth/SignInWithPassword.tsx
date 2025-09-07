@@ -3,9 +3,7 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 import { useState } from "react";
-import { ConvexError } from "convex/values";
 import { useRouter } from "next/navigation";
 import { handleAuthSuccess } from "@/lib/auth";
 import { CircleArrowRight } from "lucide-react";
@@ -44,7 +42,7 @@ export function SignInWithPassword({
         signIn(provider ?? "password", formData)
           .then(() => authHandler.onSuccess(formData.get("email") as string))
           .catch((error) => {
-            const result = authHandler.onError(error);
+            authHandler.onError(error);
             setSubmitting(false);
           });
       }}

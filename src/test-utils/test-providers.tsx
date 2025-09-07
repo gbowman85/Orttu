@@ -24,8 +24,7 @@ export const clearAuthMocks = () => {
 };
 
 export function TestProviders({ 
-  children,
-  authState = { isAuthenticated: false }
+  children
 }: { 
   children: ReactNode;
   authState?: AuthState;

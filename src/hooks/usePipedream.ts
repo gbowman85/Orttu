@@ -7,9 +7,10 @@ import { api } from '@/../convex/_generated/api'
 import { Doc, Id } from '@/../convex/_generated/dataModel'
 import { getPipedreamClient } from '@/lib/pipedream-client'
 import { fetchAndStoreRemoteOptions } from '@/lib/pipedream-client'
+import { ConnectError } from '@pipedream/sdk/browser'
 
 interface UsePipedreamConnectionOptions {
-    onSuccess?: (account: any) => void
+    onSuccess?: (account: { accountId: string; [key: string]: unknown }) => void
     onError?: (error: Error) => void
 }
 
@@ -28,7 +29,7 @@ export function usePipedreamConnection(options: UsePipedreamConnectionOptions = 
 
             await frontendClient.connectAccount({
                 app: app,
-                onSuccess: (result: any) => {
+                onSuccess: (result: { id: string; [key: string]: unknown }) => {
                     if (result.id) {
                         recordConnection({
                             serviceId: serviceId,
@@ -42,12 +43,12 @@ export function usePipedreamConnection(options: UsePipedreamConnectionOptions = 
                     toast.success(`Successfully connected to ${app}`)
                     options.onSuccess?.({ app, externalUserId, accountId: result.id })
                 },
-                onError: (error: any) => {
+                onError: (error: ConnectError) => {
                     console.error('Connection error:', error)
                     toast.error(`Connection failed: ${error.message}`)
                     options.onError?.(error)
                 },
-                onClose: (status: any) => {
+                onClose: (status: { successful: boolean; completed: boolean; }) => {
                     if (status.successful) {
                         console.log('Connection completed successfully')
                     } else if (status.completed) {
@@ -59,7 +60,7 @@ export function usePipedreamConnection(options: UsePipedreamConnectionOptions = 
                 }
             })
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Connection failed:', error)
             const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
             toast.error(`Connection failed: ${errorMessage}`)
@@ -85,12 +86,12 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
     const step = options.step
     const actionDefinition = options.actionDefinition
     
-    const [configuredProps, setConfiguredProps] = useState<Record<string, any>>(step?.parameterValues || {})
+    const [configuredProps, setConfiguredProps] = useState<Record<string, unknown>>(step?.parameterValues || {})
     const [loadingProps, setLoadingProps] = useState<Set<string>>(new Set())
-    const [remoteOptions, setRemoteOptions] = useState<Record<string, Array<{ label: string; value?: any }>>>({})
+    const [remoteOptions, setRemoteOptions] = useState<Record<string, Array<{ label: string; value?: unknown }>>>({})
     
-    const ongoingRequests = useRef<Map<string, Promise<Array<{ label: string; value?: any }>>>>(new Map())
-    const configuredPropsRef = useRef<Record<string, any>>(step?.parameterValues || {})
+    const ongoingRequests = useRef<Map<string, Promise<Array<{ label: string; value?: unknown }>>>>(new Map())
+    const configuredPropsRef = useRef<Record<string, unknown>>(step?.parameterValues || {})
 
     // Get the connection for this step
     const connection = useQuery(
@@ -103,13 +104,16 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
     // Get remote options from the database
     const storedRemoteOptions = useQuery(
         api.data_functions.workflow_steps.getStepRemoteOptions,
-        step?._id ? { stepId: step._id as any } : 'skip'
+        step?._id ? { stepId: step._id as Id<'action_steps'> } : 'skip'
     )
 
     const updateStepRemoteOptionsMutation = useMutation(api.data_functions.workflow_steps.updateStepRemoteOptions)
     
-    const updateStepRemoteOptions = useCallback(async (args: { stepId: any; remoteOptions: Record<string, any> }) => {
-        await updateStepRemoteOptionsMutation(args)
+    const updateStepRemoteOptions = useCallback(async (args: { stepId: string; remoteOptions: Record<string, unknown> }) => {
+        await updateStepRemoteOptionsMutation({
+            stepId: args.stepId as Id<'action_steps'>,
+            remoteOptions: args.remoteOptions as Record<string, { value?: unknown; label: string; }[]>
+        })
     }, [updateStepRemoteOptionsMutation])
 
     // Reset configuredProps when step or actionDefinition changes
@@ -128,7 +132,7 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
         }
     }, [storedRemoteOptions])
 
-    const updateConfiguredProps = useCallback((newValues: Record<string, any>) => {
+    const updateConfiguredProps = useCallback((newValues: Record<string, unknown>) => {
         setConfiguredProps(prev => {
             const updated = {
                 ...prev,
@@ -192,7 +196,7 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
         ongoingRequests.current.set(requestKey, requestPromise)
         
         return requestPromise
-    }, [user?._id, actionDefinition?.actionKey, step?._id, storedRemoteOptions, updateStepRemoteOptions])
+    }, [user?._id, actionDefinition?.actionKey, step?._id, storedRemoteOptions, updateStepRemoteOptions, actionDefinition?.configurableProps])
 
     const reloadProps = useCallback(async (propName: string) => {
         const prop = actionDefinition?.configurableProps?.find(p => p.name === propName)

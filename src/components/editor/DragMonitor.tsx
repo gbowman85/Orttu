@@ -3,6 +3,12 @@
 import { useDragDropMonitor } from '@dnd-kit/react'
 import { createContext, useContext, useState, ReactNode } from 'react'
 import { Id } from '@/../convex/_generated/dataModel'
+import { DragOperation } from '@dnd-kit/abstract'
+
+// Define proper types for dnd-kit events
+interface DragStartEvent {
+  operation: DragOperation<any, any>
+}
 
 interface DragStateContextType {
     isDragging: boolean
@@ -37,7 +43,7 @@ export function DragMonitor({ children }: { children: ReactNode }) {
     const [currentDropTarget, setCurrentDropTarget] = useState<{ group: string | null, isChildContainer: boolean } | null>(null)
 
     useDragDropMonitor({
-        onDragStart: (event) => {
+        onDragStart: (event: DragStartEvent) => {
             // Start of a drag operation
             if (event.operation?.source?.data?.actionStep) {
                 // Dragging an action step
@@ -58,7 +64,7 @@ export function DragMonitor({ children }: { children: ReactNode }) {
                 setDraggedActionStepId(null)
             }
         },
-        onDragOver: (event) => {
+        onDragOver: () => {
             // Dragging over a drop target
         },
         onDragEnd: () => {

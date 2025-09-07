@@ -54,12 +54,12 @@ export async function getOptionsFromPipedream(
       description?: string
       optional?: boolean
       remoteOptions?: boolean
-      default?: any
+      default?: unknown
   },
-  configuredProps: Record<string, any>,
+  configuredProps: Record<string, unknown>,
   externalUserId: string,
   actionKey: string
-): Promise<Array<{ label: string; value?: any }>> {
+): Promise<Array<{ label: string; value?: unknown }>> {
   console.log('Getting options for property:', prop.name)
   console.log('Configured props:', configuredProps)
   try {

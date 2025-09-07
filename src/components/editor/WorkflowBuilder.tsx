@@ -14,8 +14,6 @@ import { api } from '@/../convex/_generated/api'
 import { useWorkflowData } from '@/hooks/useWorkflowData'
 import { useState } from 'react'
 import { ActionsSkeleton } from './LoadingStates'
-import { Button } from '../ui/button'
-import { DatabaseIcon } from 'lucide-react'
 
 export default function WorkflowBuilder() {
     const {
@@ -35,7 +33,6 @@ export default function WorkflowBuilder() {
     const removeActionStep = useMutation(api.data_functions.workflow_steps.removeActionStep)
     const removeTrigger = useMutation(api.data_functions.workflow_steps.removeTrigger)
     const [isDeleting, setIsDeleting] = useState(false)
-    const [isDataPopupOpen, setIsDataPopupOpen] = useState(false)
 
     const [actionsContainerRef] = useAutoAnimate()
 

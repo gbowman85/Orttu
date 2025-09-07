@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Doc, Id } from '@/../convex/_generated/dataModel'
+import { Id } from '@/../convex/_generated/dataModel'
 import { useWorkflowEditor } from '@/contexts/WorkflowEditorContext'
 import { useWorkflowData } from './useWorkflowData'
 

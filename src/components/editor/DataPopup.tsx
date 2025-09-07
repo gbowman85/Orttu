@@ -70,7 +70,7 @@ export function DataPopup({ children }: DataPopupProps) {
         return () => document.removeEventListener('focusin', handleFocusChange)
     }, [])
 
-    const handleDragEnd = (event: any, info: PanInfo) => {
+    const handleDragEnd = (_event: unknown, info: PanInfo) => {
         setPosition(prev => ({
             x: prev.x + info.offset.x,
             y: prev.y + info.offset.y

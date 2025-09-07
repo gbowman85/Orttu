@@ -15,10 +15,10 @@ import { InputWithMentions } from './InputWithMentions'
 
 interface PipedreamPropInputProps {
     prop: PipedreamConfigurableProp
-    value: any
-    onChange: (value: any) => void
+    value: unknown
+    onChange: (value: unknown) => void
     error?: string
-    options?: Array<{ label: string; value?: any }>
+    options?: Array<{ label: string; value?: unknown }>
 }
 
 
@@ -53,7 +53,7 @@ export function PipedreamPropInput({
                 return (
                     <div className="flex items-center gap-2">
                         <Select
-                            value={value?.__lv?.value ?? value ?? ''}
+                            value={(typeof value === 'object' && value !== null && '__lv' in (value as Record<string, unknown>)) ? (value as { __lv?: { value?: string } }).__lv?.value ?? '' : (typeof value === 'string' ? value : '')}
                             onValueChange={(selectedValue) => {
                                 const option = options.find(opt => opt.value === selectedValue)
                                 if (option && prop.withLabel) {
@@ -68,7 +68,7 @@ export function PipedreamPropInput({
                             </SelectTrigger>
                             <SelectContent>
                                 {options.map((option) => (
-                                    <SelectItem key={option.value ?? option.label} value={option.value ?? ''}>
+                                    <SelectItem key={String(option.value ?? option.label)} value={String(option.value ?? '')}>
                                         {option.label}
                                     </SelectItem>
                                 ))}
@@ -90,7 +90,7 @@ export function PipedreamPropInput({
                 return (
                     <div className="flex items-center gap-2">
                         <Input
-                            value={value?.__lv?.value ?? value ?? ''}
+                            value={(typeof value === 'object' && value !== null && '__lv' in (value as Record<string, unknown>)) ? (value as { __lv?: { value?: string } }).__lv?.value ?? '' : (typeof value === 'string' ? value : '')}
                             onChange={(e) => {
                                 const inputValue = e.target.value
                                 if (prop.withLabel) {
@@ -131,7 +131,7 @@ export function PipedreamPropInput({
             case 'string':
                 return (
                     <InputWithMentions
-                        value={value ?? ''}
+                        value={typeof value === 'string' ? value : ''}
                         onChange={onChange}
                         placeholder={`Enter ${prop.label?.toLowerCase() || prop.name.toLowerCase()}`}
                     />
@@ -140,7 +140,7 @@ export function PipedreamPropInput({
             case 'text':
                 return (
                     <InputWithMentions
-                        value={value ?? ''}
+                        value={typeof value === 'string' ? value : ''}
                         onChange={onChange}
                         placeholder={`Enter ${prop.label?.toLowerCase() || prop.name.toLowerCase()}`}
                         isTextarea={true}
@@ -151,7 +151,7 @@ export function PipedreamPropInput({
                 return (
                     <Input
                         type="number"
-                        value={value ?? ''}
+                        value={typeof value === 'number' ? value : (typeof value === 'string' ? value : '')}
                         onChange={(e) => onChange(Number(e.target.value))}
                         placeholder={`Enter ${prop.label?.toLowerCase() || prop.name.toLowerCase()}`}
                     />
@@ -160,16 +160,16 @@ export function PipedreamPropInput({
             case 'boolean':
                 return (
                     <Switch
-                        checked={value ?? false}
-                        onCheckedChange={onChange}
+                        checked={typeof value === 'boolean' ? value : false}
+                        onCheckedChange={(checked) => onChange(checked)}
                     />
                 )
 
             case 'date':
                 return (
                     <DatePicker
-                        value={value}
-                        onChange={(date) => onChange(date?.getTime())}
+                        value={typeof value === 'string' || value instanceof Date ? value : undefined}
+                        onChange={(date) => onChange(date ? date.getTime() : undefined)}
                         placeholder={`Select ${prop.label?.toLowerCase() || prop.name.toLowerCase()}`}
                     />
                 )
@@ -177,8 +177,8 @@ export function PipedreamPropInput({
             case 'datetime':
                 return (
                     <DatePicker
-                        value={value}
-                        onChange={(date) => onChange(date?.getTime())}
+                        value={typeof value === 'string' || value instanceof Date ? value : undefined}
+                        onChange={(date) => onChange(date ? date.getTime() : undefined)}
                         placeholder={`Select ${prop.label?.toLowerCase() || prop.name.toLowerCase()}`}
                         showTime={true}
                     />
@@ -243,7 +243,7 @@ export function PipedreamPropInput({
             default:
                 return (
                     <InputWithMentions
-                        value={value ?? ''}
+                        value={typeof value === 'string' ? value : ''}
                         onChange={onChange}
                         placeholder={`Enter ${prop.label?.toLowerCase() || prop.name.toLowerCase()}`}
                     />

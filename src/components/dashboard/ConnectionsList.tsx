@@ -12,7 +12,7 @@ import {
 import { useConnections } from '@/contexts/ConnectionsContext'
 
 export default function ConnectionsList() {
-    const { connections, isLoading, error, isFiltering, clearFilters } = useConnections();
+    const { connections, isLoading, error } = useConnections();
 
     const handleSeeDetails = (connectionId: string) => {
         // TODO: Implement see details action

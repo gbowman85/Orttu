@@ -1,6 +1,6 @@
 'use client'
 
-import { Clock, MoreVertical, CircleCheck, CircleX, LoaderCircle, Play, FileSearch, RotateCw, Pencil, Trash2 } from 'lucide-react'
+import { MoreVertical, CircleCheck, CircleX, LoaderCircle, Play, FileSearch, RotateCw, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '../ui/button'
 import { useActivity } from '@/contexts/ActivityContext'
 import { ActivityEmpty } from "./ActivityEmpty"

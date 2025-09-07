@@ -5,7 +5,7 @@ import { useDroppable } from "@dnd-kit/react";
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { useDragState } from '@/components/editor/DragMonitor'
-import { closestCenter, closestCorners, } from "@dnd-kit/collision";
+import { closestCenter } from "@dnd-kit/collision";
 import { Id } from "@/../convex/_generated/dataModel";
 
 interface AddActionButtonProps {

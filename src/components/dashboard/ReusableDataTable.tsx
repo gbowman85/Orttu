@@ -27,7 +27,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useReusableData } from '@/contexts/ReusableDataContext';
+import { useReusableData, DataType } from '@/contexts/ReusableDataContext';
 
 interface EditingVariable {
     id?: string;
@@ -146,7 +146,7 @@ export default function ReusableDataTable() {
                 default:
                     return variable.value;
             }
-        } catch (e) {
+        } catch {
             return variable.value;
         }
     };
@@ -180,10 +180,14 @@ export default function ReusableDataTable() {
                                     <TableCell>
                                         <Select
                                             value={editingVariable.dataType}
-                                            onValueChange={(value: any) => setEditingVariable({
-                                                ...editingVariable,
-                                                dataType: value
-                                            })}
+                                            onValueChange={(value: DataType) => {
+                                                if (value !== 'all') {
+                                                    setEditingVariable({
+                                                        ...editingVariable,
+                                                        dataType: value as EditingVariable['dataType']
+                                                    })
+                                                }
+                                            }}
                                         >
                                             <SelectTrigger>
                                                 <SelectValue />
@@ -279,10 +283,14 @@ export default function ReusableDataTable() {
                             <TableCell>
                                 <Select
                                     value={newVariable.dataType}
-                                    onValueChange={(value: any) => setNewVariable({
-                                        ...newVariable,
-                                        dataType: value
-                                    })}
+                                    onValueChange={(value: DataType) => {
+                                        if (value !== 'all') {
+                                            setNewVariable({
+                                                ...newVariable,
+                                                dataType: value as EditingVariable['dataType']
+                                            })
+                                        }
+                                    }}
                                 >
                                     <SelectTrigger>
                                         <SelectValue />

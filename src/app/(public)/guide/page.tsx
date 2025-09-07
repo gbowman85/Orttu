@@ -35,7 +35,7 @@ export default function GuidePage() {
                         <div className="border-l-4 border-blue-500 pl-4">
                             <h3 className="text-lg font-medium mb-2">Step 1: Sign Up and Connect Services</h3>
                             <p className="text-gray-700">
-                                After creating an account, you'll need to connect your third-party services (like Gmail, Google Drive,
+                                After creating an account, you&apos;ll need to connect your third-party services (like Gmail, Google Drive,
                                 or other applications) through a secure integration system. This allows workflows to access and
                                 interact with your accounts.
                             </p>
@@ -137,7 +137,7 @@ export default function GuidePage() {
                         <li>This is an academic project - no guarantees are provided regarding reliability or security</li>
                         <li>Always test workflows thoroughly before using them with important data</li>
                         <li>Be cautious when connecting accounts to third-party services</li>
-                        <li>Monitor your workflows regularly to ensure they're working as expected</li>
+                        <li>Monitor your workflows regularly to ensure they&apos;re working as expected</li>
                         <li>Keep your connections secure and up-to-date</li>
                     </ul>
                 </section>
@@ -147,7 +147,7 @@ export default function GuidePage() {
                     <h2 className="text-2xl font-semibold mb-4">Need Help?</h2>
                     <p className="text-gray-700 leading-relaxed">
                         If you encounter any issues or have questions about using the platform, please remember that this is
-                        an academic demonstration project. While I've built it to be functional, it's primarily designed
+                        an academic demonstration project. While I&apos;ve built it to be functional, it&apos;s primarily designed
                         to showcase workflow automation concepts rather than serve as a production-ready service.
                     </p>
                 </section>

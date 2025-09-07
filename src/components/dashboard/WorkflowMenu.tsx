@@ -79,7 +79,7 @@ export function WorkflowMenu({
     try {
       await onAddTag(workflow._id, newTag.trim())
       setNewTag('')
-    } catch (error) {
+    } catch {
       // Error is already handled in the context
     } finally {
       setIsAddingTag(false)

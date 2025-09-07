@@ -13,10 +13,10 @@ import { InputWithMentions } from './InputWithMentions'
 
 interface ParameterInputProps {
     parameter: Parameter
-    value: any
-    onChange: (value: any) => void
+    value: unknown
+    onChange: (value: unknown) => void
     error?: string
-    otherValues?: Record<string, any>
+    otherValues?: Record<string, unknown>
 }
 
 export function ParameterInput({ parameter, value, onChange, error, otherValues = {} }: ParameterInputProps) {
@@ -34,9 +34,9 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
                 case 'notEquals':
                     return compareValue !== conditionValue
                 case 'greaterThan':
-                    return compareValue > conditionValue
+                    return typeof compareValue === 'number' && typeof conditionValue === 'number' && compareValue > conditionValue
                 case 'lessThan':
-                    return compareValue < conditionValue
+                    return typeof compareValue === 'number' && typeof conditionValue === 'number' && compareValue < conditionValue
                 case 'contains':
                     return Array.isArray(compareValue) && compareValue.includes(conditionValue)
                 case 'notContains':
@@ -59,7 +59,7 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
                 case 'text':
                     return (
                         <InputWithMentions
-                            value={value ?? ''}
+                            value={typeof value === 'string' ? value : ''}
                             onChange={onChange}
                             placeholder={`Enter ${parameter.title.toLowerCase()}`}
                         />
@@ -67,7 +67,7 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
                 case 'textarea':
                     return (
                         <InputWithMentions
-                            value={value ?? ''}
+                            value={typeof value === 'string' ? value : ''}
                             onChange={onChange}
                             placeholder={`Enter ${parameter.title.toLowerCase()}`}
                             isTextarea={true}
@@ -76,8 +76,8 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
                 case 'select':
                     return (
                         <Select
-                            value={value ?? ''}
-                            onValueChange={onChange}
+                            value={typeof value === 'string' ? value : ''}
+                            onValueChange={(v) => onChange(v)}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select a value" />
@@ -95,23 +95,23 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
                 case 'switch':
                     return (
                         <Switch
-                            checked={value ?? false}
-                            onCheckedChange={onChange}
+                            checked={typeof value === 'boolean' ? value : false}
+                            onCheckedChange={(checked) => onChange(checked)}
                         />
                     )
                 case 'date':
                     return (
                         <DatePicker
-                            value={value}
-                            onChange={(date) => onChange(date?.getTime())}
+                            value={typeof value === 'string' || value instanceof Date ? value : undefined}
+                            onChange={(date) => onChange(date ? date.getTime() : undefined)}
                             placeholder={`Select ${parameter.inputType}`}
                         />
                     )
                 case 'datetime':
                     return (
                         <DatePicker
-                            value={value}
-                            onChange={(date) => onChange(date?.getTime())}
+                            value={typeof value === 'string' || value instanceof Date ? value : undefined}
+                            onChange={(date) => onChange(date ? date.getTime() : undefined)}
                             placeholder={`Select ${parameter.inputType}`}
                             showTime={true}
                         />
@@ -120,7 +120,7 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
                     return (
                         <Input
                             type="number"
-                            value={value ?? ''}
+                            value={typeof value === 'number' ? value : (typeof value === 'string' ? value : '')}
                             onChange={(e) => onChange(Number(e.target.value))}
                             min={parameter.validation?.min}
                             max={parameter.validation?.max}
@@ -144,8 +144,8 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
             case 'string':
                 return parameter.validation?.allowedValues ? (
                     <Select
-                        value={value ?? ''}
-                        onValueChange={onChange}
+                        value={typeof value === 'string' ? value : ''}
+                        onValueChange={(v) => onChange(v)}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Select a value" />
@@ -160,7 +160,7 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
                     </Select>
                 ) : (
                     <InputWithMentions
-                        value={value ?? ''}
+                        value={typeof value === 'string' ? value : ''}
                         onChange={onChange}
                         placeholder={`Enter ${parameter.title.toLowerCase()}`}
                     />
@@ -170,7 +170,7 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
                 return (
                     <Input
                         type="number"
-                        value={value ?? ''}
+                        value={typeof value === 'number' ? value : (typeof value === 'string' ? value : '')}
                         onChange={(e) => onChange(Number(e.target.value))}
                         min={parameter.validation?.min}
                         max={parameter.validation?.max}
@@ -181,23 +181,23 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
             case 'boolean':
                 return (
                     <Switch
-                        checked={value ?? false}
-                        onCheckedChange={onChange}
+                        checked={typeof value === 'boolean' ? value : false}
+                        onCheckedChange={(checked) => onChange(checked)}
                     />
                 )
 
             case 'date':
                 return (
                     <DatePicker
-                        value={value}
-                        onChange={(date) => onChange(date?.getTime())}
+                        value={typeof value === 'string' || value instanceof Date ? value : undefined}
+                        onChange={(date) => onChange(date ? date.getTime() : undefined)}
                     />
                 )
             case 'datetime':
                 return (
                     <DatePicker
-                        value={value}
-                        onChange={(date) => onChange(date?.getTime())}
+                        value={typeof value === 'string' || value instanceof Date ? value : undefined}
+                        onChange={(date) => onChange(date ? date.getTime() : undefined)}
                         showTime={true}
                     />
                 )
@@ -231,7 +231,7 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
             default:
                 return (
                     <InputWithMentions
-                        value={value ?? ''}
+                        value={typeof value === 'string' ? value : ''}
                         onChange={onChange}
                         placeholder={`Enter ${parameter.title.toLowerCase()}`}
                     />

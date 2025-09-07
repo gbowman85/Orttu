@@ -2,7 +2,7 @@ import { createContext, useContext, useState, ReactNode, useEffect, useMemo } fr
 import Fuse from 'fuse.js';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import { Doc, Id } from '../../convex/_generated/dataModel';
+import { Doc } from '../../convex/_generated/dataModel';
 
 // Real data types from Convex
 type WorkflowRun = Doc<"workflow_runs"> & { workflowTitle: string };
@@ -56,10 +56,13 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     const rawWorkflowRuns = useQuery(api.data_functions.workflow_runs.getAllUserWorkflowRuns);
 
     // Create workflow titles mapping
-    const workflowTitles: Record<string, string> = {};
-    workflows?.forEach(workflow => {
-        workflowTitles[workflow._id] = workflow.title;
-    });
+    const workflowTitles: Record<string, string> = useMemo(() => {
+        const titles: Record<string, string> = {};
+        workflows?.forEach(workflow => {
+            titles[workflow._id] = workflow.title;
+        });
+        return titles;
+    }, [workflows]);
 
     // Get unique workflow titles
     const availableWorkflowTitles = Array.from(new Set(Object.values(workflowTitles)));

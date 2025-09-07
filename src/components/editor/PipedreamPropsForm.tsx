@@ -146,7 +146,7 @@ export function PipedreamPropsForm({
     useEffect(() => {
         setErrors({})
         setHasChanged(false)
-    }, [step?.parameterValues, configurableProps])
+    }, [step?.parameterValues, actionDefinition?.configurableProps])
 
     // Cleanup on unmount
     useEffect(() => {
@@ -156,7 +156,7 @@ export function PipedreamPropsForm({
         }
     }, [])
 
-    const validateForm = (values: Record<string, any>) => {
+    const validateForm = (values: Record<string, unknown>) => {
         const formSchema = createFormSchema(configurableProps)
         const result = formSchema.safeParse(values)
 
@@ -174,7 +174,7 @@ export function PipedreamPropsForm({
         return { isValid: false, errors: newErrors }
     }
 
-    const handleChange = async (propName: string, value: any) => {
+    const handleChange = async (propName: string, value: unknown) => {
         setHasChanged(true)
 
         // Update configured props for Pipedream API calls
@@ -218,7 +218,7 @@ export function PipedreamPropsForm({
         const currentValues = configurableProps.reduce((acc, prop) => {
             acc[prop.name] = configuredProps[prop.name] ?? null
             return acc
-        }, {} as Record<string, any>)
+        }, {} as Record<string, unknown>)
 
         // Validate all inputs before submitting
         const { isValid: formIsValid, errors: newErrors } = validateForm(currentValues)

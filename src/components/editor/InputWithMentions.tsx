@@ -9,8 +9,8 @@ import { useRef, useEffect } from 'react'
 const mentionsInputRegistry = new Map<Element, (text: string) => void>()
 
 // Initialize the global registry on window if it doesn't exist
-if (typeof window !== 'undefined' && !(window as any).__mentionsInputRegistry) {
-    (window as any).__mentionsInputRegistry = mentionsInputRegistry
+if (typeof window !== 'undefined' && !(window as unknown as { __mentionsInputRegistry?: Map<Element, (text: string) => void> }).__mentionsInputRegistry) {
+    (window as unknown as { __mentionsInputRegistry: Map<Element, (text: string) => void> }).__mentionsInputRegistry = mentionsInputRegistry
 }
 
 function registerMentionsInput(element: Element, insertTextFn: (text: string) => void) {
@@ -65,13 +65,14 @@ export function InputWithMentions({
 
             registerMentionsInput(containerRef.current, insertTextFn)
 
+            const currentContainer = containerRef.current
             return () => {
-                if (containerRef.current) {
-                    unregisterMentionsInput(containerRef.current)
+                if (currentContainer) {
+                    unregisterMentionsInput(currentContainer)
                 }
             }
         }
-    }, [value, onChange, currentInputRef])
+    }, [value, onChange, currentInputRef, containerRef])
 
     // Transform available outputs into the format expected by react-mentions
     const mentionData = (availableOutputs || []).flatMap(step =>
@@ -114,7 +115,7 @@ export function InputWithMentions({
             <MentionsInput
                 inputRef={currentInputRef}
                 value={value}
-                onChange={(e: any) => onChange(e.target.value)}
+                onChange={(e: { target: { value: string } }) => onChange(e.target.value)}
                 placeholder={placeholder}
                 style={inputStyle}
                 singleLine={!isTextarea}
@@ -135,7 +136,7 @@ export function InputWithMentions({
                         return suggestion ? suggestion.display : display
                     }}
                     className="bg-gray-100 border border-gray-300 rounded"
-                    renderSuggestion={(suggestion: any) => (
+                    renderSuggestion={(suggestion: { display?: string }) => (
                         <div className="bg-gray-100 border-2 border-gray-400 rounded mb-1">
                             {suggestion.display}
                         </div>

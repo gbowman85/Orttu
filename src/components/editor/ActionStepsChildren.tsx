@@ -1,13 +1,10 @@
 'use client'
 
 import { Id } from "@/../convex/_generated/dataModel"
-import { CollisionPriority } from '@dnd-kit/abstract';
 import React from 'react'
 import { useWorkflowEditor } from '@/contexts/WorkflowEditorContext'
 import { ActionStepCard } from "./ActionStepCard"
-import { ActionTarget } from "@/components/editor/ActionTarget"
 import { AddActionButton } from "@/components/editor/AddActionButton"
-import { useDragState } from './DragMonitor'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { Info } from "lucide-react"
 import { useAutoAnimate } from '@formkit/auto-animate/react'

@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { User, LogOut, Settings } from 'lucide-react'
+import { LogOut, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 
@@ -33,7 +33,7 @@ export function UserMenu() {
         try {
             await signOut()
             toast.success('Signed out successfully')
-        } catch (error) {
+        } catch {
             toast.error('Failed to sign out')
         }
     }

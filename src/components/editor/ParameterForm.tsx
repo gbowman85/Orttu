@@ -11,7 +11,7 @@ import { Id } from '@/../convex/_generated/dataModel'
 import { z } from 'zod/v4'
 
 // Check if a parameter should be visible based on its showIf condition and current values
-function isParameterVisible(parameter: Parameter, values: Record<string, any>): boolean {
+function isParameterVisible(parameter: Parameter, values: Record<string, unknown>): boolean {
     if (!parameter.showIf) return true
 
     const { parameterKey, operator, value: conditionValue } = parameter.showIf
@@ -23,9 +23,9 @@ function isParameterVisible(parameter: Parameter, values: Record<string, any>): 
         case 'notEquals':
             return compareValue !== conditionValue
         case 'greaterThan':
-            return compareValue > conditionValue
+            return typeof compareValue === 'number' && typeof conditionValue === 'number' && compareValue > conditionValue
         case 'lessThan':
-            return compareValue < conditionValue
+            return typeof compareValue === 'number' && typeof conditionValue === 'number' && compareValue < conditionValue
         case 'contains':
             return Array.isArray(compareValue) && compareValue.includes(conditionValue)
         case 'notContains':
@@ -143,7 +143,7 @@ function createParameterSchema(parameter: Parameter, isVisible: boolean) {
 }
 
 // Create a form schema from parameters array
-function createFormSchema(parameters: Parameter[], values: Record<string, any>) {
+function createFormSchema(parameters: Parameter[], values: Record<string, unknown>) {
     const schemaObject: Record<string, z.ZodTypeAny> = {}
 
     parameters.forEach(parameter => {
@@ -156,7 +156,7 @@ function createFormSchema(parameters: Parameter[], values: Record<string, any>) 
 
 interface ParameterFormProps {
     parameters: Parameter[]
-    initialValues: Record<string, any>
+    initialValues: Record<string, unknown>
     stepId: Id<'trigger_steps'> | Id<'action_steps'>
     workflowConfigId: Id<'workflow_configurations'>
 }
@@ -172,9 +172,9 @@ export function ParameterForm({
     const initialFormValues = parameters.reduce((acc, param) => {
         acc[param.parameterKey] = initialValues[param.parameterKey] ?? param.default ?? null
         return acc
-    }, {} as Record<string, any>)
+    }, {} as Record<string, unknown>)
 
-    const [values, setValues] = useState<Record<string, any>>(initialFormValues)
+    const [values, setValues] = useState<Record<string, unknown>>(initialFormValues)
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [hasChanged, setHasChanged] = useState(false)
 
@@ -192,7 +192,7 @@ export function ParameterForm({
         setValues(initialFormValues)
         setErrors({})
         setHasChanged(false)
-    }, [initialValues, parameters])
+    }, [initialFormValues, parameters])
 
     // Cleanup on unmount
     useEffect(() => {
@@ -203,7 +203,7 @@ export function ParameterForm({
         }
     }, [])
 
-    const validateForm = (values: Record<string, any>) => {
+    const validateForm = (values: Record<string, unknown>) => {
         const formSchema = createFormSchema(parameters, values)
         const result = formSchema.safeParse(values)
 
@@ -221,7 +221,7 @@ export function ParameterForm({
         return { isValid: false, errors: newErrors }
     }
 
-    const handleChange = (parameterKey: string, value: any) => {
+    const handleChange = (parameterKey: string, value: unknown) => {
         const newValues = { ...values, [parameterKey]: value }
         setValues(newValues)
         setHasChanged(true)

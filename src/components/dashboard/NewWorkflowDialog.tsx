@@ -1,6 +1,6 @@
 'use client'
 
-import { Dialog, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";

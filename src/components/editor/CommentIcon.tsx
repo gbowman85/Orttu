@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'

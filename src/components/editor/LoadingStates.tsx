@@ -1,4 +1,4 @@
-import { SelectContent, SelectItem } from "@/components/ui/select";
+import { SelectItem } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 
 export function CategorySkeleton() {

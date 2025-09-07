@@ -30,7 +30,6 @@ function EditorContent({ children }: { children: React.ReactNode }) {
 export default function EditorPage({ children }: { children: React.ReactNode }) {
     const {
         workflow,
-        workflowConfig,
         triggerStep,
         triggerDefinition,
         actionStepsOrder,

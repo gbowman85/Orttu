@@ -4,7 +4,7 @@ import { createContext, useContext, useState, ReactNode, useEffect, useMemo } fr
 import Fuse from 'fuse.js';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import { Doc, Id } from '../../convex/_generated/dataModel';
+import { Doc } from '../../convex/_generated/dataModel';
 
 // Connection type based on Convex schema
 type Connection = Doc<"connections">;

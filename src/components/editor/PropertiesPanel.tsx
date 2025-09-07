@@ -18,7 +18,6 @@ export default function PropertiesPanel() {
     const { handleEditStepTitle, handleEditStepComment } = useStepActions()
     const selectedStep = triggerStep?._id === selectedStepId ? triggerStep : selectedStepId && actionStepsDetails[selectedStepId as Id<'action_steps'>]
     const selectedDefinition = triggerStep?._id === selectedStepId ? triggerDefinition : selectedStep && 'actionDefinitionId' in selectedStep ? actionDefinitions[selectedStep.actionDefinitionId] : null
-    const selectedKey = selectedStepId ? (triggerStep?._id === selectedStepId ? triggerDefinition?.serviceId || '' : selectedStep && 'actionDefinitionId' in selectedStep ? actionDefinitions[selectedStep.actionDefinitionId].actionKey : '') : null
 
     // Get the parameter values for the selected step
     const parameterValues = useQuery(
@@ -28,9 +27,6 @@ export default function PropertiesPanel() {
         } : "skip"
     )
 
-    // Get the current userId
-    const user = useQuery(api.data_functions.users.currentUser)
-    const userId = user?._id || ''
 
 
     return (

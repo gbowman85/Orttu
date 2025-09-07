@@ -87,7 +87,7 @@ export default function ActivityPage() {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No runs yet</h3>
                 <p className="text-gray-500 max-w-md">
-                    This workflow hasn't been executed yet. Once you run it, you'll see activity here.
+                    This workflow hasn&apos;t been executed yet. Once you run it, you&apos;ll see activity here.
                 </p>
             </div>
         )

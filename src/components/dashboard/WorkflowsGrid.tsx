@@ -6,8 +6,8 @@ import { useWorkflows } from '@/contexts/WorkflowsContext'
 import { WorkflowsEmpty } from '@/components/dashboard/WorkflowsEmpty'
 import { NoResults } from '@/components/dashboard/WorkflowsNoResults'
 import { WorkflowMenu } from '@/components/dashboard/WorkflowMenu'
-import { Id } from '@/../convex/_generated/dataModel'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   HoverCard,
   HoverCardContent,
@@ -113,10 +113,12 @@ export default function WorkflowsGrid() {
 
                             {/* Clickable image thumbnail */}
                             <Link href={`/w/${workflow._id}/edit`}>
-                                <img
+                                <Image
                                     src="/images/placeholder.png"
                                     alt="Workflow thumbnail"
                                     className="w-full h-40 object-cover cursor-pointer"
+                                    width={400}
+                                    height={160}
                                 />
                             </Link>
                         </div>
