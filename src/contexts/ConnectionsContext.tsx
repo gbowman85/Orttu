@@ -1,10 +1,13 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode, use, useEffect, useMemo } from 'react';
-import { mockConnections, Connection } from '@/data/mockConnections';
+import { createContext, useContext, useState, ReactNode, useEffect, useMemo } from 'react';
 import Fuse from 'fuse.js';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import { Doc, Id } from '../../convex/_generated/dataModel';
+
+// Connection type based on Convex schema
+type Connection = Doc<"connections">;
 
 // Default preferences
 const DEFAULT_SORT_BY: SortBy = 'lastUsed';
@@ -29,6 +32,8 @@ const fuseOptions = {
 
 interface ConnectionsContextType {
     connections: Connection[];
+    isLoading: boolean;
+    error: Error | null;
     sortBy: 'title' | 'created' | 'lastUsed';
     setSortBy: (field: 'title' | 'created' | 'lastUsed') => void;
     sortDirection: 'asc' | 'desc';
@@ -45,11 +50,15 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
     const preferences = useQuery(api.data_functions.users.getUserPreferences, { prefType: "dashConnections" }) as ConnectionsPreferences | null;
     const updatePreferences = useMutation(api.data_functions.users.updateUserPreferences);
 
-    // Use the 'use' hook to handle the Promise
-    const allConnections = use(mockConnections);
+    // Get connections data
+    const allConnections = useQuery(api.data_functions.connections.getUserConnections);
     const [sortBy, setSortBy] = useState<SortBy>(DEFAULT_SORT_BY);
     const [sortDirection, setSortDirection] = useState<SortDirection>(DEFAULT_SORT_DIRECTION);
     const [searchQuery, setSearchQuery] = useState('');
+
+    // Handle loading and error states
+    const isLoading = allConnections === undefined;
+    const error = null; 
 
     // Update local state when preferences load, or use defaults
     useEffect(() => {
@@ -93,6 +102,8 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
 
     // Get filtered connections based on search query
     const filteredConnections = useMemo(() => {
+        if (!allConnections) return [];
+        
         let results = allConnections;
 
         // Apply search query filtering
@@ -131,6 +142,8 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
         <ConnectionsContext.Provider 
             value={{ 
                 connections,
+                isLoading,
+                error,
                 sortBy,
                 setSortBy,
                 sortDirection,

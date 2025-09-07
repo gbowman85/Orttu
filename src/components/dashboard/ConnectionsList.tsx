@@ -12,7 +12,7 @@ import {
 import { useConnections } from '@/contexts/ConnectionsContext'
 
 export default function ConnectionsList() {
-    const { connections, isFiltering, clearFilters } = useConnections();
+    const { connections, isLoading, error, isFiltering, clearFilters } = useConnections();
 
     const handleSeeDetails = (connectionId: string) => {
         // TODO: Implement see details action
@@ -34,6 +34,22 @@ export default function ConnectionsList() {
         console.log('Delete connection:', connectionId);
     };
 
+    if (isLoading) {
+        return (
+            <div className="text-center p-8">
+                <p className="text-gray-500">Loading connections...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="text-center p-8">
+                <p className="text-red-500">Error loading connections: {error.message}</p>
+            </div>
+        );
+    }
+
     if (connections.length === 0) {
         return (
             <div className="text-center p-8">
@@ -45,7 +61,7 @@ export default function ConnectionsList() {
     return (
         <div className="space-y-2">
             {connections.map((connection) => (
-                <div key={connection.id} className="flex items-center justify-between gap-2 p-2 bg-white rounded-lg border">
+                <div key={connection._id} className="flex items-center justify-between gap-2 p-2 bg-white rounded-lg border">
                     {/* Status icon */}
                     <div className="flex items-center h-6 w-6">
                         {connection.active ? <CircleCheck className="text-green-500 fill-green-100" /> : <CircleX className="text-red-500 fill-red-100" />}
@@ -76,20 +92,20 @@ export default function ConnectionsList() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleSeeDetails(connection.id)}>
+                            <DropdownMenuItem onClick={() => handleSeeDetails(connection._id)}>
                                 <FileSearch className="mr-2 h-4 w-4" />
                                 See details
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEditConnection(connection.id)}>
+                            <DropdownMenuItem onClick={() => handleEditConnection(connection._id)}>
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Edit connection
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleSeeConnectedWorkflows(connection.id)}>
+                            <DropdownMenuItem onClick={() => handleSeeConnectedWorkflows(connection._id)}>
                                 <Link2 className="mr-2 h-4 w-4" />
                                 See connected workflows
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => handleDeleteConnection(connection.id)}
+                                onClick={() => handleDeleteConnection(connection._id)}
                                 className="text-red-600"
                             >
                                 <Trash2 className="mr-2 h-4 w-4" />
