@@ -1,24 +1,31 @@
 'use client'
 
-import { useWorkflowRuns } from '@/hooks/useWorkflowData'
+import { useWorkflowData, useWorkflowRuns } from '@/hooks/useWorkflowData'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { formatDistanceToNow } from 'date-fns'
-import { Clock, CheckCircle, XCircle, PlayCircle, AlertCircle } from 'lucide-react'
+import { Clock, CircleCheck, CircleX, Play, LoaderCircle, AlertCircle } from 'lucide-react'
 
 export default function ActivityPage() {
-    const { workflowRuns } = useWorkflowRuns()
+    const { workflowRuns, workflowRunLogs } = useWorkflowRuns()
+    const { actionStepsDetails } = useWorkflowData()
 
     const getStatusIcon = (status: string) => {
         switch (status) {
             case 'running':
-                return <PlayCircle className="h-4 w-4 text-blue-500" />
+                return (
+                    <div className="relative h-6 w-6">
+                        <Play className="absolute h-3 w-3 translate-x-1/2 translate-y-1/2 text-blue-500 fill-blue-200" />
+                        <LoaderCircle className="animate-spin text-blue-500" />
+                    </div>
+                )
             case 'completed':
-                return <CheckCircle className="h-4 w-4 text-green-500" />
+                return <CircleCheck className="text-green-500 fill-green-100" />
             case 'failed':
-                return <XCircle className="h-4 w-4 text-red-500" />
+                return <CircleX className="text-red-500 fill-red-100" />
             default:
-                return <AlertCircle className="h-4 w-4 text-gray-500" />
+                return <AlertCircle className="text-gray-500" />
         }
     }
 
@@ -51,6 +58,27 @@ export default function ActivityPage() {
         }
     }
 
+    const getStepDetails = (runId: string) => {
+        const runLogs = workflowRunLogs.filter((log) => log.workflowRunId === runId)
+        
+        return runLogs.map((log) => {
+            // Check if it's an action step or trigger step
+            const step = actionStepsDetails[log.stepId as keyof typeof actionStepsDetails]
+            const title = step?.title || `Step ${log.stepId.slice(-8)}`
+            const duration = formatDuration(log.started, log.finished)
+            const status = log.status
+            
+            return {
+                id: log.stepId,
+                title,
+                duration,
+                status,
+                started: log.started,
+                finished: log.finished
+            }
+        })
+    }
+
     if (workflowRuns.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center h-full text-center p-8">
@@ -77,7 +105,7 @@ export default function ActivityPage() {
             <div className="space-y-3">
                 {workflowRuns.map((run) => (
                     <Card key={run._id} className="hover:shadow-md transition-shadow">
-                        <CardHeader className="pb-3">
+                        <CardHeader>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     {getStatusIcon(run.status)}
@@ -89,7 +117,7 @@ export default function ActivityPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="pt-0">
-                            <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="grid grid-cols-3 gap-4 text-sm">
                                 <div>
                                     <div className="text-gray-500 mb-1">Started</div>
                                     <div className="font-medium">
@@ -102,20 +130,60 @@ export default function ActivityPage() {
                                         {formatDuration(run.started, run.finished)}
                                     </div>
                                 </div>
-                                {run.finished && (
-                                    <div>
-                                        <div className="text-gray-500 mb-1">Finished</div>
-                                        <div className="font-medium">
-                                            {formatDistanceToNow(run.finished, { addSuffix: true })}
-                                        </div>
-                                    </div>
-                                )}
                                 <div>
                                     <div className="text-gray-500 mb-1">Steps</div>
                                     <div className="font-medium">
-                                        {run.runLogs?.length || 0} executed
+                                        {(() => {
+                                            const runLogs = workflowRunLogs.filter((log) => log.workflowRunId === run._id)
+                                            const completed = runLogs.filter((log) => log.status === 'completed').length
+                                            const running = runLogs.filter((log) => log.status === 'running').length
+                                            const failed = runLogs.filter((log) => log.status === 'failed').length
+                                            
+                                            const statusCounts = []
+                                            if (completed > 0) statusCounts.push(`${completed} complete`)
+                                            if (running > 0) statusCounts.push(`${running} running`)
+                                            if (failed > 0) statusCounts.push(`${failed} failed`)
+                                            
+                                            return statusCounts.length > 0 ? statusCounts.join(', ') : 'No steps recorded'
+                                        })()}
                                     </div>
                                 </div>
+                            </div>
+                            
+                            {/* Accordion for step details */}
+                            <div className="mt-4">
+                                <Accordion type="single" collapsible>
+                                    <AccordionItem value="step-details">
+                                        <AccordionTrigger className="text-sm font-medium">
+                                            Details
+                                        </AccordionTrigger>
+                                        <AccordionContent>
+                                            <div className="space-y-2 pt-2">
+                                                {(() => {
+                                                    const stepDetails = getStepDetails(run._id)
+                                                    return stepDetails.length > 0 ? (
+                                                        stepDetails.map((step) => (
+                                                            <div key={step.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-md">
+                                                                <div className="flex items-center gap-3">
+                                                                    {getStatusIcon(step.status)}
+                                                                    <span className="text-sm font-medium">{step.title}</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-4 text-sm text-gray-600">
+                                                                    <span>{step.duration}</span>
+                                                                    {getStatusBadge(step.status)}
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="text-sm text-gray-500 py-4 text-center">
+                                                            No step details available
+                                                        </div>
+                                                    )
+                                                })()}
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                </Accordion>
                             </div>
                         </CardContent>
                     </Card>

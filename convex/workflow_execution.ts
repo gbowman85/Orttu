@@ -4,9 +4,11 @@ import { v } from "convex/values";
 import { actionRegistry } from "./action_functions/_action_registry";
 import { internalAction, mutation } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
+import { StepStatusType } from "./types";
 
-type ActionStatus = {
-    status: 'success' | 'failure' | 'skipped'
+type ActionResult = {
+    status: StepStatusType
+    data?: any
     error?: {
         errorMessage: string
         errorType: string
@@ -75,13 +77,18 @@ export const executeWorkflow = convexWorkflow.define({
                 }
 
                 // Execute the action for this step
-                const result = await step.runAction(
+                const result: ActionResult = await step.runAction(
                     internal.workflow_execution.executeAction,
                     {
+                        workflowId: args.workflowId,
                         workflowRunId,
                         stepId: actionStep.actionStepId
                     }
                 );
+
+                if (result.status === 'failed') {
+                    throw new Error(result.error?.errorMessage || "Action failed");
+                }
             }
 
             // Update the workflow run with the finished time
@@ -108,17 +115,22 @@ export const executeWorkflow = convexWorkflow.define({
 
 export const executeAction = internalAction({
     args: {
+        workflowId: v.id("workflows"),
         workflowRunId: v.id("workflow_runs"),
         stepId: v.id("action_steps")
     },
     handler: async (step, args): Promise<any> => {
+        const startTime = Date.now();
+
         const actionStep = await step.runQuery(internal.data_functions.workflow_steps.getActionStepInternal, {
             actionStepId: args.stepId
         });
 
+        let actionResult: ActionResult;
+
         if (!actionStep) {
-            return {
-                status: 'failure',
+            actionResult = {
+                status: 'failed',
                 error: {
                     errorMessage: "Action step not found",
                     errorType: 'action_step_not_found',
@@ -127,6 +139,7 @@ export const executeAction = internalAction({
                     }
                 }
             }
+            return actionResult;
         }
 
         // Get the action definition for the key
@@ -135,8 +148,8 @@ export const executeAction = internalAction({
         });
 
         if (!actionDefinition) {
-            return {
-                status: 'failure',
+            actionResult = {
+                status: 'failed',
                 error: {
                     errorMessage: "Action definition not found",
                     errorType: 'action_definition_not_found',
@@ -145,6 +158,7 @@ export const executeAction = internalAction({
                     }
                 }
             }
+            return actionResult;
         }
 
         const parameters = {
@@ -153,32 +167,32 @@ export const executeAction = internalAction({
 
         // Replace {{stepId.variableKey}} template variables with values
         for (const key in parameters) {
-            
+
             // Check if the value exists and contains {{ and }}
-            if (parameters[key] && typeof parameters[key] === 'string' 
+            if (parameters[key] && typeof parameters[key] === 'string'
                 && parameters[key].includes('{{') && parameters[key].includes('}}')) {
-                
+
                 // Extract all template references between {{ and }}
                 const templateReferences: string[] | null = parameters[key].match(/{{.*?}}/g);
                 if (templateReferences && templateReferences.length > 0) {
                     let processedValue = parameters[key];
-                    
+
                     for (const templateRef of templateReferences) {
                         // Extract the content between {{ and }}
                         const reference = templateRef.slice(2, -2);
-                        
+
                         // Skip if reference is null or empty
                         if (!reference || reference === 'null') {
                             processedValue = processedValue.replace(templateRef, '');
                             continue;
                         }
-                        
+
                         // Parse stepId.variableKey format
                         const parts = reference.split('.');
                         if (parts.length === 2) {
                             const stepId = parts[0] as Id<'action_steps'>;
                             const variableKey = parts[1];
-                            
+
                             try {
                                 const stepRunData = await step.runQuery(internal.data_functions.workflow_runs.getRunDataInternal, {
                                     workflowRunId: args.workflowRunId,
@@ -203,13 +217,11 @@ export const executeAction = internalAction({
                             processedValue = processedValue.replace(templateRef, '');
                         }
                     }
-                    
+
                     parameters[key] = processedValue;
                 }
             }
         }
-
-        let result: any;
 
         // Handle Pipedream actions
         if (actionDefinition.isPipedream) {
@@ -217,8 +229,8 @@ export const executeAction = internalAction({
             const connectionId = actionStep.connectionId;
 
             if (!connectionId) {
-                return {
-                    status: 'failure',
+                actionResult = {
+                    status: 'failed',
                     error: {
                         errorMessage: "Connection not found",
                         errorType: 'connection_not_found',
@@ -227,6 +239,7 @@ export const executeAction = internalAction({
                         }
                     }
                 }
+                return actionResult;
             }
 
             // Get connection from the connectionId
@@ -236,7 +249,8 @@ export const executeAction = internalAction({
 
             // Check for connection
             if (!connection) {
-                result = {
+                actionResult = {
+                    status: 'failed',
                     error: {
                         errorMessage: "Connection not found",
                         errorType: 'connection_not_found',
@@ -245,6 +259,7 @@ export const executeAction = internalAction({
                         }
                     }
                 }
+                return actionResult;
             } else {
                 const response = await step.runAction(internal.action_functions.pipedream.executePipedreamAction, {
                     externalUserId: connection.ownerId,
@@ -252,16 +267,21 @@ export const executeAction = internalAction({
                     configuredProps: parameters
                 });
 
-                if (response?.success) {
+                if (response.success) {
                     if (response.data?.returnValue) {
-                        result = response.data?.returnValue;
+                        actionResult = {
+                            status: 'completed',
+                            data: response.data.returnValue
+                        }
                     } else {
-                        result = {
-                            status: 'success'
+                        actionResult = {
+                            status: 'completed',
+                            data: response.data
                         }
                     }
                 } else {
-                    result = {
+                    actionResult = {
+                        status: 'failed',
                         error: response?.error || {
                             errorMessage: "Unknown error",
                             errorType: 'unknown_error',
@@ -282,7 +302,7 @@ export const executeAction = internalAction({
             const registryEntry = actionRegistry[actionKey];
             if (!registryEntry) {
                 return {
-                    status: 'failure',
+                    status: 'failed',
                     error: {
                         errorMessage: `Unknown action: ${actionKey}`,
                         errorType: 'unknown_action',
@@ -294,45 +314,71 @@ export const executeAction = internalAction({
             }
 
             // Execute the action function with the parameters
-            result = await step.runAction(registryEntry.actionFunction as any, {
+            const actionResponse = await step.runAction(registryEntry.actionFunction as any, {
                 workflowRunId: args.workflowRunId,
                 stepId: args.stepId,
                 ...parameters
             });
+
+            if (actionResponse.status === 'failed') {
+                actionResult = {
+                    status: 'failed',
+                    error: actionResponse.error
+                }
+            } else {
+                actionResult = {
+                    status: 'completed',
+                    data: actionResponse.data,
+                    error: actionResponse.error
+                }
+            }
+
+            actionResult = {
+                status: 'completed',
+                data: actionResponse,
+                error: actionResponse.error
+            };
         }
 
         // Add the result to the workflow run data
         await step.runMutation(internal.data_functions.workflow_runs.setRunDataInternal, {
             workflowRunId: args.workflowRunId,
             stepId: args.stepId,
-            value: result,
+            value: actionResult.data,
             source: "output"
         });
 
-        if (result.error) {
-            return {
-                status: 'failure',
-                error: result.error
-            }
+        // Add the result to the workflow run logs
+        await step.runMutation(internal.data_functions.workflow_runs.addRunLogInternal, {
+            workflowId: args.workflowId,
+            workflowRunId: args.workflowRunId,
+            stepId: args.stepId,
+            status: actionResult.status,
+            started: startTime,
+            finished: Date.now()
+        });
+
+        if (actionResult.error) {
+            actionResult.status = 'failed';
         }
 
         // Return status
-        return {
-            status: 'success'
-        }
+        return actionResult;
     }
 });
 
 export const executeMultipleActions = internalAction({
     args: {
+        workflowId: v.id("workflows"),
         workflowRunId: v.id("workflow_runs"),
         actionStepIds: v.array(v.id("action_steps")),
     },
     handler: async (step, args) => {
-        const results: ActionStatus[] = [];
+        const results: ActionResult[] = [];
         for (const actionStepId of args.actionStepIds) {
             // TODO: handle errors - check if workflow run is still valid
             const result = await step.runAction(internal.workflow_execution.executeAction, {
+                workflowId: args.workflowId,
                 workflowRunId: args.workflowRunId,
                 stepId: actionStepId
             });

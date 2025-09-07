@@ -6,6 +6,7 @@ import { useActivity } from '@/contexts/ActivityContext'
 import { ActivityEmpty } from "./ActivityEmpty"
 import { NoResults } from "./ActivityNoResults"
 import { formatDistanceToNow, formatRelative, formatDistanceStrict } from 'date-fns'
+import { useRouter } from 'next/navigation'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -15,6 +16,7 @@ import {
 
 export default function ActivityList() {
     const { workflowRuns, isFiltering, clearFilters } = useActivity();
+    const router = useRouter();
 
     const handleSeeDetails = (runId: string) => {
         // TODO: Implement see details action
@@ -26,9 +28,9 @@ export default function ActivityList() {
         console.log('Run again:', runId);
     };
 
-    const handleEditWorkflow = (runId: string) => {
-        // TODO: Implement edit workflow action
-        console.log('Edit workflow:', runId);
+    const handleEditWorkflow = (workflowId: string) => {
+        // Navigate to the edit page for this workflow
+        router.push(`/w/${workflowId}/edit`);
     };
 
     const handleDeleteLog = (runId: string) => {
@@ -43,7 +45,7 @@ export default function ActivityList() {
     return (
         <div className="space-y-2">
             {workflowRuns.map((run) => (
-                <div key={run.id} className="flex items-center justify-between gap-2 p-2 bg-white rounded-lg border">
+                <div key={run._id} className="flex items-center justify-between gap-2 p-2 bg-white rounded-lg border">
                     {/* Status icon */}
                     <div className="flex items-center h-6 w-6">
                         <div>
@@ -69,9 +71,9 @@ export default function ActivityList() {
                             <h3 className="font-medium truncate">{run.workflowTitle}</h3>
                             
                             {/* Error message */}
-                            {run.errorMessage && (
+                            {run.status === 'failed' && (
                                 <div className="text-sm text-red-500">
-                                    {run.errorMessage}
+                                    Failed to run workflow
                                 </div>
                             )}
                         </div>
@@ -80,13 +82,13 @@ export default function ActivityList() {
                         <div className="flex items-center gap-2 text-sm text-gray-500 min-w-[200px]">
                             {run.status == 'running' && (
                                 <div>
-                                    started {formatDistanceToNow(run.started, { addSuffix: true })}
+                                    started {formatDistanceToNow(new Date(run.started), { addSuffix: true })}
                                 </div>
                             )}
-                            {run.status !== 'running' && (
+                            {run.status !== 'running' && run.finished && (
                                 <div className="flex flex-col">
                                     <div>
-                                        finished in {formatDistanceStrict(run.finished, run.started)}
+                                        finished in {formatDistanceStrict(new Date(run.finished), new Date(run.started))}
                                     </div>
                                     <div>
                                         {formatRelative(new Date(run.finished), new Date())}
@@ -109,20 +111,20 @@ export default function ActivityList() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleSeeDetails(run.id)}>
+                            <DropdownMenuItem onClick={() => handleSeeDetails(run._id)}>
                                 <FileSearch className="mr-2 h-4 w-4" />
                                 See details
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleRunAgain(run.id)}>
+                            <DropdownMenuItem onClick={() => handleRunAgain(run._id)}>
                                 <RotateCw className="mr-2 h-4 w-4" />
                                 Run again
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEditWorkflow(run.id)}>
+                            <DropdownMenuItem onClick={() => handleEditWorkflow(run.workflowId)}>
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Edit workflow
                             </DropdownMenuItem>
                             <DropdownMenuItem 
-                                onClick={() => handleDeleteLog(run.id)}
+                                onClick={() => handleDeleteLog(run._id)}
                                 className="text-red-600"
                             >
                                 <Trash2 className="mr-2 h-4 w-4" />

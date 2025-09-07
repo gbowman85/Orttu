@@ -28,6 +28,7 @@ const ConditionSchema = v.object({
 
 export const conditional: ActionRegistryEntry['actionFunction'] = internalAction({
     args: {
+        workflowId: v.id("workflows"),
         workflowRunId: v.id("workflow_runs"),
         condition: ConditionSchema,
         trueActionStepIds: v.array(v.id("action_steps")),
@@ -44,6 +45,7 @@ export const conditional: ActionRegistryEntry['actionFunction'] = internalAction
         let output: object[] = [];
         if (actionStepIds.length > 0) {
             output = await ctx.runAction(internal.workflow_execution.executeMultipleActions, {
+                workflowId: args.workflowId,
                 workflowRunId: args.workflowRunId,
                 actionStepIds: actionStepIds,
             });
@@ -110,6 +112,7 @@ export const conditionalDefinition: ActionRegistryEntry['actionDefinition'] = {
 
 export const loop = internalAction({
     args: {
+        workflowId: v.id("workflows"),
         workflowRunId: v.id("workflow_runs"),
         loopType: v.union(
             v.literal("for"),
@@ -129,6 +132,7 @@ export const loop = internalAction({
                 if (typeof args.loopData === "number") {
                     for (let i = 0; i < args.loopData; i++) {     
                         let reponses =  await ctx.runAction(internal.workflow_execution.executeMultipleActions, {
+                            workflowId: args.workflowId,
                             workflowRunId: args.workflowRunId,
                             actionStepIds: args.actionStepIds,
                         });
@@ -137,6 +141,7 @@ export const loop = internalAction({
                 } else if (Array.isArray(args.loopData)) {
                     for (const item of args.loopData) {
                         let reponses = await ctx.runAction(internal.workflow_execution.executeMultipleActions, {
+                            workflowId: args.workflowId,
                             workflowRunId: args.workflowRunId,
                             actionStepIds: args.actionStepIds,
                         });
@@ -145,6 +150,7 @@ export const loop = internalAction({
                 } else if (typeof args.loopData === "object") {
                     for (const key in args.loopData) {
                         let reponses = await ctx.runAction(internal.workflow_execution.executeMultipleActions, {
+                            workflowId: args.workflowId,
                             workflowRunId: args.workflowRunId,
                             actionStepIds: args.actionStepIds,
                         });
@@ -156,6 +162,7 @@ export const loop = internalAction({
                 // loopData is a condition
                 while (args.loopData) {
                     let reponses = await ctx.runAction(internal.workflow_execution.executeMultipleActions, {
+                        workflowId: args.workflowId,
                         workflowRunId: args.workflowRunId,
                         actionStepIds: args.actionStepIds,
                     });

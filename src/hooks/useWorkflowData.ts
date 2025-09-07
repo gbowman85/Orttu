@@ -126,7 +126,13 @@ export function useWorkflowRuns() {
         workflowId: workflowId
     })
 
+    // Get all logs for the workflow
+    const workflowRunLogs = useQuery(api.data_functions.workflow_runs.getAllWorkflowRunLogs, {
+        workflowId: workflowId
+    })
+
     return {
-        workflowRuns: workflowRuns || []
+        workflowRuns: workflowRuns || [],
+        workflowRunLogs: workflowRunLogs || []
     }
 } 

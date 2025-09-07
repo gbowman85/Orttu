@@ -206,12 +206,14 @@ export default defineSchema({
         .index("by_iteration_count", ["iterationCount"]),
     
     workflow_run_logs: defineTable({
+        workflowId: v.optional(v.id("workflows")),
+        workflowRunId: v.id("workflow_runs"),
         stepId: v.union(v.id("action_steps"), v.id("trigger_steps")),
         status: StepStatus,
-        workflowRunId: v.id("workflow_runs"),
         started: v.number(),
         finished: v.optional(v.number())
-    }).index("by_workflow_run", ["workflowRunId"]),
+    }).index("by_workflow", ["workflowId"])
+        .index("by_workflow_run", ["workflowRunId"]),
 
     // Templates
 

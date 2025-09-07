@@ -92,8 +92,6 @@ export const executePipedreamAction = internalAction({
                 configuredProps: args.configuredProps
             });
 
-            console.log("Pipedream response:", response);
-
             if (response?.os as any[] && (response.os as any[])[0]?.err) {
                 return {
                     success: false,

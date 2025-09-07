@@ -14,6 +14,8 @@ export const WorkflowStatus = v.union(
     v.literal("cancelled")
 );
 
+export type WorkflowStatus = 'running' | 'completed' | 'failed' | 'cancelled'
+
 export const StepStatus = v.union(
     v.literal("pending"),
     v.literal("running"),
@@ -21,6 +23,8 @@ export const StepStatus = v.union(
     v.literal("failed"),
     v.literal("skipped")
 );
+
+export type StepStatusType = 'pending' | 'running' | 'completed' | 'failed' | 'skipped'
 
 // Convex schema for data types
 export const DataTypeSchema = v.union(

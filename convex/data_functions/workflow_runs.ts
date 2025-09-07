@@ -1,5 +1,7 @@
 import { internalMutation, internalQuery, query } from "../_generated/server";
 import { v } from "convex/values";
+import { StepStatus } from "../types";
+import { requireAuthenticated } from "./users";
 
 // Create a new workflow run in the database
 export const createWorkflowRun = internalMutation({
@@ -115,6 +117,59 @@ export const setRunDataInternal = internalMutation({
     }
 });
 
+// Add a log entry for a workflow run step
+export const addRunLogInternal = internalMutation({
+    args: {
+        workflowId: v.id("workflows"),
+        workflowRunId: v.id("workflow_runs"),
+        stepId: v.union(v.id("action_steps"), v.id("trigger_steps")),
+        status: StepStatus,
+        started: v.number(),
+        finished: v.optional(v.number())
+    },
+    handler: async (ctx, args) => {
+        const logId = await ctx.db.insert("workflow_run_logs", {
+            workflowId: args.workflowId,
+            workflowRunId: args.workflowRunId,
+            stepId: args.stepId,
+            status: args.status,
+            started: args.started,
+            finished: args.finished
+        });
+
+        return logId;
+    }
+});
+
+// Get logs for a specific workflow run
+export const getRunLogs = query({
+    args: {
+        workflowRunId: v.id("workflow_runs"),
+    },
+    handler: async (ctx, args) => {
+        const logs = await ctx.db.query("workflow_run_logs")
+            .withIndex("by_workflow_run", (q) => q.eq("workflowRunId", args.workflowRunId))
+            .order("asc")
+            .collect();
+
+        return logs;
+    }
+});
+
+// Get logs for a specific workflow
+export const getAllWorkflowRunLogs = query({
+    args: {
+        workflowId: v.id("workflows"),
+    },
+    handler: async (ctx, args) => {
+        const logs = await ctx.db.query("workflow_run_logs")
+            .withIndex("by_workflow", (q) => q.eq("workflowId", args.workflowId))
+            .order("asc")
+            .collect();
+        return logs;
+    }
+});
+
 // Get workflow runs for a specific workflow
 export const getWorkflowRuns = query({
     args: {
@@ -127,5 +182,33 @@ export const getWorkflowRuns = query({
             .collect();
 
         return workflowRuns;
+    }
+});
+
+// Get all workflow runs for a user across all their workflows
+export const getAllUserWorkflowRuns = query({
+    args: {},
+    handler: async (ctx) => {
+        const userId = await requireAuthenticated(ctx);
+
+        // First get all workflows owned by the user
+        const userWorkflows = await ctx.db.query("workflows")
+            .filter((q) => q.eq(q.field("ownerId"), userId))
+            .filter((q) => q.neq(q.field("deleted"), true))
+            .collect();
+
+        const workflowIds = userWorkflows.map(w => w._id);
+
+        // Get all workflow runs for these workflows
+        const allWorkflowRuns = [];
+        for (const workflowId of workflowIds) {
+            const runs = await ctx.db.query("workflow_runs")
+                .withIndex("by_workflow", (q) => q.eq("workflowId", workflowId))
+                .collect();
+            allWorkflowRuns.push(...runs);
+        }
+
+        // Sort by started time descending (most recent first)
+        return allWorkflowRuns.sort((a, b) => b.started - a.started);
     }
 });

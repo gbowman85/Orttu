@@ -1,9 +1,11 @@
-import { createContext, useContext, useState, ReactNode, use, useEffect, useMemo } from 'react';
-import { mockWorkflowRuns, WorkflowRun } from '@/data/mockWorkflowRuns';
-import { mockWorkflows } from '@/data/mockWorkflows';
+import { createContext, useContext, useState, ReactNode, useEffect, useMemo } from 'react';
 import Fuse from 'fuse.js';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import { Doc, Id } from '../../convex/_generated/dataModel';
+
+// Real data types from Convex
+type WorkflowRun = Doc<"workflow_runs"> & { workflowTitle: string };
 
 // Default preferences
 const DEFAULT_SORT_BY: SortBy = 'started';
@@ -49,23 +51,28 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     const preferences = useQuery(api.data_functions.users.getUserPreferences, { prefType: "dashActivities" }) as ActivityPreferences | null;
     const updatePreferences = useMutation(api.data_functions.users.updateUserPreferences);
 
-    // Get workflows and create workflow titles mapping
-    const loadedWorkflows = use(mockWorkflows);
+    // Get real data from Convex
+    const workflows = useQuery(api.data_functions.workflows.listWorkflows);
+    const rawWorkflowRuns = useQuery(api.data_functions.workflow_runs.getAllUserWorkflowRuns);
+
+    // Create workflow titles mapping
     const workflowTitles: Record<string, string> = {};
-    loadedWorkflows.forEach(workflow => {
-        workflowTitles[workflow.id] = workflow.title;
+    workflows?.forEach(workflow => {
+        workflowTitles[workflow._id] = workflow.title;
     });
 
     // Get unique workflow titles
     const availableWorkflowTitles = Array.from(new Set(Object.values(workflowTitles)));
 
-    // Get mock workflow runs with titles
-    const initialWorkflowRuns = use(mockWorkflowRuns).map(run => ({
-        ...run,
-        workflowTitle: workflowTitles[run.workflowId] || 'Unknown Workflow'
-    }));
-
-    const [rawWorkflowRuns, setRawWorkflowRuns] = useState(initialWorkflowRuns);
+    // Combine workflow runs with titles
+    const workflowRunsWithTitles: WorkflowRun[] = useMemo(() => {
+        if (!rawWorkflowRuns || !workflows) return [];
+        
+        return rawWorkflowRuns.map(run => ({
+            ...run,
+            workflowTitle: workflowTitles[run.workflowId] || 'Unknown Workflow'
+        }));
+    }, [rawWorkflowRuns, workflows, workflowTitles]);
     const [sortBy, setSortBy] = useState<SortBy>(DEFAULT_SORT_BY);
     const [sortDirection, setSortDirection] = useState<SortDirection>(DEFAULT_SORT_DIRECTION);
     const [searchQuery, setSearchQuery] = useState('');
@@ -114,7 +121,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
 
     // Get filtered workflow runs based on search query and selected workflow title
     const filteredWorkflowRuns = useMemo(() => {
-        let results = rawWorkflowRuns;
+        let results = workflowRunsWithTitles;
 
         // Apply workflow title filter
         if (selectedWorkflowTitle !== '__all_workflows__') {
@@ -128,7 +135,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
         }
 
         return results;
-    }, [rawWorkflowRuns, searchQuery, selectedWorkflowTitle]);
+    }, [workflowRunsWithTitles, searchQuery, selectedWorkflowTitle]);
 
     // Sort workflow runs based on current sortBy and sortDirection
     const workflowRuns = useMemo(() => {
@@ -145,7 +152,10 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
                     comparison = a.started - b.started;
                     break;
                 case 'finished':
-                    comparison = a.finished - b.finished;
+                    // Handle cases where finished might be undefined (running workflows)
+                    const aFinished = a.finished || 0;
+                    const bFinished = b.finished || 0;
+                    comparison = aFinished - bFinished;
                     break;
                 case 'status':
                     comparison = a.status.localeCompare(b.status);
@@ -161,7 +171,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     return (
         <ActivityContext.Provider 
             value={{ 
-                workflowRuns,
+                workflowRuns: workflowRuns || [],
                 sortBy,
                 setSortBy,
                 sortDirection,
