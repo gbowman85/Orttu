@@ -1,5 +1,6 @@
 'use client'
 
+import { useCallback } from 'react'
 import { useWorkflowEditor } from '@/contexts/WorkflowEditorContext'
 import { useQuery } from 'convex/react'
 import { api } from '@/../convex/_generated/api'
@@ -27,6 +28,25 @@ export default function PropertiesPanel() {
         } : "skip"
     )
 
+    // Memoize the onSave handlers to prevent unnecessary re-renders
+    const handleSaveTitle = useCallback(async (newTitle: string) => {
+        if (!workflowConfig || !selectedStepId) return
+        await handleEditStepTitle(
+            workflowConfig.workflowId,
+            selectedStepId,
+            newTitle
+        )
+    }, [workflowConfig?.workflowId, selectedStepId, handleEditStepTitle])
+
+    const handleSaveComment = useCallback(async (newComment: string) => {
+        if (!workflowConfig || !selectedStepId) return
+        await handleEditStepComment(
+            workflowConfig.workflowId,
+            selectedStepId,
+            newComment
+        )
+    }, [workflowConfig?.workflowId, selectedStepId, handleEditStepComment])
+
 
 
     return (
@@ -46,13 +66,7 @@ export default function PropertiesPanel() {
                                         elementType="h2"
                                         className="font-semibold mb-1"
                                         inputClassName="font-semibold mb-1"
-                                        onSave={async (newTitle) => {
-                                            await handleEditStepTitle(
-                                                workflowConfig.workflowId,
-                                                selectedStepId,
-                                                newTitle
-                                            )
-                                        }}
+                                        onSave={handleSaveTitle}
                                     />
                                     {selectedStep.title && (
                                         <div className="text-sm text-muted-foreground">{selectedDefinition.title}</div>
@@ -75,13 +89,7 @@ export default function PropertiesPanel() {
                                 elementType="div"
                                 className="text-sm text-muted-foreground mb-2"
                                 inputClassName="text-sm text-muted-foreground mb-2"
-                                onSave={async (newComment) => {
-                                    await handleEditStepComment(
-                                        workflowConfig.workflowId,
-                                        selectedStepId,
-                                        newComment
-                                    )
-                                }}
+                                onSave={handleSaveComment}
                                 longText={true}
                             />
 

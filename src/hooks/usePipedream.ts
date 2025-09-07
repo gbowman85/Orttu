@@ -123,7 +123,7 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
         configuredPropsRef.current = newConfiguredProps
         // Clear remote options when switching actions
         setRemoteOptions({})
-    }, [step?._id, step?.parameterValues, actionDefinition?._id])
+    }, [step?._id, actionDefinition?._id])
 
     // Update remote options when stored options change
     useEffect(() => {
@@ -196,7 +196,7 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
         ongoingRequests.current.set(requestKey, requestPromise)
         
         return requestPromise
-    }, [user?._id, actionDefinition?.actionKey, step?._id, storedRemoteOptions, updateStepRemoteOptions, actionDefinition?.configurableProps])
+    }, [user?._id, actionDefinition?.actionKey, step?._id, updateStepRemoteOptions, actionDefinition?.configurableProps?.length])
 
     const reloadProps = useCallback(async (propName: string) => {
         const prop = actionDefinition?.configurableProps?.find(p => p.name === propName)
@@ -240,7 +240,7 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
                 }
             })
         }
-    }, [shouldTriggerPropLoading, actionDefinition?.configurableProps, storedRemoteOptions, loadPropertyOptions])
+    }, [shouldTriggerPropLoading, actionDefinition?.configurableProps?.length, storedRemoteOptions, loadPropertyOptions])
 
     // Update ref when state changes
     useEffect(() => {

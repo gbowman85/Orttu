@@ -192,7 +192,7 @@ export function ParameterForm({
         setValues(initialFormValues)
         setErrors({})
         setHasChanged(false)
-    }, [initialFormValues, parameters])
+    }, [initialValues, parameters])
 
     // Cleanup on unmount
     useEffect(() => {
