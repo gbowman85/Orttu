@@ -7,11 +7,11 @@ import { DragOperation } from "@dnd-kit/abstract"
 
 // Define proper types for dnd-kit events
 interface DragStartEvent {
-  operation: DragOperation<any, any>
+  operation: DragOperation
 }
 
 interface DragEndEvent {
-  operation: DragOperation<any, any>
+  operation: DragOperation
   canceled: boolean
 }
 
@@ -84,6 +84,10 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
         }
 
         const source = operation.source
+        if (!source) {
+            console.log('No source found')
+            return
+        }
         const draggedType = source.type
         
         // Adding a new action step from an action definition

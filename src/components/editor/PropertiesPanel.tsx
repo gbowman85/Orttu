@@ -36,7 +36,7 @@ export default function PropertiesPanel() {
             selectedStepId,
             newTitle
         )
-    }, [workflowConfig?.workflowId, selectedStepId, handleEditStepTitle])
+    }, [workflowConfig, selectedStepId, handleEditStepTitle])
 
     const handleSaveComment = useCallback(async (newComment: string) => {
         if (!workflowConfig || !selectedStepId) return
@@ -45,7 +45,7 @@ export default function PropertiesPanel() {
             selectedStepId,
             newComment
         )
-    }, [workflowConfig?.workflowId, selectedStepId, handleEditStepComment])
+    }, [workflowConfig, selectedStepId, handleEditStepComment])
 
 
 

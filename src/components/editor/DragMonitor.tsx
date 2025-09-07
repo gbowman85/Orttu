@@ -7,7 +7,7 @@ import { DragOperation } from '@dnd-kit/abstract'
 
 // Define proper types for dnd-kit events
 interface DragStartEvent {
-  operation: DragOperation<any, any>
+  operation: DragOperation
 }
 
 interface DragStateContextType {
