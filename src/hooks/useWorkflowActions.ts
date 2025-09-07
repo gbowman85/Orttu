@@ -45,7 +45,7 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
         const draggedType = source?.type
         if (draggedType === 'action-step') {
 
-            if (!source?.data?.actionStep || !source?.data?.parentId || !source?.data?.index) {
+            if (!source?.data?.actionStep || !source?.data?.parentId || source?.data?.index === undefined || source?.data?.index === null) {
                 console.log('No source data for action-step')
                 return
             }
@@ -76,7 +76,6 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
         }
         lastMovedParent.current = null
         const { operation, canceled } = event
-        console.log('operation', operation)
 
         if (canceled || !workflowConfigId) {
             initialActionStepPosition.current = null
@@ -111,8 +110,8 @@ export function useWorkflowActions(workflowConfigId: Id<"workflow_configurations
                 return
             }
             
-            if (!targetData.parentId || !targetData.index) {
-                console.log('No parentId, parentKey, or index ')
+            if (!targetData.parentId || targetData.index === undefined || targetData.index === null) {
+                console.log('No parentId, or index')
                 console.log('targetData', targetData)
                 return
             }
