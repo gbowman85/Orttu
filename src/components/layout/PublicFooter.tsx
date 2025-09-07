@@ -14,7 +14,7 @@ export default function PublicFooter() {
                         </a>
                     </div>
                     <div>
-                        <Image src="/images/logo/novaLearn-logo-120.png" alt="novaLearn Logo" className="h-16" width={120} height={120} />
+                        <Image src="/images/logo/novaLearn-logo-120.png" alt="novaLearn Logo" className="h-16 w-16" width={120} height={120} />
                     </div>
                 </div>
             </div>

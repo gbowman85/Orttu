@@ -14,7 +14,7 @@ export default function MinimalFooter() {
                         </a>
                     </div>
                     <div>
-                        <Image src="/images/logo/novaLearn-icon-80.png" alt="novaLearn Logo" className="h-8" width={80} height={80} />
+                        <Image src="/images/logo/novaLearn-icon-80.png" alt="novaLearn Logo" className="h-8 w-8" width={80} height={80} />
                     </div>
                 </div>
             </div>
