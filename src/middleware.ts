@@ -29,6 +29,7 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
     "img-src 'self' blob: data: https://assets.pipedream.net https://*.convex.cloud https://*.convex.dev",
     "font-src 'self' https://fonts.gstatic.com",
     "connect-src 'self' https://*.convex.cloud https://*.convex.dev https://assets.pipedream.net wss://*.convex.cloud wss://*.convex.dev",
+    "frame-src 'self' https://pipedream.com https://*.pipedream.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -50,7 +51,7 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
     response.headers.set('x-nonce', nonce);
     response.headers.set('Content-Security-Policy', cspHeader);
     response.headers.set('X-Content-Type-Options', 'nosniff');
-    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('X-Frame-Options', 'SAMEORIGIN');
     response.headers.set('X-XSS-Protection', '1; mode=block');
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     return response;
@@ -61,7 +62,7 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
   nextResponse.headers.set('x-nonce', nonce);
   nextResponse.headers.set('Content-Security-Policy', cspHeader);
   nextResponse.headers.set('X-Content-Type-Options', 'nosniff');
-  nextResponse.headers.set('X-Frame-Options', 'DENY');
+  nextResponse.headers.set('X-Frame-Options', 'SAMEORIGIN');
   nextResponse.headers.set('X-XSS-Protection', '1; mode=block');
   nextResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   return nextResponse;

@@ -49,6 +49,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' blob: data: https://assets.pipedream.net https://*.convex.cloud https://*.convex.dev",
               "font-src 'self' https://fonts.gstatic.com",
               "connect-src 'self' https://*.convex.cloud https://*.convex.dev https://assets.pipedream.net wss://*.convex.cloud wss://*.convex.dev",
+              "frame-src 'self' https://pipedream.com https://*.pipedream.com",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
@@ -62,7 +63,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'X-Frame-Options',
-            value: 'DENY'
+            value: 'SAMEORIGIN'
           },
           {
             key: 'X-XSS-Protection',

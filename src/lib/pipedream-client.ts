@@ -31,8 +31,6 @@ async function createNewPipedreamClient(externalUserId: string): Promise<Pipedre
     }
 
     const tokenCallback = async ({ externalUserId }: { externalUserId: string }) => {
-        console.log('Token callback called with externalUserId:', externalUserId)
-        console.log('Token data:', tokenData)
         return tokenData
     }
 
