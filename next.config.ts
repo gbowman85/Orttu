@@ -13,10 +13,33 @@ const nextConfig: NextConfig = {
   async headers() {
     const isDev = process.env.NODE_ENV === 'development'
     
+    // Define allowed origins for CORS
+    const allowedOrigins = [
+      process.env.NEXT_PUBLIC_CONVEX_URL?.replace('https://', 'https://'),
+      process.env.CONVEX_SITE_URL,
+      ...(isDev ? ['http://localhost:3000', 'http://127.0.0.1:3000'] : [])
+    ].filter(Boolean)
+    
     return [
       {
         source: '/(.*)',
         headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: isDev ? '*' : allowedOrigins.join(', ')
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PUT, DELETE, OPTIONS'
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type, Authorization, X-Requested-With'
+          },
+          {
+            key: 'Access-Control-Allow-Credentials',
+            value: 'true'
+          },
           {
             key: 'Content-Security-Policy',
             value: [
