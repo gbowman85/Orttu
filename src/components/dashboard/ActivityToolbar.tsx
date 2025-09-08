@@ -44,7 +44,7 @@ export default function ActivityToolbar() {
         {/* Workflow Filter */}
         <div className="flex items-center">
           <Select value={selectedWorkflowTitle} onValueChange={setSelectedWorkflowTitle}>
-            <SelectTrigger className="min-w-[200px]">
+            <SelectTrigger className="min-w-[200px]" aria-label="Filter by workflow">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-muted-foreground" />
                 <SelectValue />
@@ -71,6 +71,7 @@ export default function ActivityToolbar() {
                 "min-w-[9em] rounded-l-md rounded-r-none",
                 "[&>svg]:hidden"
               )}
+              aria-label="Sort by"
             >
               <SelectValue />
             </SelectTrigger>

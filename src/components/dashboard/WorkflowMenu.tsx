@@ -115,6 +115,7 @@ export function WorkflowMenu({
             variant="ghost" 
             size="sm" 
             className="h-8 w-8 p-0 rounded-full hover:bg-primary-background"
+            aria-label="More actions"
           >
             <MoreVertical className="h-4 w-4" />
           </Button>
@@ -197,6 +198,7 @@ export function WorkflowMenu({
                     onClick={handleAddTag}
                     disabled={!newTag.trim() || isAddingTag}
                     className="w-full h-8"
+                    aria-label="Add tag"
                   >
                     <Plus className="mr-1 h-3 w-3" />
                     {isAddingTag ? 'Adding...' : 'Add Tag'}

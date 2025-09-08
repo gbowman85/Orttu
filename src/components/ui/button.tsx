@@ -44,6 +44,8 @@ function Button({
   variant,
   size,
   asChild = false,
+  "aria-label": ariaLabel,
+  children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
@@ -51,12 +53,36 @@ function Button({
   }) {
   const Comp = asChild ? Slot : "button"
 
+  // Check if button has only icon children (no text content)
+  const hasOnlyIcons = React.Children.toArray(children).every(child => {
+    if (React.isValidElement(child)) {
+      // Check if it's an SVG element or has SVG class
+      const props = child.props as any
+      return child.type === 'svg' || 
+             (typeof props?.className === 'string' && 
+              (props.className.includes('icon') || 
+               props.className.includes('svg') ||
+               props.className.includes('lucide')))
+    }
+    return false
+  })
+
+  // Auto-generate aria-label for icon-only buttons if none provided
+  const accessibilityProps = hasOnlyIcons && !ariaLabel ? {
+    'aria-label': 'Button'
+  } : ariaLabel ? {
+    'aria-label': ariaLabel
+  } : {}
+
   return (
     <Comp
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      {...accessibilityProps}
       {...props}
-    />
+    >
+      {children}
+    </Comp>
   )
 }
 

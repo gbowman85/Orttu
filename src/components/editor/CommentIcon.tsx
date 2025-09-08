@@ -22,6 +22,7 @@ export function CommentIcon({ comment, className = '' }: CommentIconProps) {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 rounded-full hover:bg-gray-300/50 cursor-help"
+                        aria-label="View comment"
                     >
                         <MessageSquare className="h-4 w-4" />
                     </Button>

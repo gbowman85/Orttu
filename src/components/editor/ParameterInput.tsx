@@ -79,7 +79,7 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
                             value={typeof value === 'string' ? value : ''}
                             onValueChange={(v) => onChange(v)}
                         >
-                            <SelectTrigger>
+                            <SelectTrigger aria-label={parameter.title}>
                                 <SelectValue placeholder="Select a value" />
                             </SelectTrigger>
                             <SelectContent>
@@ -97,6 +97,7 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
                         <Switch
                             checked={typeof value === 'boolean' ? value : false}
                             onCheckedChange={(checked) => onChange(checked)}
+                            aria-label={parameter.title}
                         />
                     )
                 case 'date':
@@ -147,7 +148,7 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
                         value={typeof value === 'string' ? value : ''}
                         onValueChange={(v) => onChange(v)}
                     >
-                        <SelectTrigger>
+                        <SelectTrigger aria-label={parameter.title}>
                             <SelectValue placeholder="Select a value" />
                         </SelectTrigger>
                         <SelectContent>
@@ -183,6 +184,7 @@ export function ParameterInput({ parameter, value, onChange, error, otherValues 
                     <Switch
                         checked={typeof value === 'boolean' ? value : false}
                         onCheckedChange={(checked) => onChange(checked)}
+                        aria-label={parameter.title}
                     />
                 )
 

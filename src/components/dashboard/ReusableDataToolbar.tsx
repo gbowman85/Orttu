@@ -57,7 +57,7 @@ export default function ReusableDataToolbar() {
                     value={selectedDataTypes.length === 0 ? 'all' : selectedDataTypes[0]} 
                     onValueChange={handleDataTypeChange}
                 >
-                    <SelectTrigger className="w-[140px]">
+                    <SelectTrigger className="w-[140px]" aria-label="Filter by type">
                         <SelectValue placeholder="Filter by type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -79,6 +79,7 @@ export default function ReusableDataToolbar() {
                                 "min-w-[9em] rounded-l-md rounded-r-none",
                                 "[&>svg]:hidden"
                             )}
+                            aria-label="Sort by"
                         >
                             <SelectValue />
                         </SelectTrigger>

@@ -22,6 +22,7 @@ export function StarToggle({
             size="sm"
             onClick={handleClick}
             className={`group h-8 w-8 p-0 rounded-full hover:bg-gray-50 ${className}`}
+            aria-label={isStarred ? 'Unstar' : 'Star'}
         >
             {isStarred ? (
                 <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 group-hover:fill-gray-200" />

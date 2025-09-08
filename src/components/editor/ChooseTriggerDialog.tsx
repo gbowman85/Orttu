@@ -88,7 +88,7 @@ function ChooseTriggerDialogContent({ workflowId, onClose }: { workflowId: Id<"w
                         }}
                         disabled={isSubmitting}
                     >
-                        <SelectTrigger aria-invalid={!!errors.triggerKey}>
+                        <SelectTrigger aria-invalid={!!errors.triggerKey} aria-label="Select a trigger">
                             <SelectValue placeholder="Select a trigger" />
                         </SelectTrigger>
                         <SelectContent>

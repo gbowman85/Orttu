@@ -46,10 +46,10 @@ export default function EditorToolbar() {
                     <BackToWorkflowsButton />
                     <Tabs value={currentTab} onValueChange={handleTabChange} className="w-[400px]">
                         <TabsList>
-                            <TabsTrigger value="editor">
+                            <TabsTrigger value="editor" aria-label="Editor view">
                                 Editor
                             </TabsTrigger>
-                            <TabsTrigger value="activity">
+                            <TabsTrigger value="activity" aria-label="Activity view">
                                 Activity
                             </TabsTrigger>
                         </TabsList>
@@ -58,13 +58,17 @@ export default function EditorToolbar() {
 
                 {/* Right side - Controls */}
                 <div className="flex items-center gap-4 px-4">
-                    <Button onClick={() => setIsTestDialogOpen(true)}>
+                    <Button onClick={() => setIsTestDialogOpen(true)} aria-label="Test workflow">
                         <FlaskConical className="mr-2 h-4 w-4" />
                         Test
                     </Button>
                     <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-4 py-2">
                         <span className="text-sm">Enable</span>
-                        <Switch checked={isEnabled} onCheckedChange={() => {}} />
+                        <Switch 
+                            checked={isEnabled} 
+                            onCheckedChange={() => {}} 
+                            aria-label={isEnabled ? 'Disable workflow' : 'Enable workflow'}
+                        />
                     </div>
                 </div>
             </div>

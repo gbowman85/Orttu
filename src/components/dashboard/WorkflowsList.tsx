@@ -42,6 +42,7 @@ export default function WorkflowsList() {
                             checked={workflow.enabled}
                             onCheckedChange={(checked) => handleEnableToggle(workflow._id, checked)}
                             className='mr-4'
+                            aria-label={`${workflow.enabled ? 'Disable' : 'Enable'} workflow "${workflow.title}"`}
                         />
                     </div>
 

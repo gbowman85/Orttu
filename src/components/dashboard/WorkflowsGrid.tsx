@@ -53,6 +53,7 @@ export default function WorkflowsGrid() {
                                 <Switch
                                     checked={workflow.enabled}
                                     onCheckedChange={(checked) => handleEnableToggle(workflow._id, checked)}
+                                    aria-label={`${workflow.enabled ? 'Disable' : 'Enable'} workflow "${workflow.title}"`}
                                 />
                             </div>
 

@@ -8,7 +8,7 @@ import { useHeaderSlot } from "@/contexts/HeaderSlotContext";
 
 export default function ProtectedHeader() {
   const { slots } = useHeaderSlot();
-  
+
   return (
     <header className="w-full">
       <div className="mx-auto px-4 py-4 flex justify-between items-center">
@@ -27,9 +27,11 @@ export default function ProtectedHeader() {
         <nav>
           <ul className="flex items-center gap-4">
             <li>
-              <Button variant="subtle" size="sm">
-                <Link href="/guide">Guide</Link>
-              </Button>
+              <Link href="/guide" className="flex">
+                <Button variant="subtle" size="sm">
+                  Guide
+                </Button>
+              </Link>
             </li>
             <li>
               <UserProfileIcon />

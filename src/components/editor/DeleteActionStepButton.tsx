@@ -31,6 +31,7 @@ export function DeleteActionStepButton({
                 size="icon"
                 onClick={handleButtonClick}
                 className="group/delete-action-step-button h-8 w-8 rounded-full hover:bg-red-300/50 cursor-pointer"
+                aria-label="Delete action step"
             >
                 <Trash2 className="h-4 w-4 text-grey-100 group-hover/delete-action-step-button:text-red-600" />
             </Button>

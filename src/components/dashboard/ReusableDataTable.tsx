@@ -110,6 +110,7 @@ export default function ReusableDataTable() {
                     <Switch
                         checked={variable.value === 'true'}
                         onCheckedChange={(checked) => updateValue(String(checked))}
+                        aria-label={`Toggle ${variable.name}`}
                     />
                 );
             case 'date':
@@ -189,7 +190,7 @@ export default function ReusableDataTable() {
                                                 }
                                             }}
                                         >
-                                            <SelectTrigger>
+                                            <SelectTrigger aria-label="Data type">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -292,7 +293,7 @@ export default function ReusableDataTable() {
                                         }
                                     }}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger aria-label="Data type">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>

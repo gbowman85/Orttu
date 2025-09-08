@@ -32,7 +32,7 @@ export const actionCategoryRegistry = {
         categoryKey: 'workflow-control',
         title: 'Workflow Control',
         description: 'Workflow Control is used to control the flow of the workflow',
-        colour: 'var(--color-gray-400)',
+        colour: 'var(--color-gray-500)',
         textColour: 'var(--color-white)',
         icon: '/images/icons/workflow.svg',
     },

@@ -63,7 +63,7 @@ export function PipedreamPropInput({
                                 }
                             }}
                         >
-                            <SelectTrigger className="flex-1 bg-white">
+                            <SelectTrigger className="flex-1 bg-white" aria-label={prop.label || prop.name}>
                                 <SelectValue placeholder="Select a value" />
                             </SelectTrigger>
                             <SelectContent>
@@ -162,6 +162,7 @@ export function PipedreamPropInput({
                     <Switch
                         checked={typeof value === 'boolean' ? value : false}
                         onCheckedChange={(checked) => onChange(checked)}
+                        aria-label={prop.label || prop.name}
                     />
                 )
 

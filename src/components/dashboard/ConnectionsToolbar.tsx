@@ -47,6 +47,7 @@ export default function ConnectionsToolbar() {
                 "min-w-[9em] rounded-l-md rounded-r-none",
                 "[&>svg]:hidden"
               )}
+              aria-label="Sort by"
             >
               <SelectValue />
             </SelectTrigger>

@@ -48,7 +48,7 @@ export function UserMenu() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-12 w-12 rounded-full p-0">
+                <Button variant="ghost" className="relative h-12 w-12 rounded-full p-0" aria-label="User menu">
                     <Avatar className="h-12 w-12">
                         <AvatarFallback className="bg-primary text-primary-foreground font-bold">
                             {initials}

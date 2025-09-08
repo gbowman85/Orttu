@@ -67,6 +67,7 @@ export function WorkflowsToolbar() {
                                 "min-w-[9em] rounded-l-md rounded-r-none",
                                 "[&>svg]:hidden"
                             )}
+                            aria-label="Sort by"
                         >
                             <SelectValue />
                         </SelectTrigger>
@@ -86,6 +87,7 @@ export function WorkflowsToolbar() {
                             size="icon"
                             className={`rounded-none border-y border-l ${sortDirection === 'asc' ? 'bg-primary-background' : ''}`}
                             onClick={() => setSortDirection('asc')}
+                            aria-label="Sort ascending"
                         >
                             <ChevronUp className="h-4 w-4" />
                         </Button>
@@ -94,6 +96,7 @@ export function WorkflowsToolbar() {
                             size="icon"
                             className={`rounded-none rounded-r-md border-y border-r border-l ${sortDirection === 'desc' ? 'bg-primary-background' : ''}`}
                             onClick={() => setSortDirection('desc')}
+                            aria-label="Sort descending"
                         >
                             <ChevronDown className="h-4 w-4" />
                         </Button>
@@ -107,6 +110,7 @@ export function WorkflowsToolbar() {
                         size="icon"
                         className={`rounded-r-none border-y border-l border-r ${viewMode === 'grid' ? 'bg-primary-background' : ''}`}
                         onClick={() => setViewMode('grid')}
+                        aria-label="Grid view"
                     >
                         <LayoutGrid />
                     </Button>
@@ -115,6 +119,7 @@ export function WorkflowsToolbar() {
                         size="icon"
                         className={`rounded-l-none border-y border-l border-r  ${viewMode === 'list' ? 'bg-primary-background' : ''}`}
                         onClick={() => setViewMode('list')}
+                        aria-label="List view"
                     >
                         <LayoutList />
                     </Button>

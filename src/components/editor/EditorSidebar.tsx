@@ -25,7 +25,7 @@ function EditorSidebar() {
 
                 {/* Category Filter */}
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full" aria-label="Filter by category">
                         <SelectValue placeholder="Filter by category" />
                     </SelectTrigger>
                     <SelectContent>
