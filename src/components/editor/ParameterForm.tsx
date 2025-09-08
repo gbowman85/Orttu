@@ -168,13 +168,7 @@ export function ParameterForm({
     stepId,
     workflowConfigId
 }: ParameterFormProps) {
-    // Initialize values with defaults
-    const initialFormValues = parameters.reduce((acc, param) => {
-        acc[param.parameterKey] = initialValues[param.parameterKey] ?? param.default ?? null
-        return acc
-    }, {} as Record<string, unknown>)
-
-    const [values, setValues] = useState<Record<string, unknown>>(initialFormValues)
+    const [values, setValues] = useState<Record<string, unknown>>({})
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [hasChanged, setHasChanged] = useState(false)
 
@@ -189,10 +183,16 @@ export function ParameterForm({
     }
 
     useEffect(() => {
+        // Initialize values with defaults
+        const initialFormValues = parameters.reduce((acc, param) => {
+            acc[param.parameterKey] = initialValues[param.parameterKey] ?? param.default ?? null
+            return acc
+        }, {} as Record<string, unknown>)
+        
         setValues(initialFormValues)
         setErrors({})
         setHasChanged(false)
-    }, [initialValues, parameters, initialFormValues])
+    }, [initialValues, parameters])
 
     // Cleanup on unmount
     useEffect(() => {

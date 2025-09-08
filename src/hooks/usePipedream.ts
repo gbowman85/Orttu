@@ -198,6 +198,10 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
         return requestPromise
     }, [user?._id, actionDefinition?.actionKey, step?._id, updateStepRemoteOptions, actionDefinition?.configurableProps, storedRemoteOptions])
 
+    // Store the function in a ref to avoid dependency issues
+    const loadPropertyOptionsRef = useRef(loadPropertyOptions)
+    loadPropertyOptionsRef.current = loadPropertyOptions
+
     const reloadProps = useCallback(async (propName: string) => {
         const prop = actionDefinition?.configurableProps?.find(p => p.name === propName)
         if (!prop) {
@@ -235,12 +239,12 @@ export function usePipedreamProps(options: UsePipedreamPropsOptions) {
                     // Check if we already have options for this prop in the database
                     const hasStoredOptions = storedRemoteOptions && storedRemoteOptions[prop.name]
                     if (!hasStoredOptions) {
-                        await loadPropertyOptions(prop.name)
+                        await loadPropertyOptionsRef.current(prop.name)
                     }
                 }
             })
         }
-    }, [shouldTriggerPropLoading, actionDefinition?.configurableProps, storedRemoteOptions, loadPropertyOptions])
+    }, [shouldTriggerPropLoading, actionDefinition?.configurableProps, storedRemoteOptions])
 
     // Update ref when state changes
     useEffect(() => {
