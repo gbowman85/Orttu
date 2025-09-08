@@ -57,7 +57,7 @@ function Button({
   const hasOnlyIcons = React.Children.toArray(children).every(child => {
     if (React.isValidElement(child)) {
       // Check if it's an SVG element or has SVG class
-      const props = child.props as any
+      const props = child.props as React.SVGProps<SVGSVGElement>
       return child.type === 'svg' || 
              (typeof props?.className === 'string' && 
               (props.className.includes('icon') || 

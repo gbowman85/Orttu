@@ -3,7 +3,7 @@ import {
   createRouteMatcher,
   nextjsMiddlewareRedirect,
 } from "@convex-dev/auth/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { PROTECTED_ROUTES } from './lib/protected-routes';
  
 const isSignInPage = createRouteMatcher(["/login"]);
